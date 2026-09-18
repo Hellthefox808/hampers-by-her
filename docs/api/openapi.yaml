@@ -1,0 +1,232 @@
+openapi: 3.1.0
+info:
+  title: Hampers by Her Digital Commerce API
+  description: Official REST API for Hampers by Her luxury gifting storefront, bespoke atelier, and operations.
+  version: 2.0.0
+  contact:
+    name: Hampers by Her Engineering
+    url: https://hampersbyher.com/contact
+servers:
+  - url: https://api.hampersbyher.com/v1
+    description: Production API Server
+  - url: https://staging-api.hampersbyher.com/v1
+    description: Staging Environment
+paths:
+  /catalog/products:
+    get:
+      summary: Retrieve list of curated hampers
+      parameters:
+        - name: occasion
+          in: query
+          schema:
+            type: string
+        - name: recipient
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful catalog listing response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+  /builder/validate-step:
+    post:
+      summary: Validate 11-step hamper builder configuration & volume
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuilderValidationRequest'
+      responses:
+        '200':
+          description: Validation result and live fullness gauge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuilderValidationResponse'
+  /checkout/create-order:
+    post:
+      summary: Convert cart into order and initiate payment gateway
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order created in PENDING_PAYMENT state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+  /webhooks/razorpay:
+    post:
+      summary: Ingest Razorpay signed payment webhook
+      parameters:
+        - name: x-razorpay-signature
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook received and queued for processing
+components:
+  schemas:
+    ProductListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductCard'
+            pageInfo:
+              type: object
+              properties:
+                hasNextPage:
+                  type: boolean
+                nextCursor:
+                  type: string
+    ProductCard:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        basePrice:
+          type: number
+        currency:
+          type: string
+        primaryImageUrl:
+          type: string
+        isCustomizable:
+          type: boolean
+        stockStatus:
+          type: string
+          enum: [IN_STOCK, LOW_STOCK, OUT_OF_STOCK]
+    BuilderValidationRequest:
+      type: object
+      required: [boxSku, selectedComponentSkus]
+      properties:
+        boxSku:
+          type: string
+        selectedComponentSkus:
+          type: array
+          items:
+            type: object
+            properties:
+              sku:
+                type: string
+              quantity:
+                type: integer
+    BuilderValidationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            isValid:
+              type: boolean
+            boxFullnessPercentage:
+              type: number
+            remainingVolumeCm3:
+              type: number
+            totalWeightGrams:
+              type: number
+            requiresFragileCushion:
+              type: boolean
+    CreateOrderRequest:
+      type: object
+      required: [cartId, buyer, recipientAddress, deliverySchedule]
+      properties:
+        cartId:
+          type: string
+          format: uuid
+        buyer:
+          type: object
+          properties:
+            fullName:
+              type: string
+            email:
+              type: string
+            phoneNumber:
+              type: string
+        recipientAddress:
+          type: object
+          properties:
+            recipientName:
+              type: string
+            addressLine1:
+              type: string
+            pincode:
+              type: string
+            city:
+              type: string
+            state:
+              type: string
+            phoneNumber:
+              type: string
+        deliverySchedule:
+          type: object
+          properties:
+            preferredDate:
+              type: string
+              format: date
+            deliverySlot:
+              type: string
+    CreateOrderResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            orderId:
+              type: string
+            orderStatus:
+              type: string
+            amountPayable:
+              type: number
+            currency:
+              type: string
+            razorpayOrderId:
+              type: string

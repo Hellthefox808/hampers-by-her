@@ -1,0 +1,21 @@
+{
+  "name": "hampers-by-her",
+  "version": "2.0.0",
+  "description": "Artisanal Luxury Gifting Digital Commerce Ecosystem & Atelier OS",
+  "private": true,
+  "scripts": {
+    "audit:docs": "node scripts/audit_documentation.js",
+    "verify": "npm run audit:docs"
+  },
+  "keywords": [
+    "gifting",
+    "ecommerce",
+    "luxury-hampers",
+    "modular-monolith",
+    "nextjs",
+    "nestjs",
+    "prisma"
+  ],
+  "author": "Hampers by Her Engineering Team",
+  "license": "UNLICENSED"
+}

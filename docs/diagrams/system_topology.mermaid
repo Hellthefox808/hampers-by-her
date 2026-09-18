@@ -1,0 +1,71 @@
+%% Hampers by Her — Complete System Topology Mermaid Specification
+graph TB
+    subgraph Clients[Client Devices & Channels]
+        MobileWeb["Mobile Web (Next.js 15 PWA)"]
+        DesktopWeb["Desktop Web (Next.js 15)"]
+        AdminWeb["Operations Admin (Next.js 15)"]
+        Instagram["Instagram App (DMs & Mentions)"]
+        WhatsApp["WhatsApp App (Customer & Concierge)"]
+    end
+
+    subgraph EdgeLayer[Edge & CDN Layer (AWS CloudFront)]
+        Route53["Route 53 DNS (Anycast)"]
+        WAF["AWS WAF (Anti-DDoS, Rate Limits, OWASP Top 10)"]
+        CF_Distribution["Amazon CloudFront CDN (ap-south-1)"]
+        S3_Media["Amazon S3 Media Bucket (OAC Protected)"]
+    end
+
+    subgraph IngressLayer[Public Subnets (Multi-AZ ap-south-1)]
+        ALB["Application Load Balancer (ALB Dual-AZ)"]
+        NAT_A["NAT Gateway (AZ-a, Elastic IP)"]
+        NAT_B["NAT Gateway (AZ-b, Elastic IP)"]
+    end
+
+    subgraph AppLayer[Private Application Subnets (AWS ECS Fargate)]
+        direction TB
+        ECS_App1["ECS Fargate Task 1: NestJS Core Monolith"]
+        ECS_App2["ECS Fargate Task 2: NestJS Core Monolith"]
+        ECS_Worker["ECS Fargate Worker: BullMQ Background Queues"]
+    end
+
+    subgraph DataLayer[Isolated Database Subnets]
+        Aurora_Primary["Amazon Aurora PostgreSQL Serverless v2 (Primary Read/Write)"]
+        Aurora_Replica["Amazon Aurora PostgreSQL Serverless v2 (Read Replica AZ-b)"]
+        Redis_Cluster["Amazon ElastiCache Serverless Redis 7.2 (Locks, Caches, Streams)"]
+    end
+
+    subgraph ExternalEcosystem[External APIs & Webhooks]
+        Meta_API["Meta Graph API (Instagram DMs)"]
+        WhatsApp_API["WhatsApp Business Cloud API"]
+        Razorpay_API["Razorpay / Cashfree Payments Gateway"]
+        Shiprocket_API["Shiprocket / Delhivery Logistics API"]
+        AWS_SES["AWS Simple Email Service (SES)"]
+        DLT_SMS["TRAI DLT SMS Gateway (Gupshup)"]
+        Google_Feed["Google Merchant Center Feed"]
+    end
+
+    %% Client Connections
+    MobileWeb & DesktopWeb & AdminWeb --> Route53
+    Route53 --> WAF --> CF_Distribution
+    CF_Distribution --> S3_Media
+    CF_Distribution --> ALB
+
+    %% Inbound Webhooks
+    Instagram -. Webhook (HMAC) .-> ALB
+    WhatsApp -. Webhook (HMAC) .-> ALB
+    Razorpay_API -. Webhook (HMAC) .-> ALB
+    Shiprocket_API -. Tracking Webhook .-> ALB
+
+    %% Application Layer Connections
+    ALB --> ECS_App1 & ECS_App2
+    ECS_App1 & ECS_App2 --> Redis_Cluster
+    ECS_App1 & ECS_App2 --> Aurora_Primary
+    ECS_App1 & ECS_App2 -. Read Queries .-> Aurora_Replica
+    ECS_Worker --> Redis_Cluster
+    ECS_Worker --> Aurora_Primary
+
+    %% Outbound Connections via NAT
+    ECS_App1 & ECS_App2 & ECS_Worker --> NAT_A & NAT_B
+    NAT_A & NAT_B --> Meta_API & WhatsApp_API & Razorpay_API & Shiprocket_API & AWS_SES & DLT_SMS
+    ECS_Worker -. Generate Feed .-> S3_Media
+    S3_Media -. Pull Feed .-> Google_Feed

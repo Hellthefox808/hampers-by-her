@@ -1,0 +1,54 @@
+%% Hampers by Her — End-to-End Customer Journeys Mermaid Specification
+graph TD
+    subgraph JourneyA[Journey A: Ready-Made Hamper Instant Checkout]
+        A1[Instagram / Search Ad / Organic] --> A2[Landing / Curated Collections]
+        A2 --> A3[Product Detail Page: Ready-Made Box]
+        A3 --> A4[Select Add-on: Polaroid / Wax Seal]
+        A4 --> A5[Drawer Cart: Recipient Address & Date]
+        A5 --> A6[2-Step Mobile Checkout]
+        A6 --> A7[Razorpay UPI Intent / Card]
+        A7 --> A8[Instant WhatsApp Order Confirmation]
+    end
+
+    subgraph JourneyB[Journey B: 11-Step Custom Hamper Builder Atelier]
+        B1[Click 'Build Your Own Hamper'] --> B2[Step 1: Select Occasion & Theme]
+        B2 --> B3[Step 2: Choose Box Container & Size]
+        B3 --> B4[Step 3–7: Multi-Category Item Selection]
+        B4 --> B5[Real-Time 3D Fullness & Weight Check]
+        B5 --> B6[Step 8: Choose Satin Ribbon & Wax Seal]
+        B6 --> B7[Step 9: Upload Polaroid / Note Card]
+        B7 --> B8[Step 10: Final 360 Box Preview]
+        B8 --> B9[Step 11: Add to Cart & Checkout]
+    end
+
+    subgraph JourneyC[Journey C: Instagram Story to WhatsApp Concierge]
+        C1[Customer views Instagram Reel / Story] --> C2[Sends DM: 'Price for wedding hamper?']
+        C2 --> C3[Automated DM Webhook & Lead Score]
+        C3 --> C4[Score >= 70: Priority Concierge Ping]
+        C4 --> C5[WhatsApp 1-on-1 Chat with Atelier Stylist]
+        C5 --> C6[Stylist generates Custom Hamper Link]
+        C6 --> C7[Customer opens pre-filled Web Cart]
+        C7 --> C8[Payment & Instant Receipt]
+    end
+
+    subgraph JourneyD[Journey D: Corporate & Bulk Gifting Pipeline]
+        D1[Corporate Gifter visits /corporate] --> D2[Submits Bulk Inquiry Form]
+        D2 --> D3[Admin CRM Bulk Pipeline Workspace]
+        D3 --> D4[Negotiation & Digital PDF Quotation]
+        D4 --> D5[B2B Contract Signed & Advance Paid]
+        D5 --> D6[CSV Multi-Address Upload & Batch AWBs]
+    end
+
+    subgraph JourneyE[Journey E: Post-Purchase Fulfillment & Feedback]
+        E1[Order Marked PACKED in Admin] --> E2[Mandatory QC Photo Captured]
+        E2 --> E3[Shiprocket AWB Generated & Dispatched]
+        E3 --> E4[WhatsApp Live Tracking Link Sent]
+        E4 --> E5[Out for Delivery Notification]
+        E5 --> E6[Delivered: Unboxing Video Survey Sent]
+    end
+
+    subgraph JourneyF[Journey F: Occasion Calendar & Retention]
+        F1[Customer saves Birthday / Anniversary in Profile] --> F2[Automated 14-Day Advance Reminder]
+        F2 --> F3[Personalized WhatsApp Hamper Recommendation]
+        F3 --> F4[1-Click Re-Order with Past Address]
+    end

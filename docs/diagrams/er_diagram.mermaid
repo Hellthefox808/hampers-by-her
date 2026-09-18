@@ -1,0 +1,51 @@
+%% Hampers by Her — Database Entity Relationship Mermaid Specification
+erDiagram
+    USERS ||--o{ CUSTOMER_PROFILES : has
+    USERS ||--o{ ADDRESSES : owns
+    USERS ||--o{ ORDERS : places
+    USERS ||--o{ REVIEWS : writes
+    USERS ||--o{ OCCASIONS : tracks
+    USERS ||--o{ CARTS : creates
+
+    CUSTOMER_PROFILES ||--o{ LEADS : linked_to
+    CUSTOMER_PROFILES ||--o{ CONVERSATIONS : participates
+
+    CATEGORIES ||--o{ PRODUCTS : contains
+    CATEGORIES ||--o{ CATEGORIES : parent_child
+
+    PRODUCTS ||--|{ PRODUCT_VARIANTS : has
+    PRODUCTS ||--o{ PRODUCT_IMAGES : displays
+    PRODUCTS ||--o{ PRODUCT_TAGS : tagged_with
+    PRODUCTS ||--o{ HAMPER_BOX_SPECIFICATIONS : fits_into
+
+    PRODUCT_VARIANTS ||--|| INVENTORIES : tracks_stock
+    PRODUCT_VARIANTS ||--o{ CART_ITEMS : added_to
+    PRODUCT_VARIANTS ||--o{ ORDER_ITEMS : fulfilled_as
+
+    HAMPER_TEMPLATES ||--o{ HAMPER_SLOTS : defines
+    HAMPER_SLOTS ||--o{ CATEGORIES : allows_category
+    HAMPER_TEMPLATES ||--o{ PRODUCTS : packaged_in
+
+    CARTS ||--o{ CART_ITEMS : holds
+    CART_ITEMS ||--o{ CART_ITEM_CUSTOMIZATIONS : customizes
+
+    ORDERS ||--|{ ORDER_ITEMS : contains
+    ORDERS ||--|| ADDRESSES : delivers_to
+    ORDERS ||--o{ ORDER_STATUS_HISTORY : transitions
+    ORDERS ||--o{ PAYMENTS : paid_via
+    ORDERS ||--o{ SHIPMENTS : shipped_by
+    ORDERS ||--o{ ORDER_QC_RECORDS : verified_by
+
+    ORDER_ITEMS ||--o{ ORDER_ITEM_CUSTOMIZATIONS : includes
+    
+    ORDER_QC_RECORDS ||--|{ QC_PHOTOS : captures
+
+    PAYMENTS ||--o{ REFUNDS : refunded_as
+
+    SHIPMENTS ||--o{ TRACKING_EVENTS : logs
+
+    LEADS ||--o{ LEAD_ACTIVITIES : logs_activity
+    LEADS ||--o{ CONVERSATIONS : records_messages
+
+    COUPONS ||--o{ COUPON_REDEMPTIONS : redeemed_in
+    ORDERS ||--o{ COUPON_REDEMPTIONS : applies
