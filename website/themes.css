@@ -1,0 +1,537 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   HAMPERS BY HER — THEME FACTORY DESIGN TOKEN ENGINE
+   11 Curated Palettes: Atelier Signature + All 10 Official Theme Factory Presets
+   WCAG AA Contrast-Verified across Light & Dark Glassmorphism Surfaces
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --theme-mesh-1: rgba(200, 157, 66, 0.10);
+  --theme-mesh-2: rgba(74, 30, 41, 0.07);
+  --theme-mesh-3: rgba(46, 90, 68, 0.06);
+  --theme-header-bg: rgba(74, 30, 41, 0.90);
+  --theme-header-accent: #F1D175;
+  --theme-card-bg: rgba(255, 255, 255, 0.78);
+  --theme-card-border: rgba(255, 255, 255, 0.88);
+  --theme-nav-bg: rgba(253, 251, 247, 0.78);
+  --theme-nav-scrolled: rgba(255, 255, 255, 0.90);
+}
+
+/* ── 1. DESERT ROSE (Dusty Rose #d4a5a5, Clay #b87d6d, Sand #e8d5c4, Deep Burgundy #5d2e46) ── */
+[data-theme="desert-rose"] {
+  --bg-canvas: #F9F2EC;
+  --bg-surface: #FFFDFB;
+  --bg-surface-soft: #E8D5C4;
+  --text-primary: #3B1D2C;
+  --text-secondary: #6E4E5A;
+  --text-tertiary: #9A7B84;
+  --color-bordeaux: #5D2E46;
+  --color-bordeaux-hover: #461F33;
+  --color-gold: #B87D6D;
+  --color-gold-subtle: #F2E2D8;
+  --border-subtle: #E8D5C4;
+  --border-accent: #D4A5A5;
+  --border-focus: #5D2E46;
+  --theme-mesh-1: rgba(212, 165, 165, 0.22);
+  --theme-mesh-2: rgba(184, 125, 109, 0.16);
+  --theme-mesh-3: rgba(93, 46, 70, 0.10);
+  --theme-header-bg: rgba(93, 46, 70, 0.92);
+  --theme-header-accent: #E8D5C4;
+  --theme-nav-bg: rgba(249, 242, 236, 0.80);
+  --theme-nav-scrolled: rgba(255, 253, 251, 0.92);
+}
+
+/* ── 2. GOLDEN HOUR (Mustard #f4a900, Terracotta #c1666b, Warm Beige #d4b896, Chocolate #4a403a) ── */
+[data-theme="golden-hour"] {
+  --bg-canvas: #FBF5EC;
+  --bg-surface: #FFFDF9;
+  --bg-surface-soft: #EFE2CE;
+  --text-primary: #332B26;
+  --text-secondary: #63554C;
+  --text-tertiary: #8E7F74;
+  --color-bordeaux: #4A403A;
+  --color-bordeaux-hover: #352D28;
+  --color-gold: #C1666B;
+  --color-gold-subtle: #F5E6C8;
+  --border-subtle: #E5D4BC;
+  --border-accent: #D4B896;
+  --border-focus: #4A403A;
+  --theme-mesh-1: rgba(244, 169, 0, 0.15);
+  --theme-mesh-2: rgba(193, 102, 107, 0.13);
+  --theme-mesh-3: rgba(212, 184, 150, 0.22);
+  --theme-header-bg: rgba(74, 64, 58, 0.94);
+  --theme-header-accent: #F4A900;
+  --theme-nav-bg: rgba(251, 245, 236, 0.82);
+  --theme-nav-scrolled: rgba(255, 253, 249, 0.94);
+}
+
+/* ── 3. BOTANICAL GARDEN (Fern Green #4a7c59, Marigold #f9a620, Terracotta #b7472a, Cream #f5f3ed) ── */
+[data-theme="botanical-garden"] {
+  --bg-canvas: #F5F3ED;
+  --bg-surface: #FFFFFF;
+  --bg-surface-soft: #E9E6DC;
+  --text-primary: #1F3325;
+  --text-secondary: #4D6253;
+  --text-tertiary: #7C8F81;
+  --color-bordeaux: #4A7C59;
+  --color-bordeaux-hover: #376044;
+  --color-gold: #B7472A;
+  --color-gold-subtle: #FDF0D5;
+  --border-subtle: #DFDDD2;
+  --border-accent: #F9A620;
+  --border-focus: #4A7C59;
+  --theme-mesh-1: rgba(74, 124, 89, 0.14);
+  --theme-mesh-2: rgba(249, 166, 32, 0.14);
+  --theme-mesh-3: rgba(183, 71, 42, 0.09);
+  --theme-header-bg: rgba(46, 86, 58, 0.94);
+  --theme-header-accent: #F9A620;
+  --theme-nav-bg: rgba(245, 243, 237, 0.82);
+  --theme-nav-scrolled: rgba(255, 255, 255, 0.94);
+}
+
+/* ── 4. FOREST CANOPY (Forest Green #2d4a2b, Sage #7d8471, Olive #a4ac86, Ivory #faf9f6) ── */
+[data-theme="forest-canopy"] {
+  --bg-canvas: #FAF9F6;
+  --bg-surface: #FFFFFF;
+  --bg-surface-soft: #EEF0E8;
+  --text-primary: #1E331D;
+  --text-secondary: #54604E;
+  --text-tertiary: #7D8471;
+  --color-bordeaux: #2D4A2B;
+  --color-bordeaux-hover: #1E331D;
+  --color-gold: #7D8471;
+  --color-gold-subtle: #E7EAD9;
+  --border-subtle: #E1E4D7;
+  --border-accent: #A4AC86;
+  --border-focus: #2D4A2B;
+  --theme-mesh-1: rgba(45, 74, 43, 0.12);
+  --theme-mesh-2: rgba(164, 172, 134, 0.18);
+  --theme-mesh-3: rgba(125, 132, 113, 0.10);
+  --theme-header-bg: rgba(45, 74, 43, 0.94);
+  --theme-header-accent: #D7DEC2;
+  --theme-nav-bg: rgba(250, 249, 246, 0.82);
+  --theme-nav-scrolled: rgba(255, 255, 255, 0.94);
+}
+
+/* ── 5. SUNSET BOULEVARD (Burnt Orange #e76f51, Coral #f4a261, Warm Sand #e9c46a, Deep Purple/Teal #264653) ── */
+[data-theme="sunset-boulevard"] {
+  --bg-canvas: #FCF8F2;
+  --bg-surface: #FFFFFF;
+  --bg-surface-soft: #F7ECDC;
+  --text-primary: #264653;
+  --text-secondary: #4E6A75;
+  --text-tertiary: #849AA3;
+  --color-bordeaux: #C85538;
+  --color-bordeaux-hover: #A94127;
+  --color-gold: #E76F51;
+  --color-gold-subtle: #FBF0D6;
+  --border-subtle: #EFDFC8;
+  --border-accent: #F4A261;
+  --border-focus: #264653;
+  --theme-mesh-1: rgba(231, 111, 81, 0.14);
+  --theme-mesh-2: rgba(244, 162, 97, 0.16);
+  --theme-mesh-3: rgba(233, 196, 106, 0.18);
+  --theme-header-bg: rgba(38, 70, 83, 0.94);
+  --theme-header-accent: #E9C46A;
+  --theme-nav-bg: rgba(252, 248, 242, 0.82);
+  --theme-nav-scrolled: rgba(255, 255, 255, 0.94);
+}
+
+/* ── 6. ARCTIC FROST (Ice Blue #d4e4f7, Steel Blue #4a6fa5, Silver #c0c0c0, Crisp White #fafafa) ── */
+[data-theme="arctic-frost"] {
+  --bg-canvas: #FAFAFA;
+  --bg-surface: #FFFFFF;
+  --bg-surface-soft: #E9F1FB;
+  --text-primary: #1B2D45;
+  --text-secondary: #4F637D;
+  --text-tertiary: #8798AD;
+  --color-bordeaux: #3A5C8E;
+  --color-bordeaux-hover: #2A466F;
+  --color-gold: #4A6FA5;
+  --color-gold-subtle: #D4E4F7;
+  --border-subtle: #DCE6F2;
+  --border-accent: #C0C0C0;
+  --border-focus: #4A6FA5;
+  --theme-mesh-1: rgba(212, 228, 247, 0.45);
+  --theme-mesh-2: rgba(74, 111, 165, 0.12);
+  --theme-mesh-3: rgba(192, 192, 192, 0.18);
+  --theme-header-bg: rgba(42, 70, 111, 0.94);
+  --theme-header-accent: #D4E4F7;
+  --theme-nav-bg: rgba(250, 250, 250, 0.84);
+  --theme-nav-scrolled: rgba(255, 255, 255, 0.95);
+}
+
+/* ── 7. MODERN MINIMALIST (Charcoal #36454f, Slate Gray #708090, Light Gray #d3d3d3, White #ffffff) ── */
+[data-theme="modern-minimalist"] {
+  --bg-canvas: #F7F8F9;
+  --bg-surface: #FFFFFF;
+  --bg-surface-soft: #EAECEE;
+  --text-primary: #1F2930;
+  --text-secondary: #55636E;
+  --text-tertiary: #708090;
+  --color-bordeaux: #36454F;
+  --color-bordeaux-hover: #243038;
+  --color-gold: #708090;
+  --color-gold-subtle: #E8ECEF;
+  --border-subtle: #DCE0E4;
+  --border-accent: #D3D3D3;
+  --border-focus: #36454F;
+  --theme-mesh-1: rgba(112, 128, 144, 0.10);
+  --theme-mesh-2: rgba(54, 69, 79, 0.08);
+  --theme-mesh-3: rgba(211, 211, 211, 0.24);
+  --theme-header-bg: rgba(54, 69, 79, 0.95);
+  --theme-header-accent: #FFFFFF;
+  --theme-nav-bg: rgba(255, 255, 255, 0.84);
+  --theme-nav-scrolled: rgba(255, 255, 255, 0.96);
+}
+
+/* ── 8. OCEAN DEPTHS — DARK (Deep Navy #1a2332, Teal #2d8b8b, Seafoam #a8dadc, Cream #f1faee) ── */
+[data-theme="ocean-depths"] {
+  color-scheme: dark;
+  --bg-canvas: #141C28;
+  --bg-surface: #1A2332;
+  --bg-surface-soft: #223044;
+  --text-primary: #F1FAEE;
+  --text-secondary: #B9D4D8;
+  --text-tertiary: #7F9EA6;
+  --text-inverse: #141C28;
+  --color-bordeaux: #2D8B8B;
+  --color-bordeaux-hover: #237070;
+  --color-gold: #A8DADC;
+  --color-gold-subtle: rgba(168, 218, 220, 0.16);
+  --border-subtle: rgba(168, 218, 220, 0.18);
+  --border-accent: rgba(168, 218, 220, 0.36);
+  --border-focus: #A8DADC;
+  --theme-mesh-1: rgba(45, 139, 139, 0.24);
+  --theme-mesh-2: rgba(168, 218, 220, 0.14);
+  --theme-mesh-3: rgba(26, 35, 50, 0.55);
+  --theme-header-bg: rgba(20, 28, 40, 0.94);
+  --theme-header-accent: #A8DADC;
+  --theme-card-bg: rgba(26, 35, 50, 0.84);
+  --theme-card-border: rgba(168, 218, 220, 0.22);
+  --theme-nav-bg: rgba(26, 35, 50, 0.84);
+  --theme-nav-scrolled: rgba(20, 28, 40, 0.94);
+}
+
+/* ── 9. MIDNIGHT GALAXY — DARK (Deep Purple #2b1e3e, Cosmic Blue #4a4e8f, Lavender #a490c2, Silver #e6e6fa) ── */
+[data-theme="midnight-galaxy"] {
+  color-scheme: dark;
+  --bg-canvas: #1E142D;
+  --bg-surface: #2B1E3E;
+  --bg-surface-soft: #372850;
+  --text-primary: #E6E6FA;
+  --text-secondary: #C4B8DF;
+  --text-tertiary: #9587B5;
+  --text-inverse: #1E142D;
+  --color-bordeaux: #6D62B8;
+  --color-bordeaux-hover: #584D9F;
+  --color-gold: #A490C2;
+  --color-gold-subtle: rgba(164, 144, 194, 0.18);
+  --border-subtle: rgba(230, 230, 250, 0.16);
+  --border-accent: rgba(164, 144, 194, 0.42);
+  --border-focus: #E6E6FA;
+  --theme-mesh-1: rgba(74, 78, 143, 0.34);
+  --theme-mesh-2: rgba(164, 144, 194, 0.22);
+  --theme-mesh-3: rgba(43, 30, 62, 0.60);
+  --theme-header-bg: rgba(30, 20, 45, 0.94);
+  --theme-header-accent: #E6E6FA;
+  --theme-card-bg: rgba(43, 30, 62, 0.84);
+  --theme-card-border: rgba(164, 144, 194, 0.28);
+  --theme-nav-bg: rgba(43, 30, 62, 0.84);
+  --theme-nav-scrolled: rgba(30, 20, 45, 0.94);
+}
+
+/* ── 10. TECH INNOVATION — DARK (Electric Blue #0066ff, Neon Cyan #00ffff, Dark Gray #1e1e1e, White #ffffff) ── */
+[data-theme="tech-innovation"] {
+  color-scheme: dark;
+  --bg-canvas: #141417;
+  --bg-surface: #1E1E22;
+  --bg-surface-soft: #28282E;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B8C4D4;
+  --text-tertiary: #808B9A;
+  --text-inverse: #141417;
+  --color-bordeaux: #0066FF;
+  --color-bordeaux-hover: #0052CC;
+  --color-gold: #00FFFF;
+  --color-gold-subtle: rgba(0, 255, 255, 0.14);
+  --border-subtle: rgba(255, 255, 255, 0.14);
+  --border-accent: rgba(0, 255, 255, 0.36);
+  --border-focus: #00FFFF;
+  --theme-mesh-1: rgba(0, 102, 255, 0.24);
+  --theme-mesh-2: rgba(0, 255, 255, 0.12);
+  --theme-mesh-3: rgba(30, 30, 34, 0.65);
+  --theme-header-bg: rgba(20, 20, 23, 0.95);
+  --theme-header-accent: #00FFFF;
+  --theme-card-bg: rgba(30, 30, 34, 0.86);
+  --theme-card-border: rgba(0, 255, 255, 0.22);
+  --theme-nav-bg: rgba(30, 30, 34, 0.86);
+  --theme-nav-scrolled: rgba(20, 20, 23, 0.96);
+}
+
+/* ── Apply Dynamic Mesh & Surfaces Globally When Theme Is Active ── */
+[data-theme] body {
+  background-color: var(--bg-canvas) !important;
+  background-image:
+    radial-gradient(at 10% 15%, var(--theme-mesh-1) 0px, transparent 55%),
+    radial-gradient(at 88% 12%, var(--theme-mesh-2) 0px, transparent 55%),
+    radial-gradient(at 50% 92%, var(--theme-mesh-3) 0px, transparent 52%) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme] .nav {
+  background: var(--theme-nav-bg) !important;
+  border-color: var(--border-subtle) !important;
+}
+[data-theme] .nav.scrolled {
+  background: var(--theme-nav-scrolled) !important;
+  border-color: var(--border-accent) !important;
+}
+
+/* Dark Theme Surface & Contrast Guarantees (Ocean Depths, Midnight Galaxy, Tech Innovation) */
+[data-theme="ocean-depths"] .product-card,
+[data-theme="midnight-galaxy"] .product-card,
+[data-theme="tech-innovation"] .product-card,
+[data-theme="ocean-depths"] .bespoke-card,
+[data-theme="midnight-galaxy"] .bespoke-card,
+[data-theme="tech-innovation"] .bespoke-card,
+[data-theme="ocean-depths"] .builder,
+[data-theme="midnight-galaxy"] .builder,
+[data-theme="tech-innovation"] .builder,
+[data-theme="ocean-depths"] .whatsapp-card,
+[data-theme="midnight-galaxy"] .whatsapp-card,
+[data-theme="tech-innovation"] .whatsapp-card,
+[data-theme="ocean-depths"] .search-input-box,
+[data-theme="midnight-galaxy"] .search-input-box,
+[data-theme="tech-innovation"] .search-input-box,
+[data-theme="ocean-depths"] .occasion-chip,
+[data-theme="midnight-galaxy"] .occasion-chip,
+[data-theme="tech-innovation"] .occasion-chip,
+[data-theme="ocean-depths"] .hero__float,
+[data-theme="midnight-galaxy"] .hero__float,
+[data-theme="tech-innovation"] .hero__float,
+[data-theme="ocean-depths"] .metric-card,
+[data-theme="midnight-galaxy"] .metric-card,
+[data-theme="tech-innovation"] .metric-card,
+[data-theme="ocean-depths"] .order-card,
+[data-theme="midnight-galaxy"] .order-card,
+[data-theme="tech-innovation"] .order-card,
+[data-theme="ocean-depths"] .tab-btn,
+[data-theme="midnight-galaxy"] .tab-btn,
+[data-theme="tech-innovation"] .tab-btn,
+[data-theme="ocean-depths"] .knapsack-modal,
+[data-theme="midnight-galaxy"] .knapsack-modal,
+[data-theme="tech-innovation"] .knapsack-modal,
+[data-theme="ocean-depths"] .voice-modal,
+[data-theme="midnight-galaxy"] .voice-modal,
+[data-theme="tech-innovation"] .voice-modal,
+[data-theme="ocean-depths"] .builder-modal,
+[data-theme="midnight-galaxy"] .builder-modal,
+[data-theme="tech-innovation"] .builder-modal,
+[data-theme="ocean-depths"] .item-modal,
+[data-theme="midnight-galaxy"] .item-modal,
+[data-theme="tech-innovation"] .item-modal,
+[data-theme="ocean-depths"] .mobile-bar,
+[data-theme="midnight-galaxy"] .mobile-bar,
+[data-theme="tech-innovation"] .mobile-bar {
+  background: var(--theme-card-bg) !important;
+  border-color: var(--theme-card-border) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="ocean-depths"] .btn--bordeaux,
+[data-theme="midnight-galaxy"] .btn--bordeaux,
+[data-theme="tech-innovation"] .btn--bordeaux {
+  background: var(--color-bordeaux) !important;
+  color: #FFFFFF !important;
+}
+[data-theme="ocean-depths"] .btn--primary,
+[data-theme="midnight-galaxy"] .btn--primary,
+[data-theme="tech-innovation"] .btn--primary {
+  background: var(--text-primary) !important;
+  color: var(--bg-canvas) !important;
+}
+[data-theme="ocean-depths"] .btn--outline,
+[data-theme="midnight-galaxy"] .btn--outline,
+[data-theme="tech-innovation"] .btn--outline,
+[data-theme="ocean-depths"] .nav__cart,
+[data-theme="midnight-galaxy"] .nav__cart,
+[data-theme="tech-innovation"] .nav__cart {
+  background: var(--bg-surface-soft) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-accent) !important;
+}
+[data-theme="ocean-depths"] input,
+[data-theme="midnight-galaxy"] input,
+[data-theme="tech-innovation"] input,
+[data-theme="ocean-depths"] select,
+[data-theme="midnight-galaxy"] select,
+[data-theme="tech-innovation"] select {
+  background: var(--bg-surface-soft) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+/* Admin Studio OS Header & Accent Sync */
+[data-theme] .admin-header {
+  background: var(--theme-header-bg) !important;
+  border-bottom-color: var(--border-accent) !important;
+}
+[data-theme] .admin-brand h1,
+[data-theme] .admin-badge {
+  color: var(--theme-header-accent) !important;
+}
+[data-theme] .metric-card {
+  border-top-color: var(--color-gold) !important;
+}
+[data-theme] .metric-value,
+[data-theme] .order-number {
+  color: var(--color-bordeaux) !important;
+}
+[data-theme="ocean-depths"] .metric-value,
+[data-theme="midnight-galaxy"] .metric-value,
+[data-theme="tech-innovation"] .metric-value,
+[data-theme="ocean-depths"] .order-number,
+[data-theme="midnight-galaxy"] .order-number,
+[data-theme="tech-innovation"] .order-number,
+[data-theme="ocean-depths"] .nav__logo,
+[data-theme="midnight-galaxy"] .nav__logo,
+[data-theme="tech-innovation"] .nav__logo {
+  color: var(--color-gold) !important;
+}
+
+/* ═══════════════ THEME FACTORY FLOATING STUDIO WIDGET ═══════════════ */
+.theme-studio-fab {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1090;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--theme-nav-scrolled);
+  color: var(--text-primary);
+  border: 1px solid var(--border-accent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease;
+}
+.theme-studio-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22);
+}
+
+.theme-studio-panel {
+  position: fixed;
+  bottom: 76px;
+  left: 24px;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  max-height: 75vh;
+  overflow-y: auto;
+  z-index: 1095;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-accent);
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.26);
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+.theme-studio-panel.open {
+  display: flex;
+}
+.theme-studio-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 10px;
+}
+.theme-studio-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+.theme-studio-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.theme-swatch-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+.theme-swatch-card:hover {
+  border-color: var(--color-gold);
+  transform: translateY(-1px);
+}
+.theme-swatch-card.active {
+  border: 2px solid var(--color-bordeaux);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+.theme-swatch-dots {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.theme-swatch-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+.theme-studio-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.74rem;
+}
+.theme-studio-link {
+  color: var(--color-bordeaux);
+  font-weight: 600;
+  text-decoration: none;
+}
+[data-theme="ocean-depths"] .theme-studio-link,
+[data-theme="midnight-galaxy"] .theme-studio-link,
+[data-theme="tech-innovation"] .theme-studio-link {
+  color: var(--color-gold);
+}
+
+@media (max-width: 767px) {
+  .theme-studio-fab {
+    bottom: 92px;
+    left: 14px;
+    padding: 8px 12px;
+    font-size: 0.7rem;
+  }
+  .theme-studio-panel {
+    bottom: 138px;
+    left: 14px;
+    width: calc(100vw - 28px);
+  }
+}

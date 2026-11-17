@@ -172,6 +172,10 @@ Build the complete digital operating system behind the luxury artisanal gifting 
       - **Voice REST Endpoints (`server/routes/api.js`)**: Upgraded `GET /api/v1/voice/status`, added `POST /api/v1/voice/vapi/webhook`, staff-protected `GET /api/v1/voice/vapi/transcripts`, and `POST /api/v1/voice/livekit/token`.
       - **Web Storefront Real-Time Voice Concierge (`website/index.html`, `website/styles_ext.css`, `website/script.js`)**: Built Apple VisionOS `#voice-concierge-modal` with breathing Voice Orb, exponential-backoff WebSocket reconnection, clearable Web Audio PCM16 streaming playback queue, live microphone PCM16 downsampler, explicit Barge-In interrupt button, TTFA pill (`3ms` localhost), and clickable hamper action cards.
       - **Verification**: **245/245 unit & integration tests passing**, **29/29 Playwright Chromium E2E assertions passing** (including live WebSocket Voice Concierge & screenshot QA), and **57/57 Section 40 documentation specs passing**.
+    - **Theme Factory 11-Preset Engine & Branded Executive Lookbook Deck (`/theme-factory`)**:
+      - **Universal Theme Token Engine (`website/themes.css`, `website/theme-switcher.js`)**: Implemented Atelier Signature + all 10 official Theme Factory presets (`desert-rose`, `golden-hour`, `botanical-garden`, `forest-canopy`, `sunset-boulevard`, `arctic-frost`, `modern-minimalist`, `ocean-depths`, `midnight-galaxy`, `tech-innovation`) with WCAG AA dark-mode glassmorphism overrides, URL `?theme=` deep-linking, `localStorage` (`hbh_theme_factory_v1`) cross-page sync, and floating **🎨 Atelier Theme Studio** switcher.
+      - **Executive Brand & Platform Lookbook Deck (`website/lookbook.html`)**: Authored 8-slide interactive presentation deck with keyboard navigation (`←`/`→`), slide progress bar, print-to-PDF stylesheet, and live 11-theme switching linked from Storefront & Admin Studio OS.
+      - **Verification**: Added `tests/theme_factory.test.js` (4/4 passing) + Playwright E2E Theme Factory & Lookbook verification (31/31 assertions passing + visual QA across Desert Rose & Midnight Galaxy screenshots).
 
 ---
 

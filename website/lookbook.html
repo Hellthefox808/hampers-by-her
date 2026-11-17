@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hampers by Her — Executive Brand &amp; Platform Lookbook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="themes.css">
+  <script src="theme-switcher.js" defer></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: var(--bg-canvas);
+      background-image:
+        radial-gradient(at 10% 15%, var(--theme-mesh-1) 0px, transparent 55%),
+        radial-gradient(at 88% 12%, var(--theme-mesh-2) 0px, transparent 55%),
+        radial-gradient(at 50% 92%, var(--theme-mesh-3) 0px, transparent 52%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+    }
+
+    .deck-topbar {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 1200px;
+      z-index: 200;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 22px;
+      border-radius: 999px;
+      background: var(--theme-nav-scrolled);
+      border: 1px solid var(--border-accent);
+      backdrop-filter: blur(26px) saturate(190%);
+      -webkit-backdrop-filter: blur(26px) saturate(190%);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    }
+    .deck-brand {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--color-bordeaux);
+      text-decoration: none;
+    }
+    [data-theme="ocean-depths"] .deck-brand,
+    [data-theme="midnight-galaxy"] .deck-brand,
+    [data-theme="tech-innovation"] .deck-brand {
+      color: var(--color-gold);
+    }
+    .deck-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .deck-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      min-width: 64px;
+      text-align: center;
+    }
+    .deck-btn {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 180ms ease;
+    }
+    .deck-btn:hover {
+      border-color: var(--color-gold);
+      transform: translateY(-1px);
+    }
+    .deck-btn--accent {
+      background: var(--color-bordeaux);
+      color: #FFFFFF;
+      border-color: transparent;
+    }
+
+    .deck-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-gold), var(--color-bordeaux));
+      width: 12.5%;
+      z-index: 250;
+      transition: width 320ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .deck-stage {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 96px 24px 100px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      background: var(--theme-card-bg);
+      border: 1px solid var(--theme-card-border);
+      border-radius: 28px;
+      padding: 48px 54px;
+      box-shadow: 0 28px 72px rgba(0, 0, 0, 0.12);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      animation: slideEnter 320ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .slide.active {
+      display: block;
+    }
+    @keyframes slideEnter {
+      from { opacity: 0.4; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide__kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--color-gold);
+      margin: 0 0 12px;
+    }
+    .slide__title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4.2vw, 3.4rem);
+      font-weight: 500;
+      line-height: 1.08;
+      margin: 0 0 18px;
+      color: var(--text-primary);
+    }
+    .slide__title em {
+      color: var(--color-bordeaux);
+      font-style: italic;
+    }
+    [data-theme="ocean-depths"] .slide__title em,
+    [data-theme="midnight-galaxy"] .slide__title em,
+    [data-theme="tech-innovation"] .slide__title em {
+      color: var(--color-gold);
+    }
+    .slide__lead {
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: var(--text-secondary);
+      max-width: 68ch;
+      margin: 0 0 28px;
+    }
+
+    .slide-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+    .slide-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .slide-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .slide-card__metric {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--color-bordeaux);
+    }
+    [data-theme="ocean-depths"] .slide-card__metric,
+    [data-theme="midnight-galaxy"] .slide-card__metric,
+    [data-theme="tech-innovation"] .slide-card__metric {
+      color: var(--color-gold);
+    }
+    .slide-card__label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+    .slide-card__img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 6px;
+    }
+    .slide-list {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      font-size: 0.94rem;
+    }
+    .slide-list strong {
+      color: var(--text-primary);
+    }
+
+    .deck-dots {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--theme-nav-scrolled);
+      border: 1px solid var(--border-subtle);
+      backdrop-filter: blur(20px);
+      z-index: 180;
+    }
+    .deck-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: none;
+      background: var(--border-accent);
+      cursor: pointer;
+      padding: 0;
+      transition: transform 200ms ease, background 200ms ease;
+    }
+    .deck-dot.active {
+      background: var(--color-bordeaux);
+      transform: scale(1.3);
+    }
+    [data-theme="ocean-depths"] .deck-dot.active,
+    [data-theme="midnight-galaxy"] .deck-dot.active,
+    [data-theme="tech-innovation"] .deck-dot.active {
+      background: var(--color-gold);
+    }
+
+    @media (max-width: 900px) {
+      .slide { padding: 28px 22px; }
+      .slide-grid-2, .slide-grid-4 { grid-template-columns: 1fr; }
+      .deck-topbar { padding: 8px 14px; }
+    }
+    @media print {
+      .deck-topbar, .deck-dots, .theme-studio-fab, .theme-studio-panel, .deck-progress { display: none !important; }
+      .slide { display: block !important; page-break-after: always; box-shadow: none; margin-bottom: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="deck-progress" class="deck-progress"></div>
+
+  <header class="deck-topbar">
+    <a href="index.html" class="deck-brand">Hampers by Her · Lookbook</a>
+    <div class="deck-controls">
+      <button type="button" id="deck-prev" class="deck-btn">&larr; Prev</button>
+      <span id="deck-counter" class="deck-counter">1 / 8</span>
+      <button type="button" id="deck-next" class="deck-btn deck-btn--accent">Next &rarr;</button>
+      <a href="index.html" class="deck-btn">Storefront</a>
+      <a href="admin.html" class="deck-btn">Studio OS</a>
+    </div>
+  </header>
+
+  <main class="deck-stage">
+    <!-- SLIDE 1: COVER -->
+    <section class="slide active" data-slide="1">
+      <p class="slide__kicker">Executive Brand &amp; Platform Lookbook · Edition 2026</p>
+      <h1 class="slide__title">Hampers by Her — <em>Artisanal Gifting Atelier</em> &amp; Commerce OS</h1>
+      <p class="slide__lead">
+        Small-batch luxury hampers composed by hand in New Delhi — unified with an 11-step Bespoke Builder, Computational DSA Engines, Real-Time Voice AI Concierge, and Atelier Fulfillment Studio OS.
+      </p>
+      <div class="slide-grid-4">
+        <div class="slide-card">
+          <span class="slide-card__label">Brand Acquisition</span>
+          <span class="slide-card__metric">@hampers</span>
+          <span style="font-size:0.8rem; color:var(--text-secondary);">instagram.com/hampers._by_her</span>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">Verified Tests</span>
+          <span class="slide-card__metric">245 / 245</span>
+          <span style="font-size:0.8rem; color:var(--text-secondary);">64 suites + 29 Playwright E2E checks</span>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">Specs Audited</span>
+          <span class="slide-card__metric">57 / 57</span>
+          <span style="font-size:0.8rem; color:var(--text-secondary);">100% Section 40 compliant</span>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">Theme Presets</span>
+          <span class="slide-card__metric">11 Live</span>
+          <span style="font-size:0.8rem; color:var(--text-secondary);">Switch live via bottom-left 🎨 Studio</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: SIGNATURE EDIT -->
+    <section class="slide" data-slide="2">
+      <p class="slide__kicker">02 · The Signature Edit</p>
+      <h2 class="slide__title">Curated hampers with a <em>quiet point of view</em>.</h2>
+      <p class="slide__lead">Every ready-made hamper ships gift-ready with wax-sealed calligraphy notes, raw silk ribbon, and live PIN-code serviceability verification.</p>
+      <div class="slide-grid-4">
+        <article class="slide-card">
+          <img src="images/hamper-wedding.jpg" alt="The Vows and Vines Hamper" class="slide-card__img">
+          <span class="slide-card__label">Wedding · Best Seller</span>
+          <strong>The Vows &amp; Vines</strong>
+          <span style="font-family:'JetBrains Mono',monospace; font-weight:700;">₹ 3,950</span>
+        </article>
+        <article class="slide-card">
+          <img src="images/hamper-corporate.jpg" alt="The Office Well-Wisher" class="slide-card__img">
+          <span class="slide-card__label">Corporate · Monogram</span>
+          <strong>The Office Well-Wisher</strong>
+          <span style="font-family:'JetBrains Mono',monospace; font-weight:700;">₹ 2,150</span>
+        </article>
+        <article class="slide-card">
+          <img src="images/hamper-festive.jpg" alt="The Diwali Slow-Burn" class="slide-card__img">
+          <span class="slide-card__label">Festive · Limited</span>
+          <strong>The Diwali Slow-Burn</strong>
+          <span style="font-family:'JetBrains Mono',monospace; font-weight:700;">₹ 2,850</span>
+        </article>
+        <article class="slide-card">
+          <img src="images/hamper-anniversary.jpg" alt="The Ten-Year Letter" class="slide-card__img">
+          <span class="slide-card__label">Anniversary · Signature</span>
+          <strong>The Ten-Year Letter</strong>
+          <span style="font-family:'JetBrains Mono',monospace; font-weight:700;">₹ 3,200</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: 11-STEP BESPOKE ATELIER -->
+    <section class="slide" data-slide="3">
+      <p class="slide__kicker">03 · Bespoke Personalization</p>
+      <h2 class="slide__title">11-Step Bespoke Atelier &amp; <em>Procedural SVG Visualizer</em></h2>
+      <div class="slide-grid-2">
+        <div class="slide-card">
+          <span class="slide-card__label">Patron Composition Journey</span>
+          <ul class="slide-list">
+            <li><strong>Steps 1–2:</strong> Heirloom vessel selection (Kraft Rigid, Linen Pine, Royal Velvet) &amp; nesting paper shred.</li>
+            <li><strong>Steps 3–5:</strong> Artisanal gourmet, aromatics, and lasting keepsakes with live 3D volume capacity gauge.</li>
+            <li><strong>Steps 6–10:</strong> Raw silk ribbon swatch, custom monogram, botanical wax seal, calligraphy note, &amp; instant Polaroid print.</li>
+            <li><strong>Step 11:</strong> Live server-generated procedural SVG preview (`viewBox="0 0 800 600"`) before bag checkout.</li>
+          </ul>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">Sensory &amp; UX Architecture</span>
+          <ul class="slide-list">
+            <li><strong>Apple Liquid Glass UI:</strong> Translucent frosted modals, floating capsule navbar, and mobile Dynamic Island dock.</li>
+            <li><strong>4D Virtual Unboxing Theater:</strong> Interactive 4-stage ribbon untying, wax seal crack, lid reveal, and inclusion showcase.</li>
+            <li><strong>WCAG 2.2 AA Keyboard Controls:</strong> Deterministic Escape-key dismissal and zero horizontal overflow on 390px mobile.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: COMPUTATIONAL DSA CORE -->
+    <section class="slide" data-slide="4">
+      <p class="slide__kicker">04 · Computational Engineering (39_DSA.md)</p>
+      <h2 class="slide__title">8 Production <em>Algorithms</em> Powering Artisanal Commerce</h2>
+      <div class="slide-grid-2">
+        <div class="slide-card">
+          <span class="slide-card__label">Physical &amp; Financial Precision</span>
+          <ul class="slide-list">
+            <li><strong>3D Volumetric Bin-Packing:</strong> 85% usable capacity threshold, 1.25× fragile buffer, upright &amp; thermal partitions.</li>
+            <li><strong>Integer Paise Pricing Ledger:</strong> Exact 64-bit `BigInt` math with zero float drift and remainder-preserving CGST/SGST.</li>
+            <li><strong>Coupon DAG Precedence:</strong> Windowed redemption limits, category rules, and optimal discount resolution.</li>
+            <li><strong>Atomic Inventory Allocation:</strong> Sorted SKU lock acquisition with automatic HTTP 409 rollback on oversell.</li>
+          </ul>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">AI Curation &amp; Logistics</span>
+          <ul class="slide-list">
+            <li><strong>Multi-Criteria Budget Knapsack:</strong> 2-opt relaxation maximizing aesthetic harmony within patron budget ceilings.</li>
+            <li><strong>ReDoS-Safe Intent Tokenizer:</strong> Linear O(M) natural language parser extracting occasion, recipient, and INR caps.</li>
+            <li><strong>Max-Heap Lead Priority Queue:</strong> Instant Tier-1 bulk wedding escalation from Instagram &amp; WhatsApp leads.</li>
+            <li><strong>Dynamic PIN SLA Resolver:</strong> 6-digit Indian postal zones with 14:00 IST dispatch cutoffs.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: REAL-TIME VOICE AI & OMNICHANNEL -->
+    <section class="slide" data-slide="5">
+      <p class="slide__kicker">05 · Conversational &amp; Voice AI</p>
+      <h2 class="slide__title">Real-Time <em>Voice AI Concierge</em> &amp; Meta Omnichannel</h2>
+      <div class="slide-grid-2">
+        <div class="slide-card">
+          <span class="slide-card__label">Voice AI Gateway (v2.0)</span>
+          <ul class="slide-list">
+            <li><strong>WebSocket PCM16 Streaming:</strong> Canonical 16kHz/24kHz audio constants, ~50-char sentence-buffered TTS, `3ms` localhost TTFA.</li>
+            <li><strong>Server-VAD &amp; Barge-In:</strong> Cooperative `AbortController` mid-stream cancellation and clearable outbound audio queue.</li>
+            <li><strong>Multi-Provider Ready:</strong> OpenAI Realtime API, Deepgram Nova-2 + ElevenLabs Turbo v2.5, Vapi webhook, &amp; LiveKit HS256 WebRTC tokens.</li>
+            <li><strong>Web + Android APK:</strong> VisionOS storefront Voice Concierge modal + signed Android `HampersByHer-VoiceAI.apk`.</li>
+          </ul>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">Meta Commerce &amp; Payments</span>
+          <ul class="slide-list">
+            <li><strong>WhatsApp Business Cloud API:</strong> HSM templates, HMAC webhook verification, and 2-way order/PIN concierge.</li>
+            <li><strong>Instagram Graph Sync:</strong> Live reel feed + DM intent lead capture synced to CRM.</li>
+            <li><strong>Smart Payment Router:</strong> Sub-second Razorpay ↔ Cashfree ↔ Stripe failover with UPI Intent &amp; dynamic QR.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: ATELIER STUDIO OS -->
+    <section class="slide" data-slide="6">
+      <p class="slide__kicker">06 · Operations &amp; Fulfillment</p>
+      <h2 class="slide__title">Atelier Studio OS &amp; <em>Mandatory QC Photo Gate</em></h2>
+      <div class="slide-grid-2">
+        <div class="slide-card">
+          <span class="slide-card__label">Security &amp; RBAC Controls</span>
+          <ul class="slide-list">
+            <li><strong>Server-Issued Staff JWTs:</strong> Constant-time `crypto.timingSafeEqual` verification on PIN, OTP, and HS256 JWTs.</li>
+            <li><strong>Granular Permissions:</strong> `requireStaffPermission()` guarding `/admin/*`, refunds, leads, and call transcripts.</li>
+            <li><strong>XSS Neutralization:</strong> Strict HTML escaping across packing slips, admin cards, and storefront modals.</li>
+          </ul>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">Fulfillment Discipline</span>
+          <ul class="slide-list">
+            <li><strong>11-Stage Order State Machine:</strong> Prevents illegal jumps (e.g., `PENDING_PAYMENT` → `DISPATCHED`).</li>
+            <li><strong>Photographic QC Gate:</strong> Blocks `QUALITY_CHECKED` until artisan photo proof &amp; 4-point checklist are signed.</li>
+            <li><strong>Automated Courier Manifests:</strong> BlueDart / Delhivery AWB issuance and printable luxury packing slips.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: VERIFIED TELEMETRY -->
+    <section class="slide" data-slide="7">
+      <p class="slide__kicker">07 · Measured Runtime &amp; Browser Telemetry</p>
+      <h2 class="slide__title">Verified <em>Performance</em> &amp; Core Web Vitals</h2>
+      <p class="slide__lead">Directly measured via `npm run benchmark` (100 req/endpoint localhost) and Playwright Headless Chromium (Desktop 1440×900 &amp; Mobile 390×844).</p>
+      <div class="slide-grid-4">
+        <div class="slide-card">
+          <span class="slide-card__label">API p50 Latency</span>
+          <span class="slide-card__metric">0.20 ms</span>
+          <span style="font-size:0.78rem; color:var(--text-secondary);">Catalog, Pricing, Knapsack &amp; /metrics</span>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">Mobile LCP</span>
+          <span class="slide-card__metric">556 ms</span>
+          <span style="font-size:0.78rem; color:var(--text-secondary);">Budget ≤ 2,200 ms (Desktop: 892 ms)</span>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">Mobile CLS</span>
+          <span class="slide-card__metric">0.0000</span>
+          <span style="font-size:0.78rem; color:var(--text-secondary);">Zero layout shift (Desktop: 0.0169)</span>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">Prometheus /metrics</span>
+          <span class="slide-card__metric">Live v0.0.4</span>
+          <span style="font-size:0.78rem; color:var(--text-secondary);">Event loop lag, RSS &amp; HTTP histograms</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 8: CLOUD INFRA & HANDOFF -->
+    <section class="slide" data-slide="8">
+      <p class="slide__kicker">08 · Enterprise Cloud &amp; Launch Readiness</p>
+      <h2 class="slide__title">Ready for <em>Scale</em> — From Atelier to Cloud</h2>
+      <div class="slide-grid-2">
+        <div class="slide-card">
+          <span class="slide-card__label">Infrastructure as Code (`/infra-flow`)</span>
+          <ul class="slide-list">
+            <li><strong>Multi-Stage Docker:</strong> Non-root `node:22-alpine` image with `dumb-init` and 5-service `docker-compose.yml`.</li>
+            <li><strong>Terraform AWS Stack:</strong> 7 modules (VPC, WAFv2, IAM, Aurora Serverless v2 + Multi-AZ Redis, ALB, ECS Fargate, S3/CloudFront).</li>
+            <li><strong>Kubernetes &amp; DevSecOps:</strong> Restricted PSS manifests, HPA (2–12 pods), PDB, Trivy scan, and OIDC rolling deploy.</li>
+          </ul>
+        </div>
+        <div class="slide-card">
+          <span class="slide-card__label">Explore Live Platform</span>
+          <p style="font-size:0.9rem; color:var(--text-secondary); margin:4px 0 14px;">
+            Try switching any of the 11 Theme Factory palettes via the bottom-left <strong>🎨 Theme Studio</strong> — your chosen palette automatically follows you across every page.
+          </p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:auto;">
+            <a href="index.html" class="deck-btn deck-btn--accent">Open Live Storefront &rarr;</a>
+            <a href="admin.html" class="deck-btn">Open Atelier Studio OS</a>
+            <button type="button" onclick="window.print()" class="deck-btn">Print / Export PDF</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav id="deck-dots" class="deck-dots" aria-label="Slide navigation"></nav>
+
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const dotsWrap = document.getElementById('deck-dots');
+      const counterEl = document.getElementById('deck-counter');
+      const progressEl = document.getElementById('deck-progress');
+      const prevBtn = document.getElementById('deck-prev');
+      const nextBtn = document.getElementById('deck-next');
+      let currentIndex = 0;
+
+      slides.forEach((_, idx) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'deck-dot' + (idx === 0 ? ' active' : '');
+        dot.setAttribute('aria-label', `Go to slide ${idx + 1}`);
+        dot.addEventListener('click', () => goToSlide(idx));
+        dotsWrap.appendChild(dot);
+      });
+
+      function goToSlide(idx) {
+        currentIndex = Math.max(0, Math.min(slides.length - 1, idx));
+        slides.forEach((s, i) => s.classList.toggle('active', i === currentIndex));
+        dotsWrap.querySelectorAll('.deck-dot').forEach((d, i) => d.classList.toggle('active', i === currentIndex));
+        if (counterEl) counterEl.textContent = `${currentIndex + 1} / ${slides.length}`;
+        if (progressEl) progressEl.style.width = `${((currentIndex + 1) / slides.length) * 100}%`;
+      }
+
+      prevBtn?.addEventListener('click', () => goToSlide(currentIndex - 1));
+      nextBtn?.addEventListener('click', () => goToSlide(currentIndex + 1));
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown') goToSlide(currentIndex + 1);
+        if (e.key === 'ArrowLeft' || e.key === 'PageUp') goToSlide(currentIndex - 1);
+      });
+    })();
+  </script>
+</body>
+</html>
