@@ -239,6 +239,7 @@ unknown:
 
 ## 14. Future Evolution
 - **Developer Documentation Portal**: Convert the 44 markdown specifications into an interactive Nextra / Mintlify developer portal with live OpenAPI interactive consoles and dynamic token playgrounds.
+- **Atelier Voice AI Mobile Expansion**: Following the successful delivery of the Android Voice AI APK (`com.hampersbyher.voiceai`), extend the real-time voice concierge pipeline with LiveKit WebRTC for simultaneous multi-modal video/photo consultation.
 
 ## 15. References
 - ISO/IEC/IEEE 26515:2018: Systems and Software Engineering — Developing Information for Users in an Agile Environment.

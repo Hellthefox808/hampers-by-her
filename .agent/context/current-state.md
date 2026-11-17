@@ -15,11 +15,18 @@ Build the complete digital operating system behind the luxury artisanal gifting 
 
 ## 3. Completed in this Session
 - Initialized root git repository and configured comprehensive `.gitignore`.
-- Created root `package.json` with documentation audit and verification scripts (`audit:docs`, `verify`).
+- Created root `package.json` with documentation audit and verification scripts (`audit:docs`, `verify`, `build:apk`, `test:voice`).
 - Authored root `AGENTS.md` autonomous agent governance contract.
 - Provisioned the full `.agent/` context harness tree across `.agent/context/` and `.agent/followups/`.
 - Harmonized all 10 previously failing architectural specifications (`10` through `19`) across both root and `/docs/` to strictly comply with Section 40's 15/15 mandatory sections.
 - Executed `npm run verify` (`node scripts/audit_documentation.js`) confirming **100% passing (57/57 specifications and auxiliary artifacts)**.
+- **Engineered & Packaged Hampers by Her Voice AI Android Application (`dist/HampersByHer-VoiceAI.apk`)**:
+  - Implemented `VoiceAiGateway` WebSocket server (`/api/v1/voice/stream`) with low-latency streaming PCM16, VAD, barge-in interruption detection, and domain tool orchestration (`searchHampers`, `customizeHamper`, `dictateCardMessage`, `checkOrderStatus`, `estimateDelivery`).
+  - Implemented Android application architecture (`android/app/src/main/`) featuring luxury Atelier Voice Concierge, animated breathing voice orb, waveform amplitude telemetry, dynamic hamper recommendation cards, and dual-mode Storefront WebView switch.
+  - Implemented native Android `AudioStreamEngine` (PCM16 16kHz capture via `AudioRecord`, streaming `AudioTrack` playback in `MODE_STREAM` with instant barge-in abort).
+  - Implemented native zero-dependency RFC-6455 `VoiceAiClient` WebSocket client.
+  - Authored automated Android build pipeline (`scripts/build_android_apk.js`) compiling, dexing, aligning, signing (v2/v3 scheme), and verifying `dist/HampersByHer-VoiceAI.apk` against Android 36 SDK.
+  - Added comprehensive test suite `tests/voice_gateway.test.js` (14/14 tests passing).
 
 ---
 
@@ -33,6 +40,7 @@ Build the complete digital operating system behind the luxury artisanal gifting 
 - **ADR-001**: Modular Monolith over Distributed Microservices (`docs/decisions/ADR_001_MODULAR_MONOLITH.md`).
 - **ADR-002**: Payment Gateway Abstraction Layer with Razorpay (`docs/decisions/ADR_002_PAYMENT_GATEWAY_ABSTRACTION.md`).
 - **ADR-003**: WhatsApp Commerce Integration via Meta Cloud API (`docs/decisions/ADR_003_WHATSAPP_COMMERCE_INTEGRATION.md`).
+- **ADR-004**: Hybrid Voice AI Gateway & Native Android PCM16 Audio Streaming Engine (`docs/decisions/ADR_004_VOICE_AI_ANDROID_STREAMING.md`).
 
 ---
 

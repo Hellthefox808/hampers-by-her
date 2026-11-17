@@ -25,8 +25,9 @@ This document defines the functional and non-functional product requirements, ta
   - WhatsApp conversational commerce and Instagram lead routing.
   - Corporate and Wedding bulk gifting enquiry portals.
   - Merchant Admin Console for catalog, orders, and CRM.
+  - Atelier Voice AI Android Application (`com.hampersbyher.voiceai`) with real-time streaming voice concierge and storefront bridge.
 - **Out-of-Scope**:
-  - Native iOS / Android mobile applications (PWA mobile web is prioritized for V1).
+  - Native iOS mobile application (Atelier Voice AI Android APK active; iOS scheduled for Future Phase).
   - Multi-currency transactions (INR `₹` only).
   - Customer subscription box models (scheduled for Phase 11).
 

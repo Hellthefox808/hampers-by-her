@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/paper"
+    android:orientation="vertical">
+
+    <!-- Top App Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@color/paper"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="20dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hampers by Her"
+                android:textColor="@color/ink"
+                android:textSize="20sp"
+                android:textStyle="bold|italic" />
+
+            <TextView
+                android:id="@+id/tv_sub_header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Atelier Voice Concierge"
+                android:textColor="@color/ink_soft"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_toggle_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:background="@drawable/btn_rounded_clay"
+            android:paddingHorizontal="16dp"
+            android:text="@string/toggle_storefront"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/line" />
+
+    <!-- Main Content Frame -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- Voice AI Mode Screen -->
+        <ScrollView
+            android:id="@+id/scroll_voice_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:id="@+id/layout_voice_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Status Header -->
+                <TextView
+                    android:id="@+id/tv_voice_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="@string/tap_to_speak"
+                    android:textColor="@color/ink_soft"
+                    android:textSize="14sp" />
+
+                <!-- Voice Orb Container -->
+                <FrameLayout
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="24dp">
+
+                    <View
+                        android:id="@+id/view_orb_pulse"
+                        android:layout_width="180dp"
+                        android:layout_height="180dp"
+                        android:layout_gravity="center"
+                        android:alpha="0.25"
+                        android:background="@drawable/voice_orb" />
+
+                    <ImageButton
+                        android:id="@+id/btn_voice_orb"
+                        android:layout_width="140dp"
+                        android:layout_height="140dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/voice_orb"
+                        android:contentDescription="Voice Orb"
+                        android:elevation="6dp"
+                        android:src="@drawable/ic_mic" />
+                </FrameLayout>
+
+                <!-- Audio Amplitude Indicator Bar -->
+                <ProgressBar
+                    android:id="@+id/pb_amplitude"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="160dp"
+                    android:layout_height="6dp"
+                    android:layout_marginTop="16dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="@color/clay" />
+
+                <!-- Transcription & Dialogue Display -->
+                <LinearLayout
+                    android:id="@+id/layout_dialogue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:background="@drawable/bg_card"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tv_user_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="YOU SAID:"
+                        android:textColor="@color/clay"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_user_transcript"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Waiting for voice input…"
+                        android:textColor="@color/ink"
+                        android:textSize="14sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="10dp"
+                        android:background="@color/line" />
+
+                    <TextView
+                        android:id="@+id/tv_assistant_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ATELIER CONCIERGE:"
+                        android:textColor="@color/ink_soft"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_assistant_transcript"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Tap the orb above to curate your bespoke hamper, dictate a card, or track an order."
+                        android:textColor="@color/ink"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Suggested Action Cards Container -->
+                <LinearLayout
+                    android:id="@+id/layout_action_cards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical" />
+
+                <!-- Suggestion Chips -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="QUICK SUGGESTIONS:"
+                    android:textColor="@color/ink_soft"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/chip_wedding"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_card"
+                            android:paddingHorizontal="14dp"
+                            android:text="Wedding Hampers"
+                            android:textColor="@color/ink"
+                            android:textSize="12sp" />
+
+                        <Button
+                            android:id="@+id/chip_anniversary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_card"
+                            android:paddingHorizontal="14dp"
+                            android:text="Anniversary Keepsake"
+                            android:textColor="@color/ink"
+                            android:textSize="12sp" />
+
+                        <Button
+                            android:id="@+id/chip_card"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_card"
+                            android:paddingHorizontal="14dp"
+                            android:text="Dictate Card Note"
+                            android:textColor="@color/ink"
+                            android:textSize="12sp" />
+
+                        <Button
+                            android:id="@+id/chip_track"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_card"
+                            android:paddingHorizontal="14dp"
+                            android:text="Track Order #1042"
+                            android:textColor="@color/ink"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- Text Query Input Bar -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/bg_card"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp">
+
+                    <EditText
+                        android:id="@+id/et_text_query"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:hint="Type voice query or prompt…"
+                        android:imeOptions="actionSend"
+                        android:inputType="text"
+                        android:textColor="@color/ink"
+                        android:textColorHint="@color/ink_soft"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/btn_send_query"
+                        android:layout_width="60dp"
+                        android:layout_height="32dp"
+                        android:background="@drawable/btn_rounded_clay"
+                        android:text="Send"
+                        android:textColor="@color/white"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Storefront Web Screen (Initially GONE) -->
+        <WebView
+            android:id="@+id/webview_storefront"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</LinearLayout>

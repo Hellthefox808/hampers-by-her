@@ -1,0 +1,61 @@
+﻿  <!-- ═══════════════ SHOPPING CART DRAWER ═══════════════ -->
+  <div id="cart-overlay" class="drawer-overlay">
+    <aside id="cart-drawer" class="cart-drawer" aria-label="Shopping Cart">
+      <header class="cart-drawer__header">
+        <div>
+          <h2 class="cart-drawer__title">Your Gifting Bag</h2>
+          <p class="mono-label" id="cart-count-label">0 items selected</p>
+        </div>
+        <button id="cart-close-btn" class="cart-drawer__close" aria-label="Close cart">&times;</button>
+      </header>
+
+      <div style="padding: 16px 26px 0;">
+        <div class="shipping-meter">
+          <div class="shipping-meter__text">
+            <span id="shipping-meter-status">Add ₹2,999 more for Free Express Delivery</span>
+            <span id="shipping-meter-pct">0%</span>
+          </div>
+          <div class="shipping-meter__track">
+            <div id="shipping-meter-bar" class="shipping-meter__bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cart-items-list" class="cart-drawer__body">
+        <!-- Dynamic Cart Items injected here -->
+      </div>
+
+      <footer class="cart-drawer__footer">
+        <div class="coupon-box">
+          <input type="text" id="coupon-input" class="coupon-input" placeholder="Promo code (e.g. ALMAS10)">
+          <button id="apply-coupon-btn" class="btn btn--outline btn--xs">Apply</button>
+        </div>
+        <div id="applied-coupon-badge" style="display: none; margin-bottom: 10px; font-size: 0.8rem; color: var(--color-success); font-weight: 500;"></div>
+
+        <div class="cart-summary-row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal">₹ 0</span>
+        </div>
+        <div class="cart-summary-row" id="cart-discount-row" style="display: none; color: var(--color-success);">
+          <span>Promo Discount</span>
+          <span id="cart-discount">- ₹ 0</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>Estimated GST (18%)</span>
+          <span id="cart-tax">₹ 0</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>Shipping (Pan-India)</span>
+          <span id="cart-shipping">₹ 150</span>
+        </div>
+        <div class="cart-summary-row cart-summary-row--total">
+          <span>Estimated Total</span>
+          <span id="cart-total">₹ 0</span>
+        </div>
+
+        <button id="checkout-btn" class="btn btn--bordeaux btn--block" style="margin-top: 14px;">
+          Proceed to Checkout <span class="btn__arrow">&rarr;</span>
+        </button>
+      </footer>
+    </aside>
+  </div>

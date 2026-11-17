@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ink">#1C1917</color>
+    <color name="ink_soft">#78716C</color>
+    <color name="paper">#FBF9F5</color>
+    <color name="paper_card">#FFFFFF</color>
+    <color name="paper_deep">#F3EFEA</color>
+    <color name="clay">#C07D58</color>
+    <color name="clay_warm">#A86744</color>
+    <color name="clay_light">#F5ECE5</color>
+    <color name="line">#E7E5E4</color>
+    <color name="white">#FFFFFF</color>
+    <color name="accent_gold">#D4AF37</color>
+    <color name="orb_listening">#C07D58</color>
+    <color name="orb_thinking">#D4AF37</color>
+    <color name="orb_speaking">#3B7A57</color>
+</resources>

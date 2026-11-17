@@ -68,6 +68,8 @@ The following matrix defines the authoritative integrations, SLA boundaries, and
 | **AWS SES** | Transactional Invoices | SMTP / AWS SDK | IAM SigV4 | Outbound | 99.99% | In-memory retry, cloud alerts |
 | **Gupshup / Twilio** | TRAI DLT Compliant SMS | HTTPS / REST | API Key / Basic Auth | Outbound | 99.9% | Secondary SMS Provider |
 | **Google Merchant** | Shopping Catalog XML/JSON| HTTPS / Pull | Public HTTPS feed / SFTP | Outbound Feed | 99.5% | Static S3 Cached XML Feed |
+| **Atelier Voice AI Gateway** | Conversational Shopping & APK | WSS / WebSocket | Session Token / Handshake | Bi-directional | 99.9% | Local Sandbox Mock Engine Fallback |
+| **OpenAI / Deepgram / 11Labs** | Speech-to-Speech & Synthesis | WSS / REST | Bearer API Key | Bi-directional | 99.8% | Local Synthesizer / Text Fallback |
 
 ### 5.2 Universal Webhook Ingestion & Verification Pipeline
 All inbound webhooks adhere to a single standardized ingestion pipeline:
