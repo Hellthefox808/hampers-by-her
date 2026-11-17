@@ -115,3 +115,23 @@
   - Optimize 4D UI animations with 60fps `requestAnimationFrame` debouncing and tab visibility detection.
   - Harden Android APK packaging pipeline (`scripts/build_android_apk.js`) with dynamic SDK auto-discovery and prebuilt integrity validation.
   - Verify 100% pass across all 133 automated tests and full Section 40 documentation audit (57/57 compliant).
+
+## FUP-012: Advanced Computational Algorithms Core & Atelier Procedural Visualizer
+- **Type**: ALGORITHMS & VISUALIZATION / DSA
+- **Priority**: HIGH
+- **Status**: COMPLETED
+- **Dependency**: `39_DSA.md`, `platform/services/`
+- **Acceptance Criteria**:
+  - Implement all 8 foundational computational engines formally specified in `39_DSA.md` under `platform/services/dsa/`:
+    1. `binPacker3D.js`: 3D volumetric bin-packing heuristic with 85% usable threshold, upright orientation rules, 1.25x fragile buffer, and thermal partitions.
+    2. `pricingLedger.js`: 64-bit safe `BigInt` integer paise financial ledger eliminating float drift and exact remainder-preserving GST splitting.
+    3. `couponDAG.js`: Directed Acyclic Graph coupon precedence engine enforcing temporal validity, redemption limits, and non-stacking invariants.
+    4. `intentTokenizer.js`: Linear-time $O(M)$ ReDoS-safe tokenizer extracting occasions, recipients, price caps, and character trigram fuzzy matching.
+    5. `budgetKnapsack.js`: Multi-criteria knapsack optimization for bespoke hampers with 2-opt local search relaxation.
+    6. `atomicInventoryLock.js`: Distributed inventory allocation with lexicographical key sorting for deadlock prevention and 15-minute sliding TTL.
+    7. `leadPriorityQueue.js`: Real-time lead scoring and Binary Max-Heap priority queue scheduler ($P_1, P_2, P_3$).
+    8. `logisticsSlaResolver.js`: Dynamic delivery interval resolver with 14:00 IST cutoff and PIN code zone matrices.
+  - Implement `platform/services/atelier-visualizer/previewGenerator.js` generating photorealistic vector SVG illustrations and Base64 Data URIs.
+  - Expose 8 dedicated REST API endpoints in `server/routes/api.js` under `/api/v1/dsa/...` and `/api/v1/atelier/visualize-hamper`.
+  - Author and verify `tests/dsa_computational_suite.test.js` (28/28 tests passing).
+  - Verify 100% pass across all 161 automated tests and documentation audit (57/57 compliant).

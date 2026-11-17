@@ -11,6 +11,7 @@
     "test:commerce": "node --test tests/*.test.js",
     "test:platform": "node --test platform/tests/*.test.js",
     "test:e2e": "node --test tests/e2e_integration.test.js",
+    "test:dsa": "node --test tests/dsa_computational_suite.test.js",
     "test:voice": "node --test tests/voice_gateway.test.js",
     "build:apk": "node scripts/build_android_apk.js",
     "audit:docs": "node scripts/audit_documentation.js",

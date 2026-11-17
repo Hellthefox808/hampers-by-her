@@ -15,6 +15,26 @@ const { CacheGrid } = require("../../platform/services/cache-service/cacheGrid")
 const { serviceMesh } = require("../../platform/services/mesh-service/serviceMesh");
 const { inventoryEngine } = require("../../platform/services/scaling-service/inventoryLock");
 
+// Advanced Computational Algorithms (39_DSA.md) & Visualizer
+const {
+  STANDARD_BOXES,
+  evaluateHamperPacking,
+  calculateDeterministicOrderPricing,
+  serializePricingLedger,
+  couponEngine,
+  tokenizeSearchIntent,
+  rankItemsByFuzzyQuery,
+  optimizeHamperForBudget,
+  scoreInboundLead,
+  leadPriorityQueue,
+  resolveDeliverySla
+} = require("../../platform/services/dsa");
+
+const {
+  generateHamperPreviewSvg,
+  generateHamperPreviewDataUri
+} = require("../../platform/services/atelier-visualizer/previewGenerator");
+
 const smartRouter = new SmartPaymentRouter();
 const cacheGrid = new CacheGrid();
 
@@ -501,6 +521,199 @@ router.get("/system/cache/metrics", (req, res) => {
     success: true,
     data: cacheGrid.getMetrics()
   });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 10. ADVANCED COMPUTATIONAL ENGINES (39_DSA.md ALGORITHMS)
+// ═══════════════════════════════════════════════════════════
+
+// Algorithm 1: 3D Volumetric Bin-Packing & Orientation/Thermal Compatibility
+router.post("/dsa/bin-packing", (req, res) => {
+  try {
+    const { box, boxSizeKey, items } = req.body;
+    const targetBox = box || STANDARD_BOXES[boxSizeKey || "MEDIUM"] || STANDARD_BOXES.MEDIUM;
+    const result = evaluateHamperPacking(targetBox, items || []);
+    res.json({
+      success: true,
+      data: {
+        box: targetBox,
+        evaluation: result
+      }
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Algorithm 2: Deterministic Integer Paise Financial Ledger
+router.post("/dsa/pricing-ledger", (req, res) => {
+  try {
+    const ledger = calculateDeterministicOrderPricing(req.body);
+    const serialized = serializePricingLedger(ledger);
+    res.json({
+      success: true,
+      data: serialized
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Algorithm 3: Rule-Based Coupon DAG Precedence
+router.post("/dsa/coupon-dag", (req, res) => {
+  try {
+    const { couponCode, candidateCodes, grossSubtotalPaise, categories, customerContext } = req.body;
+
+    if (candidateCodes && Array.isArray(candidateCodes)) {
+      const optimal = couponEngine.resolveOptimalPromotion({
+        candidateCodes,
+        grossSubtotalPaise,
+        categories,
+        customerContext
+      });
+      return res.json({
+        success: true,
+        data: {
+          optimalPromotion: optimal ? {
+            ...optimal,
+            discountPaise: Number(optimal.discountPaise)
+          } : null
+        }
+      });
+    }
+
+    const evaluation = couponEngine.evaluateCoupon({
+      couponCode,
+      grossSubtotalPaise,
+      categories,
+      customerContext
+    });
+
+    res.json({
+      success: true,
+      data: {
+        ...evaluation,
+        discountPaise: evaluation.discountPaise !== undefined ? Number(evaluation.discountPaise) : 0
+      }
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Algorithm 4: Colloquial Intent Tokenizer & Trigram Fuzzy Matcher
+router.post("/dsa/search-intent", (req, res) => {
+  try {
+    const { query, rankCatalog } = req.body;
+    const intent = tokenizeSearchIntent(query);
+
+    let rankedResults = null;
+    if (rankCatalog) {
+      const catalog = CatalogService.getProducts({ limit: 50 }).items;
+      rankedResults = rankItemsByFuzzyQuery(catalog, query);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        intent: {
+          ...intent,
+          maxPricePaise: intent.maxPricePaise !== null ? Number(intent.maxPricePaise) : null,
+          minPricePaise: intent.minPricePaise !== null ? Number(intent.minPricePaise) : null
+        },
+        rankedResults
+      }
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Algorithm 5: Multi-Criteria Budget Knapsack Optimizer
+router.post("/dsa/budget-knapsack", (req, res) => {
+  try {
+    const { targetBudgetPaise, preferredCategories } = req.body;
+    const result = optimizeHamperForBudget({
+      targetBudgetPaise,
+      preferredCategories
+    });
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Algorithm 7: Omnichannel Conversational Lead Scoring & Max-Heap Priority
+router.post("/dsa/lead-priority", (req, res) => {
+  try {
+    const { lead, enqueue } = req.body;
+    if (!lead) {
+      return res.status(400).json({ success: false, error: "lead object is required" });
+    }
+
+    if (enqueue) {
+      const enqueuedNode = leadPriorityQueue.insert(lead);
+      return res.json({
+        success: true,
+        data: {
+          enqueued: true,
+          lead: enqueuedNode,
+          queueSize: leadPriorityQueue.size(),
+          highestPriority: leadPriorityQueue.peekHighest()
+        }
+      });
+    }
+
+    const evaluation = scoreInboundLead(lead);
+    res.json({
+      success: true,
+      data: evaluation
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Algorithm 8: Dynamic Pincode SLA, Dispatch Distance & Delivery Interval
+router.post("/dsa/logistics-sla", (req, res) => {
+  try {
+    const { pincode, isBespokePersonalization, quantity } = req.body;
+    const result = resolveDeliverySla({
+      pincode,
+      isBespokePersonalization,
+      quantity
+    });
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 11. ATELIER BESPOKE HAMPER PROCEDURAL VISUALIZER
+// ═══════════════════════════════════════════════════════════
+
+router.post("/atelier/visualize-hamper", (req, res) => {
+  try {
+    const svg = generateHamperPreviewSvg(req.body);
+    const dataUri = generateHamperPreviewDataUri(req.body);
+    res.json({
+      success: true,
+      data: {
+        svg,
+        dataUri,
+        options: req.body
+      }
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
 });
 
 module.exports = router;

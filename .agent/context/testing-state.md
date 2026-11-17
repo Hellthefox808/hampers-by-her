@@ -18,6 +18,7 @@
     - `tests/instagram_service.test.js`: Meta Graph API feed sync, webhook challenge verification, and DM intent classification.
     - `tests/interactive_4d_ui.test.js`: Gyroscopic mouse tilt, 4-step unboxing theater, 60fps golden particle loop, and synthetic Web Audio soundscapes.
     - `tests/voice_gateway.test.js`: Real-time WebSocket streaming, PCM16 audio frames, and voice tool invocation.
+    - `tests/dsa_computational_suite.test.js`: All 8 DSA foundational algorithms (3D bin packing, BigInt paise ledger, coupon DAG, intent tokenizer, budget knapsack, atomic inventory lock, lead priority queue, logistics SLA resolver) and Atelier procedural preview visualizer (28 tests).
     - `tests/api_routes.test.js`: REST v1 endpoints, SingleFlight caching, Smart Payment Router, and service mesh health probes.
 
 - **Layer 3: Platform & Enterprise Infrastructure Testing**:
@@ -50,9 +51,9 @@
   - Verification: Target SDK 36, valid ZIP/DEX structure (`504b0304`), and v4 `.idsig` cryptographic integrity.
 
 ## 2. Test Execution Metrics
-- **Total Test Suites**: 40
-- **Total Automated Tests**: 133
-- **Passing**: 133 (100%)
+- **Total Test Suites**: 51
+- **Total Automated Tests**: 161
+- **Passing**: 161 (100%)
 - **Failing**: 0 (0%)
 - **Execution Duration**: ~750ms total run time
 - **Zero-Defect Guarantee**: Clean exit code 0 on `npm run verify`

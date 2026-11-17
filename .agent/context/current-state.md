@@ -88,9 +88,22 @@ Build the complete digital operating system behind the luxury artisanal gifting 
   - Hardened Android build pipeline (`scripts/build_android_apk.js`) with dynamic SDK/JDK platform auto-discovery, cross-platform fallbacks, and cryptographic verification of `dist/HampersByHer-VoiceAI.apk`.
   - Added enterprise security headers, static caching (`Cache-Control: public, max-age=86400`), `/health` probes, and graceful shutdown (`SIGTERM`/`SIGINT`) to `server/index.js`.
   - Optimized 4D UI performance in `website/script.js` with `requestAnimationFrame` tilt debouncing, battery-saving tab visibility detection, and global WCAG 2.2 AA `Escape` key handlers.
+- **Engineered Advanced Computational Algorithms Core (`platform/services/dsa/`) & Atelier Preview Visualizer**:
+  - Implemented all 8 foundational computational engines formally specified in [39_DSA.md](file:///c:/Users/ravir/Desktop/Almas/Hampers_By_Her_E2E_Engineering_Docs/39_DSA.md):
+    1. **3D Volumetric Bin-Packing** (`binPacker3D.js`): Usable 85% volume threshold, upright orientation constraints, 1.25x fragile virtual buffer, thermal partitions (chilled vs ambient), and standard box size recommendations (`SMALL`, `MEDIUM`, `LARGE`, `GRANDE`).
+    2. **Deterministic Integer Paise Pricing Ledger** (`pricingLedger.js`): 64-bit safe `BigInt` integer math eliminating float drift, coupon capping, shipping threshold evaluation, and remainder-preserving GST splitting (`cgst + sgst === totalGst`).
+    3. **Rule-Based Coupon Evaluation & DAG Precedence** (`couponDAG.js`): Temporal active window, global & user redemption limits, min order thresholds, category inclusions, and optimal promotion resolution.
+    4. **Faceted Search, Intent Tokenizer & Trigram Fuzzy Ranking** (`intentTokenizer.js`): Linear-time $O(M)$ ReDoS-safe tokenizer extracting occasions, recipients, price caps ("under 4000", "below 5k"), and luxury intent flags with Jaccard trigram typo tolerance.
+    5. **Multi-Criteria Budget Knapsack Optimization** (`budgetKnapsack.js`): Solves bespoke hamper optimization maximizing aesthetic harmony score subject to $P_{\text{total}} \le B$ and fullness ratio $\in [0.65, 0.95]$ with 2-opt pairwise exchange relaxation.
+    6. **Atomic Inventory Allocation & Pessimistic Concurrency Engine** (`atomicInventoryLock.js`): Alphabetically sorted resource keys preventing distributed deadlocks, atomic check-and-reserve, and 15-minute sliding TTL expirations.
+    7. **Omnichannel Lead Scoring & Binary Priority Queue Scheduler** (`leadPriorityQueue.js`): Real-time Multi-Attribute Utility lead scoring with instant Tier-1 ($P_1 \ge 85$) bulk wedding escalation and Binary Max-Heap scheduling.
+    8. **Dynamic Pincode SLA & Delivery Interval Resolver** (`logisticsSlaResolver.js`): 6-digit Indian PIN code validation, 14:00 IST daily cutoff logic, handcrafted prep buffers (24h standard, 48h bespoke), and transit zone mapping.
+  - Implemented **Atelier Procedural Luxury SVG & Visual Preview Generator** (`platform/services/atelier-visualizer/previewGenerator.js`): Vector SVG illustration with raw silk ribbons, botanical wax seal monograms, copperplate calligraphy greeting card, and Base64 Data URI output.
+  - Wired 8 dedicated REST API endpoints in [server/routes/api.js](file:///c:/Users/ravir/Desktop/Almas/Hampers_By_Her_E2E_Engineering_Docs/server/routes/api.js) under `/api/v1/dsa/...` and `/api/v1/atelier/visualize-hamper`.
+  - Authored and verified [tests/dsa_computational_suite.test.js](file:///c:/Users/ravir/Desktop/Almas/Hampers_By_Her_E2E_Engineering_Docs/tests/dsa_computational_suite.test.js) (28/28 tests passing).
   - **Total Platform Tests**: **68/68 passing 100% (0 failures)**.
-  - **Total Root Commerce & UI Tests**: **65/65 passing 100% (0 failures)**.
-  - **Total Combined Verified Tests**: **133/133 tests passing across all 40 test suites**.
+  - **Total Root Commerce, UI & DSA Tests**: **93/93 passing 100% (0 failures)**.
+  - **Total Combined Verified Tests**: **161/161 tests passing across all 51 test suites**.
   - **Full Documentation Audit**: **57/57 specifications and auxiliary artifacts 100% compliant with Section 40**.
   - **Master Pipeline Verification**: **`npm run verify` passes cleanly with zero errors**.
 

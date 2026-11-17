@@ -55,3 +55,15 @@
 - `GET /system/health`: Aggregated platform health including memory RSS, uptime, cache metrics, and service mesh statuses.
 - `GET /system/mesh/health`: Direct probe of all registered microservices in the service mesh.
 - `GET /system/cache/metrics`: Hit/miss ratios, eviction count, and active keys across CacheGrid.
+
+### K. Advanced Computational Algorithms (39_DSA.md)
+- `POST /dsa/bin-packing`: 3D physical bin packing evaluation (usable 85% volume threshold, upright constraints, 1.25x fragile buffer, thermal partition).
+- `POST /dsa/pricing-ledger`: BigInt 64-bit integer paise ledger with coupon capping, free shipping evaluation, and remainder-preserving GST splitting.
+- `POST /dsa/coupon-dag`: DAG-based promotion evaluator with temporal window, redemption caps, and conflict resolution.
+- `POST /dsa/search-intent`: Colloquial query tokenizer extracting occasion, recipient, price cap, and trigram fuzzy catalog ranking.
+- `POST /dsa/budget-knapsack`: Multi-criteria knapsack optimization for bespoke hampers with 2-opt local search relaxation.
+- `POST /dsa/lead-priority`: Multi-Attribute Utility scoring with instant Tier-1 bulk wedding escalation and Binary Max-Heap scheduling.
+- `POST /dsa/logistics-sla`: Resolves 6-digit PIN code delivery interval window with 14:00 IST cutoff and preparation lead times.
+
+### L. Atelier Procedural Luxury Visualizer
+- `POST /atelier/visualize-hamper`: Generates bespoke vector SVG illustrations and Base64 Data URIs with custom raw silk ribbon, botanical wax seal monograms, and copperplate calligraphy greeting cards.
