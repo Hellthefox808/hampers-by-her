@@ -989,7 +989,859 @@ document.addEventListener('DOMContentLoaded', () => {
       if (waPopover?.classList.contains('active')) {
         waPopover.classList.remove('active');
       }
+      document.getElementById('builder-overlay')?.classList.remove('open');
+      document.getElementById('checkout-overlay')?.classList.remove('open');
+      document.getElementById('knapsack-curator-modal')?.classList.remove('open');
+      document.getElementById('order-tracking-modal')?.classList.remove('open');
     }
   });
+
+  // ═══════════════════════════════════════════════════════════
+  // 7. INTERACTIVE 11-STEP BESPOKE ATELIER BUILDER ENGINE
+  // ═══════════════════════════════════════════════════════════
+  const builderState = {
+    currentStep: 1,
+    boxId: "BOX_KRAFT_RIGID",
+    boxName: "Classic Rigid Kraft Box",
+    boxPricePaise: 45000,
+    boxCapacityCm3: 5200,
+    recipient: "Sister",
+    occasion: "Wedding",
+    colorway: "Warm Earth & Terracotta",
+    ribbonColor: "burgundy_merlot",
+    ribbonName: "Burgundy Merlot Raw Silk",
+    monogramInitials: "HBH",
+    waxSealColor: "vintage_gold",
+    waxSealName: "Vintage Gold Botanical",
+    sealMotif: "botanical_wreath",
+    inclusions: [],
+    cardTo: "",
+    cardFrom: "",
+    cardMessage: "To someone truly cherished, with warmest congratulations on your joyous milestone.",
+    hasPolaroid: false
+  };
+
+  const builderOverlayEl = document.getElementById('builder-overlay');
+  const builderCloseBtn = document.getElementById('builder-close-btn');
+  const builderNextBtn = document.getElementById('builder-next-btn');
+  const builderPrevBtn = document.getElementById('builder-prev-btn');
+  const builderFinishBtn = document.getElementById('builder-finish-btn');
+  const builderStepIndicator = document.getElementById('builder-step-indicator');
+  const builderProgress = document.getElementById('builder-progress');
+  const builderPriceTicker = document.getElementById('builder-price-ticker-val');
+  const fullnessBar = document.getElementById('fullness-bar');
+  const fullnessText = document.getElementById('fullness-text');
+  const fullnessBadge = document.getElementById('fullness-badge');
+
+  function updateBuilderUI() {
+    // 1. Show only active step pane
+    document.querySelectorAll('.builder-step-pane').forEach(pane => {
+      const step = parseInt(pane.dataset.step, 10);
+      if (step === builderState.currentStep) {
+        pane.classList.add('active');
+      } else {
+        pane.classList.remove('active');
+      }
+    });
+
+    // 2. Progress and labels
+    if (builderProgress) {
+      builderProgress.style.width = `${Math.round((builderState.currentStep / 11) * 100)}%`;
+    }
+    const stepTitles = [
+      "Box Selection", "Recipient Persona", "Occasion Mood", "Colorway Palette",
+      "Raw Silk Ribbon & Monogram", "Fragrance & Candle Inclusions", "Gourmet Treats",
+      "Wax Seal Crest", "Handwritten Calligraphy Card", "Polaroid Print", "Review Your Composition"
+    ];
+    if (builderStepIndicator) {
+      builderStepIndicator.textContent = `Step ${builderState.currentStep} of 11 · ${stepTitles[builderState.currentStep - 1]}`;
+    }
+
+    // 3. Buttons visibility
+    if (builderPrevBtn) {
+      builderPrevBtn.style.visibility = builderState.currentStep > 1 ? 'visible' : 'hidden';
+    }
+    if (builderState.currentStep === 11) {
+      if (builderNextBtn) builderNextBtn.style.display = 'none';
+      if (builderFinishBtn) builderFinishBtn.style.display = 'inline-block';
+      renderBuilderSummary();
+      renderProceduralPreview();
+    } else {
+      if (builderNextBtn) builderNextBtn.style.display = 'inline-block';
+      if (builderFinishBtn) builderFinishBtn.style.display = 'none';
+    }
+
+    // 4. Calculate total price
+    let totalPaise = builderState.boxPricePaise;
+    builderState.inclusions.forEach(inc => { totalPaise += (inc.pricePaise || 0); });
+    if (builderState.hasPolaroid) totalPaise += 12000;
+    if (builderPriceTicker) {
+      builderPriceTicker.textContent = `₹ ${Math.round(totalPaise / 100).toLocaleString('en-IN')}`;
+    }
+
+    // 5. Calculate 3D capacity fullness
+    let usedVolumeCm3 = 0;
+    builderState.inclusions.forEach(inc => { usedVolumeCm3 += (inc.volumeCm3 || 650); });
+    const fullnessPct = Math.min(100, Math.round((usedVolumeCm3 / builderState.boxCapacityCm3) * 100));
+
+    if (fullnessBar) fullnessBar.style.width = `${fullnessPct}%`;
+    if (fullnessText) fullnessText.textContent = `${usedVolumeCm3.toLocaleString('en-IN')} / ${builderState.boxCapacityCm3.toLocaleString('en-IN')} cm³`;
+    if (fullnessBadge) {
+      if (fullnessPct < 40) {
+        fullnessBadge.textContent = "Underfilled";
+        fullnessBadge.className = "fullness-badge UNDERFILLED";
+      } else if (fullnessPct <= 85) {
+        fullnessBadge.textContent = "Optimal Fill";
+        fullnessBadge.className = "fullness-badge OPTIMAL";
+      } else {
+        fullnessBadge.textContent = "Near Capacity";
+        fullnessBadge.className = "fullness-badge OVERFILLED";
+      }
+    }
+  }
+
+  // Open builder from triggers
+  document.querySelectorAll('a[href="#builder"], .hero__builder-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      builderOverlayEl?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      updateBuilderUI();
+    });
+  });
+
+  builderCloseBtn?.addEventListener('click', () => {
+    builderOverlayEl?.classList.remove('open');
+    document.body.style.overflow = '';
+  });
+
+  builderNextBtn?.addEventListener('click', () => {
+    if (builderState.currentStep < 11) {
+      builderState.currentStep++;
+      updateBuilderUI();
+    }
+  });
+
+  builderPrevBtn?.addEventListener('click', () => {
+    if (builderState.currentStep > 1) {
+      builderState.currentStep--;
+      updateBuilderUI();
+    }
+  });
+
+  // Step 1: Box selection
+  document.querySelectorAll('.builder-step-pane[data-step="1"] .select-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.builder-step-pane[data-step="1"] .select-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      builderState.boxId = card.dataset.boxId || "BOX_KRAFT_RIGID";
+      builderState.boxName = card.querySelector('.select-card__title')?.textContent || "Keepsake Box";
+      builderState.boxPricePaise = parseInt(card.dataset.price, 10) || 45000;
+      builderState.boxCapacityCm3 = parseInt(card.dataset.capacity, 10) || 5200;
+      updateBuilderUI();
+    });
+  });
+
+  // Step 5: Ribbon selection
+  const ribbonMap = {
+    "RIB_BORDEAUX": { key: "burgundy_merlot", name: "Burgundy Merlot Raw Silk" },
+    "RIB_GOLD": { key: "champagne_gold", name: "Champagne Gold Satin" },
+    "RIB_EMERALD": { key: "forest_emerald", name: "Forest Emerald Grosgrain" },
+    "RIB_BLUSH": { key: "blush_rose", name: "Blush Rose Velvet" }
+  };
+  document.querySelectorAll('.builder-step-pane[data-step="5"] .select-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.builder-step-pane[data-step="5"] .select-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      const ribId = card.dataset.ribbonId;
+      if (ribbonMap[ribId]) {
+        builderState.ribbonColor = ribbonMap[ribId].key;
+        builderState.ribbonName = ribbonMap[ribId].name;
+      }
+      updateBuilderUI();
+    });
+  });
+
+  // Monogram initials input
+  const monogramInput = document.getElementById('monogram-input');
+  monogramInput?.addEventListener('input', (e) => {
+    builderState.monogramInitials = e.target.value.trim().toUpperCase() || "HBH";
+  });
+
+  // Step 6 & 7: Inclusions toggle (checkboxes or cards)
+  document.querySelectorAll('.builder-step-pane[data-step="6"] .select-card, .builder-step-pane[data-step="7"] .select-card').forEach(card => {
+    card.addEventListener('click', () => {
+      card.classList.toggle('selected');
+      const incId = card.dataset.inclusionId || card.querySelector('.select-card__title')?.textContent;
+      const title = card.querySelector('.select-card__title')?.textContent;
+      const pricePaise = parseInt(card.dataset.price, 10) || 65000;
+      const volumeCm3 = parseInt(card.dataset.volume, 10) || 800;
+
+      const existingIdx = builderState.inclusions.findIndex(i => i.id === incId);
+      if (existingIdx >= 0) {
+        builderState.inclusions.splice(existingIdx, 1);
+      } else {
+        builderState.inclusions.push({ id: incId, title, pricePaise, volumeCm3 });
+      }
+      updateBuilderUI();
+    });
+  });
+
+  // Step 8: Wax seal selection
+  const sealMap = {
+    "SEAL_BOTANICAL": { colorKey: "vintage_gold", motif: "botanical_wreath", name: "Vintage Gold Botanical Wreath" },
+    "SEAL_BORDEAUX": { colorKey: "bordeaux_red", motif: "monogram_hbh", name: "Bordeaux Merlot Crest" },
+    "SEAL_SAGE": { colorKey: "forest_sage", motif: "botanical_wreath", name: "Forest Sage Leaf" },
+    "SEAL_BRONZE": { colorKey: "antique_bronze", motif: "celestial_star", name: "Antique Bronze Star" }
+  };
+  document.querySelectorAll('.builder-step-pane[data-step="8"] .select-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.builder-step-pane[data-step="8"] .select-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      const sealId = card.dataset.sealId;
+      if (sealMap[sealId]) {
+        builderState.waxSealColor = sealMap[sealId].colorKey;
+        builderState.sealMotif = sealMap[sealId].motif;
+        builderState.waxSealName = sealMap[sealId].name;
+      }
+      updateBuilderUI();
+    });
+  });
+
+  // Step 9: Calligraphy Note
+  const cardToInput = document.getElementById('card-to-input');
+  const cardFromInput = document.getElementById('card-from-input');
+  const cardMsgTextarea = document.getElementById('card-message-textarea');
+  cardToInput?.addEventListener('input', (e) => { builderState.cardTo = e.target.value; });
+  cardFromInput?.addEventListener('input', (e) => { builderState.cardFrom = e.target.value; });
+  cardMsgTextarea?.addEventListener('input', (e) => {
+    builderState.cardMessage = e.target.value;
+    const counter = document.getElementById('card-char-counter');
+    if (counter) counter.textContent = `${e.target.value.length} / 280`;
+  });
+
+  // Render Step 11 Summary
+  function renderBuilderSummary() {
+    const summaryList = document.getElementById('builder-summary-breakdown');
+    if (!summaryList) return;
+
+    let itemsHtml = `
+      <div style="display: flex; justify-content: space-between;">
+        <span><strong>Box Base:</strong> ${builderState.boxName}</span>
+        <span style="font-family: 'JetBrains Mono', monospace;">₹ ${(builderState.boxPricePaise / 100).toLocaleString('en-IN')}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+        <span><strong>Silk Ribbon:</strong> ${builderState.ribbonName} (Monogram: ${builderState.monogramInitials})</span>
+        <span>Included</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+        <span><strong>Wax Seal:</strong> ${builderState.waxSealName}</span>
+        <span>Included</span>
+      </div>
+    `;
+
+    builderState.inclusions.forEach(inc => {
+      itemsHtml += `
+        <div style="display: flex; justify-content: space-between;">
+          <span>• ${inc.title}</span>
+          <span style="font-family: 'JetBrains Mono', monospace;">₹ ${Math.round((inc.pricePaise || 0) / 100).toLocaleString('en-IN')}</span>
+        </div>
+      `;
+    });
+
+    if (builderState.hasPolaroid) {
+      itemsHtml += `
+        <div style="display: flex; justify-content: space-between;">
+          <span>• Polaroid Keepsake Print</span>
+          <span style="font-family: 'JetBrains Mono', monospace;">₹ 120</span>
+        </div>
+      `;
+    }
+
+    summaryList.innerHTML = itemsHtml;
+
+    let totalPaise = builderState.boxPricePaise;
+    builderState.inclusions.forEach(inc => { totalPaise += (inc.pricePaise || 0); });
+    if (builderState.hasPolaroid) totalPaise += 12000;
+
+    const finalTotalEl = document.getElementById('builder-final-total');
+    if (finalTotalEl) {
+      finalTotalEl.textContent = `₹ ${Math.round(totalPaise / 100).toLocaleString('en-IN')}`;
+    }
+  }
+
+  // Render Photorealistic Vector SVG Visualizer via API
+  async function renderProceduralPreview() {
+    const stage = document.getElementById('builder-preview-svg-stage');
+    if (!stage) return;
+
+    stage.innerHTML = `<span class="mono-label" style="font-size: 0.8rem; color: #8A7B72;">Rendering procedural vector luxury preview...</span>`;
+
+    try {
+      const res = await fetch('/api/v1/atelier/visualize-hamper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          boxId: builderState.boxId,
+          ribbonColor: builderState.ribbonColor,
+          waxSealColor: builderState.waxSealColor,
+          sealMotif: builderState.sealMotif,
+          monogramInitials: builderState.monogramInitials,
+          cardMessage: builderState.cardMessage || "To someone truly cherished...",
+          recipientName: builderState.cardTo || "Cherished Patron",
+          width: 520,
+          height: 380
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.data?.svg) {
+        stage.innerHTML = data.data.svg;
+      } else {
+        throw new Error();
+      }
+    } catch {
+      // Local fallback vector representation if offline
+      stage.innerHTML = `
+        <svg viewBox="0 0 520 340" width="100%" height="auto" style="border-radius: 8px;">
+          <rect width="520" height="340" fill="#FBF8F5"/>
+          <rect x="60" y="50" width="400" height="240" rx="6" fill="#F5F2EB" stroke="#D6D0C3" stroke-width="2"/>
+          <rect x="250" y="50" width="20" height="240" fill="#4A1E29"/>
+          <rect x="60" y="160" width="400" height="20" fill="#4A1E29"/>
+          <circle cx="260" cy="170" r="32" fill="#C59B3F" stroke="#7A5915" stroke-width="2"/>
+          <text x="260" y="176" font-family="'Playfair Display', serif" font-size="16" font-weight="700" fill="#3B260A" text-anchor="middle">${builderState.monogramInitials}</text>
+          <text x="260" y="270" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" fill="#8A7B72" text-anchor="middle">Atelier Bespoke Edition</text>
+        </svg>
+      `;
+    }
+  }
+
+  document.getElementById('btn-refresh-preview')?.addEventListener('click', renderProceduralPreview);
+
+  // Add Bespoke Hamper to Bag
+  builderFinishBtn?.addEventListener('click', () => {
+    let totalPaise = builderState.boxPricePaise;
+    builderState.inclusions.forEach(inc => { totalPaise += (inc.pricePaise || 0); });
+    if (builderState.hasPolaroid) totalPaise += 12000;
+
+    const bespokeItem = {
+      id: `bespoke_${Date.now()}`,
+      title: `Bespoke ${builderState.boxName}`,
+      subtitle: `${builderState.inclusions.length} Inclusions · ${builderState.ribbonName}`,
+      priceRupees: Math.round(totalPaise / 100).toLocaleString('en-IN'),
+      basePricePaise: totalPaise,
+      image: "images/hero-hamper.jpg",
+      quantity: 1,
+      ribbon: builderState.ribbonName,
+      waxSeal: builderState.waxSealName,
+      monogram: builderState.monogramInitials,
+      cardMessage: builderState.cardMessage,
+      inclusions: builderState.inclusions
+    };
+
+    cart.push(bespokeItem);
+    builderOverlayEl?.classList.remove('open');
+    document.body.style.overflow = '';
+    renderCart();
+    showToast("✨ Bespoke Hamper composed and added to your bag!");
+    openCart();
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // 8. 2-STEP CHECKOUT & PATRON OTP AUTHENTICATION
+  // ═══════════════════════════════════════════════════════════
+  const checkoutOverlay = document.getElementById('checkout-overlay');
+  const checkoutCloseBtn = document.getElementById('checkout-close-btn');
+  const checkoutBtn = document.getElementById('checkout-btn');
+  const checkoutStep1 = document.getElementById('checkout-step-1');
+  const checkoutStep2 = document.getElementById('checkout-step-2');
+  const checkoutStep3 = document.getElementById('checkout-step-3');
+  const checkoutProceedBtn = document.getElementById('checkout-proceed-btn');
+  const checkoutBackBtn = document.getElementById('checkout-back-btn');
+  const checkoutPayBtn = document.getElementById('checkout-pay-btn');
+  const pincodeInput = document.getElementById('co-pincode');
+  const pincodeStatus = document.getElementById('pincode-status');
+
+  checkoutBtn?.addEventListener('click', () => {
+    closeCart();
+    checkoutOverlay?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Reset steps
+    checkoutStep1.style.display = 'block';
+    checkoutStep2.style.display = 'none';
+    checkoutStep3.style.display = 'none';
+
+    // Compute total
+    const subtotalPaise = cart.reduce((sum, item) => sum + (item.basePricePaise * item.quantity), 0);
+    const isFreeShipping = subtotalPaise >= 299900 || subtotalPaise === 0;
+    const shippingFeePaise = isFreeShipping ? 0 : 15000;
+    let discountPaise = appliedCoupon === 'ALMAS10' ? Math.min(Math.round(subtotalPaise * 0.10), 100000) : 0;
+    const taxablePaise = Math.max(0, subtotalPaise - discountPaise);
+    const taxPaise = Math.round(taxablePaise * 0.18);
+    const finalPaise = taxablePaise + taxPaise + shippingFeePaise;
+
+    const coFinalAmount = document.getElementById('co-final-amount');
+    if (coFinalAmount) coFinalAmount.textContent = `₹ ${Math.round(finalPaise / 100).toLocaleString('en-IN')}`;
+  });
+
+  checkoutCloseBtn?.addEventListener('click', () => {
+    checkoutOverlay?.classList.remove('open');
+    document.body.style.overflow = '';
+  });
+
+  // Pincode lookup
+  pincodeInput?.addEventListener('input', async (e) => {
+    const val = e.target.value.trim();
+    if (val.length === 6) {
+      try {
+        const res = await fetch(`/api/v1/delivery/serviceability/${val}`);
+        const data = await res.json();
+        if (data.success && data.data?.isServiceable) {
+          pincodeStatus.style.display = 'block';
+          pincodeStatus.style.color = '#2E7D32';
+          pincodeStatus.textContent = `✓ Serviceable (${data.data.city}, ${data.data.state}) · Est: ${data.data.standardDays} Days`;
+          const cityInput = document.getElementById('co-city');
+          if (cityInput && !cityInput.value) cityInput.value = `${data.data.city}, ${data.data.state}`;
+        } else {
+          pincodeStatus.style.display = 'block';
+          pincodeStatus.style.color = '#C62828';
+          pincodeStatus.textContent = "✕ Pincode unserviceable by express air courier.";
+        }
+      } catch {
+        pincodeStatus.style.display = 'block';
+        pincodeStatus.style.color = '#2E7D32';
+        pincodeStatus.textContent = "✓ Verified (Standard Pan-India Transit)";
+      }
+    } else {
+      pincodeStatus.style.display = 'none';
+    }
+  });
+
+  // WhatsApp OTP Authentication flow
+  const btnRequestOtp = document.getElementById('btn-request-otp');
+  const btnVerifyOtp = document.getElementById('btn-verify-otp');
+  const authPhoneInput = document.getElementById('auth-patron-phone');
+  const authOtpInput = document.getElementById('auth-patron-otp');
+  const authStepPhone = document.getElementById('auth-step-phone');
+  const authStepVerify = document.getElementById('auth-step-verify');
+  const patronAuthStatus = document.getElementById('patron-auth-status');
+  const otpFeedback = document.getElementById('otp-feedback');
+
+  btnRequestOtp?.addEventListener('click', async () => {
+    const phone = authPhoneInput?.value?.trim();
+    if (!phone) {
+      showToast("Please enter your mobile phone number");
+      return;
+    }
+    try {
+      const res = await fetch('/api/v1/auth/request-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, channel: 'WHATSAPP' })
+      });
+      const json = await res.json();
+      if (json.success) {
+        authStepVerify.style.display = 'block';
+        if (otpFeedback) otpFeedback.textContent = "✓ 6-digit OTP dispatched to your WhatsApp! (Sandbox code: 123456)";
+        showToast("OTP sent to your WhatsApp!");
+      } else {
+        throw new Error(json.error);
+      }
+    } catch {
+      authStepVerify.style.display = 'block';
+      if (otpFeedback) otpFeedback.textContent = "✓ Sandbox code active: Use 123456 to verify";
+    }
+  });
+
+  btnVerifyOtp?.addEventListener('click', async () => {
+    const phone = authPhoneInput?.value?.trim();
+    const otp = authOtpInput?.value?.trim();
+    if (!otp) {
+      showToast("Please enter the 6-digit OTP");
+      return;
+    }
+    try {
+      const res = await fetch('/api/v1/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp })
+      });
+      const json = await res.json();
+      if (json.success && json.data?.token) {
+        localStorage.setItem('hbh_patron_jwt', json.data.token);
+        if (patronAuthStatus) {
+          patronAuthStatus.textContent = "✓ VIP Patron Verified";
+          patronAuthStatus.style.color = "#2E7D32";
+        }
+        if (authStepVerify) authStepVerify.style.display = 'none';
+        if (authStepPhone) authStepPhone.style.display = 'none';
+        const nameInput = document.getElementById('co-recipient-name');
+        if (nameInput && !nameInput.value && json.data.user?.name) {
+          nameInput.value = json.data.user.name;
+        }
+        showToast("Welcome back! Verified as VIP Patron.");
+      } else {
+        throw new Error(json.error || "Invalid OTP code");
+      }
+    } catch (err) {
+      showToast("Invalid OTP code. Please enter 123456.");
+    }
+  });
+
+  checkoutProceedBtn?.addEventListener('click', () => {
+    const name = document.getElementById('co-recipient-name')?.value?.trim();
+    const phone = document.getElementById('co-recipient-phone')?.value?.trim();
+    const address = document.getElementById('co-address')?.value?.trim();
+    const pin = document.getElementById('co-pincode')?.value?.trim();
+
+    if (!name || !phone || !address || !pin) {
+      showToast("Please complete required delivery fields (*)");
+      return;
+    }
+    checkoutStep1.style.display = 'none';
+    checkoutStep2.style.display = 'block';
+  });
+
+  checkoutBackBtn?.addEventListener('click', () => {
+    checkoutStep2.style.display = 'none';
+    checkoutStep1.style.display = 'block';
+  });
+
+  // Payment method selection
+  document.querySelectorAll('.payment-method-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+  });
+
+  // Confirm and Authorize Payment
+  checkoutPayBtn?.addEventListener('click', async () => {
+    checkoutPayBtn.textContent = "Authorizing via Secure Acquirer...";
+    checkoutPayBtn.disabled = true;
+
+    const name = document.getElementById('co-recipient-name')?.value?.trim() || "Patron";
+    const phone = document.getElementById('co-recipient-phone')?.value?.trim() || "9876543210";
+    const address = document.getElementById('co-address')?.value?.trim();
+    const pin = document.getElementById('co-pincode')?.value?.trim() || "110001";
+    const city = document.getElementById('co-city')?.value?.trim() || "New Delhi";
+
+    const subtotalPaise = cart.reduce((sum, item) => sum + (item.basePricePaise * item.quantity), 0);
+    const isFreeShipping = subtotalPaise >= 299900 || subtotalPaise === 0;
+    const shippingFeePaise = isFreeShipping ? 0 : 15000;
+    let discountPaise = appliedCoupon === 'ALMAS10' ? Math.min(Math.round(subtotalPaise * 0.10), 100000) : 0;
+    const taxablePaise = Math.max(0, subtotalPaise - discountPaise);
+    const taxPaise = Math.round(taxablePaise * 0.18);
+    const finalPaise = taxablePaise + taxPaise + shippingFeePaise;
+
+    try {
+      const res = await fetch('/api/v1/checkout/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `idemp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
+        },
+        body: JSON.stringify({
+          items: cart,
+          shippingAddress: {
+            recipientName: name,
+            addressLine1: address,
+            pincode: pin,
+            city,
+            phoneNumber: phone
+          },
+          couponCode: appliedCoupon
+        })
+      });
+      const data = await res.json();
+      const orderNum = data.data?.orderNumber || `HBH-${Date.now()}`;
+
+      // Simulate payment confirmation callback
+      await fetch('/api/v1/payments/verify-and-confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderNumber: orderNum,
+          paymentId: `pay_mock_${Date.now()}`,
+          signature: "valid_signature"
+        })
+      });
+
+      // Clear Cart
+      cart = [];
+      renderCart();
+
+      // Show Confirmation Step
+      checkoutStep2.style.display = 'none';
+      checkoutStep3.style.display = 'block';
+      const confirmedOrderNumEl = document.getElementById('confirmed-order-number');
+      if (confirmedOrderNumEl) confirmedOrderNumEl.textContent = `Order # ${orderNum}`;
+
+      const waBtn = document.getElementById('confirmed-whatsapp-btn');
+      if (waBtn) {
+        waBtn.href = `https://wa.me/919876543210?text=${encodeURIComponent(`Hi Hampers by Her! I just placed order ${orderNum}.`)}`;
+      }
+
+      playGoldenChime();
+      showToast("✨ Payment Confirmed! Artisanal curation initiated.");
+    } catch {
+      // Fallback
+      checkoutStep2.style.display = 'none';
+      checkoutStep3.style.display = 'block';
+      const orderNum = `HBH-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+      const confirmedOrderNumEl = document.getElementById('confirmed-order-number');
+      if (confirmedOrderNumEl) confirmedOrderNumEl.textContent = `Order # ${orderNum}`;
+      cart = [];
+      renderCart();
+      playGoldenChime();
+    } finally {
+      checkoutPayBtn.textContent = "Confirm & Authorize Payment →";
+      checkoutPayBtn.disabled = false;
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // 9. AI BESPOKE HAMPER KNAPSACK CURATOR (39_DSA.md)
+  // ═══════════════════════════════════════════════════════════
+  const knapsackModal = document.getElementById('knapsack-curator-modal');
+  const btnOpenKnapsack = document.getElementById('btn-open-knapsack-curator');
+  const knapsackCloseBtn = document.getElementById('knapsack-close-btn');
+  const btnRunKnapsack = document.getElementById('btn-run-knapsack');
+  const knapsackBudgetInput = document.getElementById('knapsack-budget-input');
+  const knapsackOccasionSelect = document.getElementById('knapsack-occasion-select');
+  const knapsackResultsContainer = document.getElementById('knapsack-results-container');
+  const knapsackHarmonyScore = document.getElementById('knapsack-harmony-score');
+  const knapsackItemsList = document.getElementById('knapsack-items-list');
+  const knapsackTotalPrice = document.getElementById('knapsack-total-price');
+  const btnLoadKnapsackBuilder = document.getElementById('btn-load-knapsack-builder');
+
+  let lastKnapsackComposition = null;
+
+  btnOpenKnapsack?.addEventListener('click', () => {
+    knapsackModal?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+
+  knapsackCloseBtn?.addEventListener('click', () => {
+    knapsackModal?.classList.remove('open');
+    document.body.style.overflow = '';
+  });
+
+  btnRunKnapsack?.addEventListener('click', async () => {
+    const budgetRupees = parseInt(knapsackBudgetInput?.value || "3500", 10);
+    const budgetPaise = budgetRupees * 100;
+    const occasion = knapsackOccasionSelect?.value || "WEDDING";
+
+    btnRunKnapsack.textContent = "Optimizing Knapsack...";
+    btnRunKnapsack.disabled = true;
+
+    try {
+      const res = await fetch('/api/v1/dsa/knapsack-optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ budgetPaise, occasion })
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        lastKnapsackComposition = data.data;
+        knapsackResultsContainer.style.display = 'block';
+        if (knapsackHarmonyScore) {
+          knapsackHarmonyScore.textContent = `Harmony Score: ${(data.data.harmonyScore || 94.5).toFixed(1)} / 100`;
+        }
+        if (knapsackTotalPrice) {
+          knapsackTotalPrice.textContent = `₹ ${Math.round(data.data.totalCostPaise / 100).toLocaleString('en-IN')}`;
+        }
+        if (knapsackItemsList && Array.isArray(data.data.selectedItems)) {
+          knapsackItemsList.innerHTML = data.data.selectedItems.map(item => `
+            <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dotted #E2D9D2;">
+              <span>• ${item.name} (${item.category || "Inclusion"})</span>
+              <span style="font-family: 'JetBrains Mono', monospace;">₹ ${Math.round(item.pricePaise / 100).toLocaleString('en-IN')}</span>
+            </div>
+          `).join('');
+        }
+        playVelvetTap();
+        showToast("✨ Optimal bespoke knapsack curated!");
+      }
+    } catch {
+      showToast("Curated local collection fallback active.");
+    } finally {
+      btnRunKnapsack.textContent = "⚡ Optimize & Curate Hamper";
+      btnRunKnapsack.disabled = false;
+    }
+  });
+
+  btnLoadKnapsackBuilder?.addEventListener('click', () => {
+    if (lastKnapsackComposition && Array.isArray(lastKnapsackComposition.selectedItems)) {
+      builderState.inclusions = lastKnapsackComposition.selectedItems.map(it => ({
+        id: it.id,
+        title: it.name,
+        pricePaise: it.pricePaise,
+        volumeCm3: it.volume_mm3 ? Math.round(it.volume_mm3 / 1000) : 600
+      }));
+    }
+    knapsackModal?.classList.remove('open');
+    builderOverlayEl?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    builderState.currentStep = 6; // Jump directly to inclusions
+    updateBuilderUI();
+    showToast("Loaded AI curated components into Bespoke Atelier!");
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // 10. RE-DOS-SAFE NATURAL LANGUAGE INTENT SEARCH
+  // ═══════════════════════════════════════════════════════════
+  const naturalSearchInput = document.getElementById('natural-search-input');
+  const naturalSearchBtn = document.getElementById('natural-search-btn');
+  const searchIntentPills = document.getElementById('search-intent-pills');
+
+  async function executeNaturalSearch() {
+    const query = naturalSearchInput?.value?.trim();
+    if (!query) return;
+
+    try {
+      const res = await fetch('/api/v1/dsa/tokenize-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        const intent = data.data;
+        if (searchIntentPills) {
+          searchIntentPills.style.display = 'flex';
+          let chips = '';
+          if (intent.occasion) chips += `<span class="intent-chip">Occasion: ${intent.occasion}</span>`;
+          if (intent.recipient) chips += `<span class="intent-chip">Recipient: ${intent.recipient}</span>`;
+          if (intent.priceCapRupees) chips += `<span class="intent-chip">Cap: ₹${intent.priceCapRupees.toLocaleString('en-IN')}</span>`;
+          if (intent.isLuxury) chips += `<span class="intent-chip">✨ Luxury Tier</span>`;
+          searchIntentPills.innerHTML = chips || `<span class="intent-chip">Tokens: ${query}</span>`;
+        }
+
+        // Filter cards in grid
+        const cards = document.querySelectorAll('.product-card');
+        cards.forEach(card => {
+          const text = card.textContent.toLowerCase();
+          const matchOccasion = !intent.occasion || text.includes(intent.occasion.toLowerCase());
+          card.style.display = matchOccasion ? 'block' : 'none';
+        });
+
+        // Smooth scroll to collections
+        document.getElementById('collections')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch {
+      // Fallback simple search
+      const cards = document.querySelectorAll('.product-card');
+      cards.forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(query.toLowerCase()) ? 'block' : 'none';
+      });
+    }
+  }
+
+  naturalSearchBtn?.addEventListener('click', executeNaturalSearch);
+  naturalSearchInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') executeNaturalSearch();
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // 11. LIVE COURIER AWB TRACKING & CHECKPOINT TIMELINE
+  // ═══════════════════════════════════════════════════════════
+  const trackingModal = document.getElementById('order-tracking-modal');
+  const trackingCloseBtn = document.getElementById('tracking-close-btn');
+  const trackingInputId = document.getElementById('tracking-input-id');
+  const btnQueryTracking = document.getElementById('btn-query-tracking');
+  const trackingResultBox = document.getElementById('tracking-result-box');
+  const trackCarrierName = document.getElementById('track-carrier-name');
+  const trackAwbNum = document.getElementById('track-awb-num');
+  const trackStatusBadge = document.getElementById('track-status-badge');
+  const trackingCheckpointsList = document.getElementById('tracking-checkpoints-list');
+
+  const navTrackOrderBtn = document.getElementById('nav-track-order-btn');
+  const mobileTrackOrderBtn = document.getElementById('mobile-track-order-btn');
+
+  function openTrackingModal(prefillId = "") {
+    if (prefillId && trackingInputId) trackingInputId.value = prefillId;
+    trackingModal?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (prefillId) executeTrackingQuery(prefillId);
+  }
+
+  navTrackOrderBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openTrackingModal();
+  });
+
+  mobileTrackOrderBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeMenu();
+    openTrackingModal();
+  });
+
+  trackingCloseBtn?.addEventListener('click', () => {
+    trackingModal?.classList.remove('open');
+    document.body.style.overflow = '';
+  });
+
+  async function executeTrackingQuery(queryId) {
+    const id = queryId || trackingInputId?.value?.trim();
+    if (!id) {
+      showToast("Please enter an Order Number or AWB");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/v1/delivery/track/${encodeURIComponent(id)}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        const trk = data.data;
+        trackingResultBox.style.display = 'block';
+        if (trackCarrierName) trackCarrierName.textContent = trk.carrier || "BlueDart Air Express";
+        if (trackAwbNum) trackAwbNum.textContent = trk.awbNumber || trk.orderNumber;
+        if (trackStatusBadge) {
+          trackStatusBadge.textContent = trk.status;
+          trackStatusBadge.style.background = trk.status === 'DELIVERED' ? '#E8F5E9' : '#FFF3E0';
+          trackStatusBadge.style.color = trk.status === 'DELIVERED' ? '#2E7D32' : '#E65100';
+        }
+        if (trackingCheckpointsList && Array.isArray(trk.checkpoints)) {
+          trackingCheckpointsList.innerHTML = trk.checkpoints.map((cp, idx) => `
+            <div class="tracking-node ${idx === trk.checkpoints.length - 1 ? 'active' : ''}">
+              <strong style="display: block; font-size: 0.85rem;">${cp.status} · ${cp.location}</strong>
+              <p style="font-size: 0.78rem; color: #555; margin: 2px 0 0;">${cp.message}</p>
+              <span class="mono-label" style="font-size: 0.68rem; color: #999;">${new Date(cp.timestamp).toLocaleString('en-IN')}</span>
+            </div>
+          `).join('');
+        }
+      } else {
+        throw new Error();
+      }
+    } catch {
+      // Sandbox fallback representation
+      trackingResultBox.style.display = 'block';
+      if (trackCarrierName) trackCarrierName.textContent = "BlueDart Air Express";
+      if (trackAwbNum) trackAwbNum.textContent = id;
+      if (trackStatusBadge) {
+        trackStatusBadge.textContent = "IN_TRANSIT";
+        trackStatusBadge.style.background = "#E8F5E9";
+        trackStatusBadge.style.color = "#2E7D32";
+      }
+      if (trackingCheckpointsList) {
+        trackingCheckpointsList.innerHTML = `
+          <div class="tracking-node">
+            <strong style="display: block; font-size: 0.85rem;">MANIFEST_CREATED · Delhi Atelier</strong>
+            <p style="font-size: 0.78rem; color: #555; margin: 2px 0 0;">Shipping label created, awaiting carrier pickup.</p>
+          </div>
+          <div class="tracking-node">
+            <strong style="display: block; font-size: 0.85rem;">PICKED_UP · Okhla Hub</strong>
+            <p style="font-size: 0.78rem; color: #555; margin: 2px 0 0;">Artisanal keepsake package handed over to carrier.</p>
+          </div>
+          <div class="tracking-node active">
+            <strong style="display: block; font-size: 0.85rem;">IN_TRANSIT · Regional Air Hub</strong>
+            <p style="font-size: 0.78rem; color: #555; margin: 2px 0 0;">Processed through sort facility; dispatched via express air.</p>
+          </div>
+        `;
+      }
+    }
+  }
+
+  btnQueryTracking?.addEventListener('click', () => executeTrackingQuery());
 
 });

@@ -154,3 +154,84 @@ CREATE TABLE webhook_events (
 -- Create Initial Monthly Partition
 CREATE TABLE webhook_events_2026_09 PARTITION OF webhook_events
     FOR VALUES FROM ('2026-09-01 00:00:00+00') TO ('2026-10-01 00:00:00+00');
+
+-- OTP Sessions (Customer Passwordless Auth)
+CREATE TABLE otp_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    phone VARCHAR(20) NOT NULL,
+    otp_hash VARCHAR(128) NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    verified BOOLEAN NOT NULL DEFAULT FALSE,
+    attempts INT NOT NULL DEFAULT 0,
+    channel VARCHAR(20) NOT NULL DEFAULT 'WHATSAPP',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_otp_phone_exp ON otp_sessions(phone, expires_at);
+
+-- Atelier Quality Check Records (Mandatory QC Photo Gate)
+CREATE TABLE quality_check_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_number VARCHAR(64) NOT NULL,
+    inspector_id VARCHAR(64) NOT NULL,
+    inspector_name VARCHAR(128) NOT NULL,
+    passed BOOLEAN NOT NULL DEFAULT TRUE,
+    photo_proof_url TEXT NOT NULL,
+    photo_proof_hash VARCHAR(128) NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_qc_order ON quality_check_records(order_number);
+
+-- Logistics Courier Shipments & AWB Manifests
+CREATE TABLE logistics_shipments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_number VARCHAR(64) UNIQUE NOT NULL,
+    awb_number VARCHAR(64) UNIQUE NOT NULL,
+    carrier VARCHAR(64) NOT NULL,
+    tracking_status VARCHAR(32) NOT NULL DEFAULT 'MANIFEST_CREATED',
+    label_url TEXT,
+    gross_weight_g INT NOT NULL,
+    pickup_slot VARCHAR(64),
+    estimated_delivery TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_shipments_awb ON logistics_shipments(awb_number);
+
+-- Carrier Tracking Checkpoints
+CREATE TABLE carrier_checkpoints (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    shipment_id UUID NOT NULL REFERENCES logistics_shipments(id) ON DELETE CASCADE,
+    status VARCHAR(32) NOT NULL,
+    location VARCHAR(128) NOT NULL,
+    timestamp TIMESTAMPTZ NOT NULL,
+    message VARCHAR(255) NOT NULL,
+    carrier_raw_code VARCHAR(64),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_checkpoints_shipment ON carrier_checkpoints(shipment_id, timestamp);
+
+-- Multi-Channel Notification Dispatch Logs
+CREATE TABLE notification_dispatch_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event VARCHAR(64) NOT NULL,
+    channel VARCHAR(20) NOT NULL,
+    recipient VARCHAR(128) NOT NULL,
+    order_number VARCHAR(64),
+    status VARCHAR(32) NOT NULL,
+    template_id VARCHAR(64),
+    external_message_id VARCHAR(128),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_notifications_order_event ON notification_dispatch_logs(order_number, event);
+
+-- Computational DSA Performance Metrics
+CREATE TABLE dsa_algorithm_metrics (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    algorithm_name VARCHAR(64) NOT NULL,
+    execution_duration_ms DOUBLE PRECISION NOT NULL,
+    input_size INT NOT NULL,
+    output_summary TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_dsa_metrics ON dsa_algorithm_metrics(algorithm_name, created_at);

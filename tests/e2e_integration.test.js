@@ -426,4 +426,159 @@ describe("Hampers by Her End-to-End Commerce & System Pipeline", () => {
     assert.ok(gwHealth.data.gateways.cashfree);
   });
 
+  // ── Tier 12: Patron OTP Authentication & Staff RBAC (25_AUTH_SECURITY.md) ──
+  test("Tier 12: Patron WhatsApp OTP verification and Staff RBAC claims", async () => {
+    // 1. Request OTP
+    const otpReqRes = await fetch(`${baseUrl}/auth/request-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: "9876543210", channel: "WHATSAPP" })
+    });
+    assert.equal(otpReqRes.status, 200);
+    const otpReqData = await otpReqRes.json();
+    assert.equal(otpReqData.success, true);
+    assert.equal(otpReqData.data.channel, "WHATSAPP");
+    const otpCode = otpReqData.data.sandboxCode || "123456";
+
+    // 2. Verify OTP with dynamic sandbox code
+    const verifyRes = await fetch(`${baseUrl}/auth/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: "9876543210", otp: otpCode })
+    });
+    assert.equal(verifyRes.status, 200);
+    const verifyData = await verifyRes.json();
+    assert.equal(verifyData.success, true);
+    assert.ok(verifyData.data.token);
+
+    // 3. Inspect Claims with Bearer Token
+    const meRes = await fetch(`${baseUrl}/auth/me`, {
+      headers: { Authorization: `Bearer ${verifyData.data.token}` }
+    });
+    assert.equal(meRes.status, 200);
+    const meData = await meRes.json();
+    assert.equal(meData.success, true);
+    assert.ok(meData.data.user);
+    assert.ok(meData.data.claims);
+  });
+
+  // ── Tier 13: Atelier Studio Operations OS & Mandatory QC Photo Gate (23_ADMIN_DASHBOARD.md) ──
+  test("Tier 13: Studio Operations fulfillment queue, QC Photo Gate, and packing slip", async () => {
+    // 1. Fetch Studio Orders
+    const ordersRes = await fetch(`${baseUrl}/admin/orders`);
+    assert.equal(ordersRes.status, 200);
+    const ordersData = await ordersRes.json();
+    assert.equal(ordersData.success, true);
+    assert.ok(Array.isArray(ordersData.data.orders));
+
+    // 2. Verify Studio Metrics
+    const metricsRes = await fetch(`${baseUrl}/admin/metrics`);
+    assert.equal(metricsRes.status, 200);
+    const metricsData = await metricsRes.json();
+    assert.equal(metricsData.success, true);
+    assert.ok(typeof metricsData.data.activeOrdersCount === "number");
+    assert.ok(typeof metricsData.data.qcApprovalRatePercent === "number");
+  });
+
+  // ── Tier 14: Logistics Courier Manifest & Live AWB Tracking (20_DELIVERY_LOGISTICS.md) ──
+  test("Tier 14: Logistics Courier AWB manifest generation and carrier tracking", async () => {
+    // 1. Generate Manifest using dynamically created order
+    const manifestRes = await fetch(`${baseUrl}/delivery/manifest`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderNumber: createdOrderNumber,
+        grossWeightG: 1850,
+        pickupSlot: "AFTERNOON_14_17"
+      })
+    });
+    assert.equal(manifestRes.status, 200);
+    const manifestData = await manifestRes.json();
+    assert.equal(manifestData.success, true);
+    assert.ok(manifestData.data.awb.startsWith("HBH-AWB-"));
+
+    // 2. Query Live Tracking
+    const trackRes = await fetch(`${baseUrl}/delivery/track/${manifestData.data.awb}`);
+    assert.equal(trackRes.status, 200);
+    const trackData = await trackRes.json();
+    assert.equal(trackData.success, true);
+    assert.equal(trackData.data.awb, manifestData.data.awb);
+    assert.ok(trackData.data.checkpoints.length >= 1);
+  });
+
+  // ── Tier 15: Multi-Channel Notification Dispatcher (30_NOTIFICATION_SYSTEM.md) ──
+  test("Tier 15: Multi-channel transactional notification dispatcher", async () => {
+    const notifyRes = await fetch(`${baseUrl}/notifications/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event: "ORDER_CONFIRMED",
+        order: {
+          orderNumber: createdOrderNumber,
+          pricing: { totalPaise: 425000 },
+          deliveryDate: "2026-09-21"
+        },
+        customerPhone: "9876543210",
+        customerEmail: "patron@example.com"
+      })
+    });
+    assert.equal(notifyRes.status, 200);
+    const notifyData = await notifyRes.json();
+    assert.equal(notifyData.success, true);
+    assert.ok(notifyData.data.channelsDispatched.length >= 2);
+  });
+
+  // ── Tier 16: Procedural Luxury SVG Visualizer & Computational DSA Core ──
+  test("Tier 16: Procedural SVG visualizer and 8-engine computational DSA core", async () => {
+    // 1. Procedural SVG Visualizer
+    const svgRes = await fetch(`${baseUrl}/atelier/visualize-hamper`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        boxId: "BOX_LINEN_KEEPSAKE",
+        ribbonColor: "burgundy_merlot",
+        waxSealColor: "vintage_gold",
+        monogramInitials: "AF",
+        cardMessage: "With heartfelt warmth and affection.",
+        recipientName: "Almas"
+      })
+    });
+    assert.equal(svgRes.status, 200);
+    const svgData = await svgRes.json();
+    assert.equal(svgData.success, true);
+    assert.ok(svgData.data.svg.includes("<svg"));
+    assert.ok(svgData.data.svg.includes("AF"));
+
+    // 2. 3D Bin Packing
+    const binRes = await fetch(`${baseUrl}/dsa/bin-packing`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: [
+          { id: "candle", length_mm: 80, width_mm: 80, height_mm: 100, isFragile: true, mustBeUpright: true }
+        ],
+        boxSizeKey: "MEDIUM"
+      })
+    });
+    assert.equal(binRes.status, 200);
+    const binData = await binRes.json();
+    assert.equal(binData.success, true);
+    assert.equal(binData.data.fit, true);
+
+    // 3. Multi-Criteria Knapsack Optimization
+    const knapRes = await fetch(`${baseUrl}/dsa/budget-knapsack`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        targetBudgetPaise: 400000,
+        preferredCategories: ["Gourmet", "Candles"]
+      })
+    });
+    assert.equal(knapRes.status, 200);
+    const knapData = await knapRes.json();
+    assert.equal(knapData.success, true);
+    assert.ok(knapData.data.items.length >= 1);
+    assert.ok(knapData.data.totalPricePaise <= 400000);
+  });
+
 });

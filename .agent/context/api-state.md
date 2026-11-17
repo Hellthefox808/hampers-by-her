@@ -67,3 +67,24 @@
 
 ### L. Atelier Procedural Luxury Visualizer
 - `POST /atelier/visualize-hamper`: Generates bespoke vector SVG illustrations and Base64 Data URIs with custom raw silk ribbon, botanical wax seal monograms, and copperplate calligraphy greeting cards.
+
+### M. Customer Authentication & Patron RBAC (25_AUTH_SECURITY.md)
+- `POST /auth/request-otp`: Dispatches 6-digit numeric OTP via WhatsApp HSM or SMS with 300s TTL.
+- `POST /auth/verify-otp`: Validates OTP and issues URL-safe HMAC-SHA256 JWT session token with patron profile and VIP tier.
+- `GET /auth/me`: Verifies Bearer JWT token and returns authenticated patron claims and role permissions.
+
+### N. Atelier Studio Operations OS & Mandatory QC Gate (23_ADMIN_DASHBOARD.md)
+- `GET /admin/orders`: Retrieves real-time studio fulfillment queue with pipeline status filters and QC pending flags.
+- `GET /admin/orders/:orderNumber`: Fetches full order detail with embellishments, calligraphy text, and QC inspection history.
+- `POST /admin/orders/:orderNumber/qc-inspect`: Enforces mandatory QC Photo Gate before orders can transition from `IN_PRODUCTION` to `QUALITY_CHECKED`. Requires inspector ID, name, passed boolean, and photographic proof hash/URL.
+- `GET /admin/orders/:orderNumber/packing-slip`: Generates high-resolution printable HTML atelier packing slip with wax seal details, calligraphy card preview, item checklist, and artisan sign-off box.
+- `GET /admin/metrics`: Real-time studio throughput KPIs, active order count, gross GMV revenue, pipeline distribution, and QC pass rate.
+
+### O. Logistics Courier Adapter & Live AWB Tracking (20_DELIVERY_LOGISTICS.md)
+- `POST /delivery/manifest`: Generates carrier shipping manifest, assigns compliant `HBH-AWB-...` identifier, routes via BlueDart Air / Delhivery Express / Shiprocket, and transitions order to `DISPATCHED`.
+- `GET /delivery/track/:identifier`: Queries live shipment tracking and chronological checkpoint timeline by Order Number or AWB.
+- `POST /delivery/carrier-webhook`: Ingests carrier scan events (`MANIFEST_CREATED`, `PICKED_UP`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED`, `UNDELIVERED_ATTEMPT`). Automates Non-Delivery Report (NDR) recovery sequence via WhatsApp HSM.
+
+### P. Multi-Channel Notification Dispatcher (30_NOTIFICATION_SYSTEM.md)
+- `POST /notifications/send`: Orchestrates transactional notifications across WhatsApp Business Cloud API HSM templates, responsive HTML email receipts, and carrier SMS alerts.
+- `GET /notifications/recent`: Fetches recent notification audit dispatch ledger with delivery statuses and provider message IDs.

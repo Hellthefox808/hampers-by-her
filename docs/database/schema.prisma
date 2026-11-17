@@ -15,6 +15,8 @@ enum UserRole {
   SALES
   FULFILLMENT
   CUSTOMER_SUPPORT
+  ARTISAN
+  CUSTOMER
   FINANCE
   VIEWER
 }
@@ -312,4 +314,93 @@ model WhatsAppConversation {
   createdAt      DateTime  @default(now()) @map("created_at")
 
   @@map("whatsapp_conversations")
+}
+
+model OtpSession {
+  id        String   @id @default(uuid()) @db.Uuid
+  phone     String   @db.VarChar(20)
+  otpHash   String   @map("otp_hash")
+  expiresAt DateTime @map("expires_at")
+  verified  Boolean  @default(false)
+  attempts  Int      @default(0)
+  channel   String   @default("WHATSAPP") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([phone, expiresAt])
+  @@map("otp_sessions")
+}
+
+model QualityCheckRecord {
+  id             String   @id @default(uuid()) @db.Uuid
+  orderNumber    String   @map("order_number") @db.VarChar(64)
+  inspectorId    String   @map("inspector_id") @db.VarChar(64)
+  inspectorName  String   @map("inspector_name") @db.VarChar(128)
+  passed         Boolean  @default(true)
+  photoProofUrl  String   @map("photo_proof_url")
+  photoProofHash String   @map("photo_proof_hash") @db.VarChar(128)
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([orderNumber])
+  @@map("quality_check_records")
+}
+
+model LogisticsShipment {
+  id                String              @id @default(uuid()) @db.Uuid
+  orderNumber       String              @unique @map("order_number") @db.VarChar(64)
+  awbNumber         String              @unique @map("awb_number") @db.VarChar(64)
+  carrier           String              @db.VarChar(64)
+  trackingStatus    String              @map("tracking_status") @db.VarChar(32)
+  labelUrl          String?             @map("label_url")
+  grossWeightG      Int                 @map("gross_weight_g")
+  pickupSlot        String?             @map("pickup_slot") @db.VarChar(64)
+  estimatedDelivery DateTime?           @map("estimated_delivery")
+  checkpoints       CarrierCheckpoint[]
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  @@index([awbNumber])
+  @@map("logistics_shipments")
+}
+
+model CarrierCheckpoint {
+  id             String            @id @default(uuid()) @db.Uuid
+  shipmentId     String            @map("shipment_id") @db.Uuid
+  shipment       LogisticsShipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status         String            @db.VarChar(32)
+  location       String            @db.VarChar(128)
+  timestamp      DateTime
+  message        String            @db.VarChar(255)
+  carrierRawCode String?           @map("carrier_raw_code") @db.VarChar(64)
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  @@index([shipmentId, timestamp])
+  @@map("carrier_checkpoints")
+}
+
+model NotificationDispatchLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  event             String   @db.VarChar(64)
+  channel           String   @db.VarChar(20)
+  recipient         String   @db.VarChar(128)
+  orderNumber       String?  @map("order_number") @db.VarChar(64)
+  status            String   @db.VarChar(32)
+  templateId        String?  @map("template_id") @db.VarChar(64)
+  externalMessageId String?  @map("external_message_id") @db.VarChar(128)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([orderNumber, event])
+  @@map("notification_dispatch_logs")
+}
+
+model DsaAlgorithmMetric {
+  id                  String   @id @default(uuid()) @db.Uuid
+  algorithmName       String   @map("algorithm_name") @db.VarChar(64)
+  executionDurationMs Float    @map("execution_duration_ms")
+  inputSize           Int      @map("input_size")
+  outputSummary       String?  @map("output_summary") @db.Text
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@index([algorithmName, createdAt])
+  @@map("dsa_algorithm_metrics")
 }

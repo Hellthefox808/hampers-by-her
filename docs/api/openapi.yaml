@@ -97,6 +97,175 @@ paths:
       responses:
         '200':
           description: Webhook received and queued for processing
+
+  # ── Smart Payments (Section 19 & SmartRouter) ──
+  /payments/initiate:
+    post:
+      summary: Dynamic UPI Intent / Desktop QR & multi-acquirer checkout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, amountPaise]
+      responses:
+        '200':
+          description: Gateway session details with UPI intent or QR payload
+
+  /payments/gateways/health:
+    get:
+      summary: Retrieve real-time acquirer health & circuit breaker metrics
+      responses:
+        '200':
+          description: Health telemetry across Razorpay, Cashfree, and Stripe
+
+  # ── Atelier Procedural Visualizer ──
+  /atelier/visualize-hamper:
+    post:
+      summary: Generate photorealistic luxury vector SVG illustration of bespoke hamper
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                boxId: { type: string }
+                ribbonColor: { type: string }
+                waxSealColor: { type: string }
+                sealMotif: { type: string }
+                monogramInitials: { type: string }
+                cardMessage: { type: string }
+                recipientName: { type: string }
+      responses:
+        '200':
+          description: Rendered SVG string, Base64 Data URI, and dimensions
+
+  # ── Advanced Computational DSA Engines (39_DSA.md) ──
+  /dsa/bin-pack-3d:
+    post:
+      summary: 3D volumetric bin-packing heuristic with upright and thermal constraints
+      responses:
+        '200':
+          description: Fit verification, packing ratio, and recommended box
+
+  /dsa/calculate-pricing:
+    post:
+      summary: 64-bit BigInt integer paise financial ledger calculation
+      responses:
+        '200':
+          description: Net payable, capped coupons, and remainder-preserving GST
+
+  /dsa/knapsack-optimize:
+    post:
+      summary: Multi-criteria budget knapsack optimization with 2-opt search
+      responses:
+        '200':
+          description: Selected items, total cost, and aesthetic harmony score
+
+  /dsa/tokenize-intent:
+    post:
+      summary: ReDoS-safe linear-time tokenizer and trigram fuzzy matcher
+      responses:
+        '200':
+          description: Extracted occasions, price caps, and luxury intent flags
+
+  # ── Authentication & RBAC (25_AUTH_SECURITY.md) ──
+  /auth/request-otp:
+    post:
+      summary: Request passwordless 6-digit WhatsApp or SMS OTP
+      responses:
+        '200':
+          description: OTP dispatched session status
+
+  /auth/verify-otp:
+    post:
+      summary: Verify OTP code and issue URL-safe HMAC-SHA256 JWT
+      responses:
+        '200':
+          description: JWT token and patron profile
+
+  /auth/me:
+    get:
+      summary: Verify session JWT and retrieve patron claims
+      responses:
+        '200':
+          description: Authenticated user details
+
+  # ── Atelier Studio Operations OS (23_ADMIN_DASHBOARD.md) ──
+  /admin/orders:
+    get:
+      summary: List studio fulfillment orders with QC status filtering
+      responses:
+        '200':
+          description: Order list and count
+
+  /admin/orders/{orderNumber}/qc-inspect:
+    post:
+      summary: Mandatory QC Photo Gate approval before dispatch
+      parameters:
+        - name: orderNumber
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Quality check confirmed and status updated
+
+  /admin/orders/{orderNumber}/packing-slip:
+    get:
+      summary: Generate printable artisanal packing slip with wax seal details
+      parameters:
+        - name: orderNumber
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Printable HTML packing slip
+
+  /admin/metrics:
+    get:
+      summary: Retrieve real-time studio KPIs, daily GMV, and bottleneck count
+      responses:
+        '200':
+          description: Studio throughput metrics
+
+  # ── Logistics Courier & AWB Tracking (20_DELIVERY_LOGISTICS.md) ──
+  /delivery/manifest:
+    post:
+      summary: Generate courier shipping manifest and assign compliant AWB
+      responses:
+        '200':
+          description: Assigned AWB, carrier routing, and pickup schedule
+
+  /delivery/track/{identifier}:
+    get:
+      summary: Query tracking status and carrier checkpoints by Order or AWB
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Current checkpoint status and timeline
+
+  /delivery/carrier-webhook:
+    post:
+      summary: Ingest carrier scan webhooks and trigger NDR recovery if failed
+      responses:
+        '200':
+          description: Webhook processed and checkpoint logged
+
+  # ── Notifications (30_NOTIFICATION_SYSTEM.md) ──
+  /notifications/send:
+    post:
+      summary: Multi-channel notification dispatcher (WhatsApp HSM, Email, SMS)
+      responses:
+        '200':
+          description: Dispatched notification logs
 components:
   schemas:
     ProductListResponse:

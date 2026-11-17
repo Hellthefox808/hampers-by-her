@@ -25,9 +25,11 @@
         <a href="#occasions" class="ribbon-link">Occasions</a>
         <a href="#collections" class="ribbon-link">Collections</a>
         <a href="#builder" class="ribbon-link">Build Your Own</a>
+        <a href="#track-order" id="nav-track-order-btn" class="ribbon-link">Track Order</a>
         <a href="#stories" class="ribbon-link">Stories</a>
       </div>
       <div class="nav__actions">
+        <a href="admin.html" class="nav__admin-badge" title="Artisan Studio OS">Studio OS ⚡</a>
         <a href="#collections" class="nav__cart">Cart · 0</a>
         <a href="#whatsapp" class="btn btn--primary btn--sm">Enquire</a>
         <button id="mobile-menu-btn" class="nav__hamburger" aria-label="Toggle menu">
@@ -45,6 +47,8 @@
       <a href="#occasions" class="mobile-menu__link">Occasions</a>
       <a href="#collections" class="mobile-menu__link">Collections</a>
       <a href="#builder" class="mobile-menu__link">Build Your Own</a>
+      <a href="#track-order" id="mobile-track-order-btn" class="mobile-menu__link">Track Order</a>
+      <a href="admin.html" class="mobile-menu__link" style="color: var(--color-gold); font-weight: 600;">Studio OS (Operations) &rarr;</a>
       <a href="#stories" class="mobile-menu__link">Stories</a>
       <a href="#whatsapp" class="mobile-menu__link">WhatsApp Us</a>
       <div class="mobile-menu__footer">
@@ -111,6 +115,17 @@
         <a href="#collections" class="occasion-chip">Thank You</a>
         <a href="#collections" class="occasion-chip">Baby Shower</a>
         <a href="#collections" class="occasion-chip">Self Care</a>
+      </div>
+
+      <!-- Natural Language Intent Search & AI Hamper Curator Trigger -->
+      <div class="search-bar-wrap">
+        <div class="search-input-box">
+          <span style="font-size: 1rem; margin-right: 4px;">🔎</span>
+          <input type="text" id="natural-search-input" placeholder="Type intent: e.g. 'wedding gift for sister under 4000' or 'festive luxury box'..." aria-label="Search hampers by intent">
+          <button id="natural-search-btn" class="btn btn--outline btn--xs" style="margin-right: 6px;">Search</button>
+          <button id="btn-open-knapsack-curator" class="btn btn--bordeaux btn--xs">✨ AI Hamper Curator</button>
+        </div>
+        <div id="search-intent-pills" class="search-intent-pills" style="display: none;"></div>
       </div>
     </div>
   </section>
@@ -735,7 +750,19 @@
         <div class="builder-step-pane" data-step="11">
           <h3 class="display-text" style="font-size: 1.3rem;">11. Review Your Composition</h3>
           <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Every element confirmed, ready to be hand-tied in our studio.</p>
-          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
+
+          <!-- Photorealistic Atelier Vector SVG Preview -->
+          <div id="builder-atelier-preview-container" class="atelier-preview-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span class="mono-label" style="font-size: 0.72rem; color: var(--color-gold);">Procedural Atelier Visualizer</span>
+              <button id="btn-refresh-preview" class="btn btn--outline btn--xs" style="font-size: 0.7rem; padding: 2px 8px;">↻ Re-render Preview</button>
+            </div>
+            <div id="builder-preview-svg-stage" style="min-height: 220px; display: flex; align-items: center; justify-content: center; background: #FAF7F2; border-radius: 8px; border: 1px dashed #E2D9D2; overflow: hidden;">
+              <span class="mono-label" style="font-size: 0.8rem; color: #8A7B72;">Generating photorealistic studio illustration...</span>
+            </div>
+          </div>
+
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; margin-top: 14px;">
             <div id="builder-summary-breakdown" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
               <!-- Injected by script -->
             </div>
@@ -771,6 +798,28 @@
       <!-- Step 1: Address & PIN Verification -->
       <div id="checkout-step-1">
         <p class="mono-label" style="margin-bottom: 12px;">Step 1 &middot; Recipient &amp; Delivery Destination</p>
+
+        <!-- Patron WhatsApp OTP Sign-In (25_AUTH_SECURITY.md) -->
+        <div id="customer-auth-box" class="auth-box-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="mono-label" style="font-size: 0.72rem; color: var(--color-bordeaux);">Patron Login &middot; Fast Track</span>
+            <span id="patron-auth-status" class="mono-label" style="font-size: 0.72rem; color: #8A7B72;">Guest Mode</span>
+          </div>
+          <div id="auth-otp-flow" style="margin-top: 6px;">
+            <div id="auth-step-phone" style="display: flex; gap: 8px;">
+              <input type="tel" id="auth-patron-phone" class="form-input" style="font-size: 0.85rem; padding: 6px 10px;" placeholder="WhatsApp Phone for Instant OTP">
+              <button id="btn-request-otp" class="btn btn--outline btn--xs" style="white-space: nowrap;">Send OTP</button>
+            </div>
+            <div id="auth-step-verify" style="display: none; margin-top: 8px;">
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="auth-patron-otp" class="form-input" maxlength="6" style="font-size: 0.85rem; padding: 6px 10px; font-family: 'JetBrains Mono', monospace;" placeholder="Enter 6-digit OTP">
+                <button id="btn-verify-otp" class="btn btn--bordeaux btn--xs" style="white-space: nowrap;">Verify &amp; Apply</button>
+              </div>
+              <p id="otp-feedback" class="mono-label" style="font-size: 0.7rem; color: var(--color-gold); margin-top: 4px;"></p>
+            </div>
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="co-recipient-name">Recipient Name *</label>
@@ -990,6 +1039,99 @@
           <button id="item-customize-builder-btn" class="ribbon-link" style="text-align: center; font-size: 0.85rem; margin-top: 4px; background: none; border: none; cursor: pointer;">
             Or customize this hamper in the 11-step Bespoke Atelier &rarr;
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ AI BESPOKE HAMPER KNAPSACK CURATOR MODAL (39_DSA.md) ═══════════════ -->
+  <div id="knapsack-curator-modal" class="modal-overlay">
+    <div class="knapsack-modal" role="dialog" aria-modal="true" aria-labelledby="knapsack-title">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+          <span class="mono-label" style="font-size: 0.72rem; color: var(--color-gold);">Computational Atelier DSA</span>
+          <h2 id="knapsack-title" class="cart-drawer__title" style="margin: 2px 0 0;">AI Bespoke Hamper Curator</h2>
+        </div>
+        <button id="knapsack-close-btn" class="cart-drawer__close" aria-label="Close curator">&times;</button>
+      </div>
+      <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">
+        Our multi-criteria knapsack optimization engine mathematically crafts the most harmonious combination of luxury inclusions within your exact budget ceiling.
+      </p>
+
+      <div style="background: #FFFFFF; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="knapsack-budget-input">Target Budget Ceiling (₹)</label>
+            <input type="number" id="knapsack-budget-input" class="form-input" value="3500" min="1500" max="25000" step="250">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="knapsack-occasion-select">Occasion Theme</label>
+            <select id="knapsack-occasion-select" class="form-input">
+              <option value="WEDDING">Wedding &amp; Trousseau</option>
+              <option value="BIRTHDAY">Birthday &amp; Joy</option>
+              <option value="FESTIVE">Festive &amp; Diwali</option>
+              <option value="CORPORATE">Corporate &amp; Well-Wisher</option>
+              <option value="ANNIVERSARY">Anniversary Milestone</option>
+            </select>
+          </div>
+        </div>
+        <button id="btn-run-knapsack" class="btn btn--bordeaux btn--block" style="margin-top: 8px;">
+          ⚡ Optimize &amp; Curate Hamper
+        </button>
+      </div>
+
+      <!-- Knapsack Algorithmic Results -->
+      <div id="knapsack-results-container" style="display: none; background: #FAF7F2; border: 1px solid #E2D9D2; border-radius: 8px; padding: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+          <span class="mono-label" style="font-size: 0.75rem; color: var(--color-bordeaux);">Algorithmic Composition</span>
+          <span id="knapsack-harmony-score" class="mono-label" style="font-size: 0.8rem; color: #2E5A44; font-weight: 700;">Harmony Score: 94.5 / 100</span>
+        </div>
+        <div id="knapsack-items-list" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; margin-bottom: 14px;">
+          <!-- Items injected via JS -->
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px dashed #D6C8BF;">
+          <div>
+            <span class="mono-label" style="font-size: 0.72rem; display: block;">Total Budget Utilized</span>
+            <strong id="knapsack-total-price" style="font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: var(--color-bordeaux);">₹ 3,420</strong>
+          </div>
+          <button id="btn-load-knapsack-builder" class="btn btn--primary btn--sm">
+            Load into Bespoke Atelier &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ LIVE ORDER & AWB SHIPMENT TRACKING MODAL (20_DELIVERY_LOGISTICS.md) ═══════════════ -->
+  <div id="order-tracking-modal" class="modal-overlay">
+    <div class="tracking-modal" role="dialog" aria-modal="true" aria-labelledby="tracking-title">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+          <span class="mono-label" style="font-size: 0.72rem; color: var(--color-gold);">Express Courier Network</span>
+          <h2 id="tracking-title" class="cart-drawer__title" style="margin: 2px 0 0;">Track Your Artisanal Hamper</h2>
+        </div>
+        <button id="tracking-close-btn" class="cart-drawer__close" aria-label="Close tracking">&times;</button>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 18px;">
+        <input type="text" id="tracking-input-id" class="form-input" placeholder="Enter Order # (HBH-...) or AWB (HBH-AWB-...)" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+        <button id="btn-query-tracking" class="btn btn--bordeaux btn--sm" style="white-space: nowrap;">Track AWB</button>
+      </div>
+
+      <div id="tracking-result-box" style="display: none; background: #FFFFFF; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #F0EAE5;">
+          <div>
+            <span class="mono-label" id="track-carrier-name" style="font-size: 0.75rem; color: var(--color-bordeaux);">BlueDart Air Express</span>
+            <div id="track-awb-num" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.95rem; margin-top: 2px;">HBH-AWB-2026-0001</div>
+          </div>
+          <span id="track-status-badge" class="fullness-badge" style="background: #E8F5E9; color: #2E7D32;">IN_TRANSIT</span>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <p class="mono-label" style="font-size: 0.72rem; color: #8A7B72;">Checkpoint Timeline</p>
+          <div id="tracking-checkpoints-list" class="tracking-timeline">
+            <!-- Timeline nodes injected via JS -->
+          </div>
         </div>
       </div>
     </div>

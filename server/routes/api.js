@@ -8,6 +8,10 @@ const { OrderService } = require("../services/orderService");
 const { CatalogService } = require("../services/catalogService");
 const { instagramService } = require("../services/instagramService");
 const { whatsappService } = require("../services/whatsappService");
+const { authService } = require("../services/authService");
+const { adminService } = require("../services/adminService");
+const { logisticsCourierService } = require("../services/logisticsCourierService");
+const { notificationService } = require("../services/notificationService");
 
 // Platform Distributed Services & Scalability Subsystems
 const { SmartPaymentRouter } = require("../../platform/services/payment-service/smartRouter");
@@ -528,16 +532,17 @@ router.get("/system/cache/metrics", (req, res) => {
 // ═══════════════════════════════════════════════════════════
 
 // Algorithm 1: 3D Volumetric Bin-Packing & Orientation/Thermal Compatibility
-router.post("/dsa/bin-packing", (req, res) => {
+router.post(["/dsa/bin-packing", "/dsa/bin-pack-3d"], (req, res) => {
   try {
-    const { box, boxSizeKey, items } = req.body;
-    const targetBox = box || STANDARD_BOXES[boxSizeKey || "MEDIUM"] || STANDARD_BOXES.MEDIUM;
+    const { box, boxSizeKey, boxType, items } = req.body;
+    const targetBox = box || STANDARD_BOXES[boxSizeKey || boxType || "MEDIUM"] || STANDARD_BOXES.MEDIUM;
     const result = evaluateHamperPacking(targetBox, items || []);
     res.json({
       success: true,
       data: {
         box: targetBox,
-        evaluation: result
+        evaluation: result,
+        fit: result.fits
       }
     });
   } catch (err) {
@@ -546,7 +551,7 @@ router.post("/dsa/bin-packing", (req, res) => {
 });
 
 // Algorithm 2: Deterministic Integer Paise Financial Ledger
-router.post("/dsa/pricing-ledger", (req, res) => {
+router.post(["/dsa/pricing-ledger", "/dsa/calculate-pricing"], (req, res) => {
   try {
     const ledger = calculateDeterministicOrderPricing(req.body);
     const serialized = serializePricingLedger(ledger);
@@ -560,7 +565,7 @@ router.post("/dsa/pricing-ledger", (req, res) => {
 });
 
 // Algorithm 3: Rule-Based Coupon DAG Precedence
-router.post("/dsa/coupon-dag", (req, res) => {
+router.post(["/dsa/coupon-dag", "/dsa/evaluate-coupons"], (req, res) => {
   try {
     const { couponCode, candidateCodes, grossSubtotalPaise, categories, customerContext } = req.body;
 
@@ -602,7 +607,7 @@ router.post("/dsa/coupon-dag", (req, res) => {
 });
 
 // Algorithm 4: Colloquial Intent Tokenizer & Trigram Fuzzy Matcher
-router.post("/dsa/search-intent", (req, res) => {
+router.post(["/dsa/search-intent", "/dsa/tokenize-intent"], (req, res) => {
   try {
     const { query, rankCatalog } = req.body;
     const intent = tokenizeSearchIntent(query);
@@ -630,11 +635,11 @@ router.post("/dsa/search-intent", (req, res) => {
 });
 
 // Algorithm 5: Multi-Criteria Budget Knapsack Optimizer
-router.post("/dsa/budget-knapsack", (req, res) => {
+router.post(["/dsa/budget-knapsack", "/dsa/knapsack-optimize"], (req, res) => {
   try {
-    const { targetBudgetPaise, preferredCategories } = req.body;
+    const { targetBudgetPaise, budgetPaise, preferredCategories } = req.body;
     const result = optimizeHamperForBudget({
-      targetBudgetPaise,
+      targetBudgetPaise: targetBudgetPaise || budgetPaise || 350000,
       preferredCategories
     });
     res.json({
@@ -714,6 +719,193 @@ router.post("/atelier/visualize-hamper", (req, res) => {
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 12. CUSTOMER AUTHENTICATION & PATRON RBAC (25_AUTH_SECURITY.md)
+// ═══════════════════════════════════════════════════════════
+
+router.post("/auth/request-otp", (req, res) => {
+  try {
+    const { phone, channel } = req.body;
+    const result = authService.requestOtp({ phone, channel });
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post("/auth/verify-otp", (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    const result = authService.verifyOtp({ phone, otp });
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(401).json({ success: false, error: err.message });
+  }
+});
+
+router.get("/auth/me", (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ success: false, error: "MISSING_BEARER_TOKEN" });
+  }
+
+  const token = authHeader.slice(7);
+  const claims = authService.verifyJwtToken(token);
+  if (!claims) {
+    return res.status(401).json({ success: false, error: "INVALID_OR_EXPIRED_TOKEN" });
+  }
+
+  const user = authService.getUserById(claims.userId);
+  res.json({
+    success: true,
+    data: {
+      user: user || { id: claims.userId, phone: claims.phone, role: claims.role, name: claims.name },
+      claims
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 13. ATELIER STUDIO OPERATIONS OS & QC GATE (23_ADMIN_DASHBOARD.md)
+// ═══════════════════════════════════════════════════════════
+
+router.get("/admin/orders", (req, res) => {
+  const { status, qcPendingOnly } = req.query;
+  const orders = adminService.getStudioOrders({
+    status,
+    qcPendingOnly: qcPendingOnly === "true" || qcPendingOnly === "1"
+  });
+  res.json({
+    success: true,
+    data: {
+      count: orders.length,
+      orders
+    }
+  });
+});
+
+router.get("/admin/orders/:orderNumber", (req, res) => {
+  const order = OrderService.getOrderByNumber(req.params.orderNumber);
+  if (!order) {
+    return res.status(404).json({ success: false, error: "ORDER_NOT_FOUND" });
+  }
+  res.json({ success: true, data: order });
+});
+
+router.post("/admin/orders/:orderNumber/transition", (req, res) => {
+  try {
+    const { targetStatus, actorName, notes } = req.body;
+    const updated = adminService.transitionOrderStatus({
+      orderNumber: req.params.orderNumber,
+      targetStatus,
+      actorName,
+      notes
+    });
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post("/admin/orders/:orderNumber/qc-verify", (req, res) => {
+  try {
+    const { inspectorName, photoEvidenceUrl, checklist, notes } = req.body;
+    const result = adminService.verifyStudioQcGate({
+      orderNumber: req.params.orderNumber,
+      inspectorName,
+      photoEvidenceUrl,
+      checklist,
+      notes
+    });
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.get("/admin/orders/:orderNumber/packing-slip", (req, res) => {
+  try {
+    const html = adminService.generatePrintablePackingSlip(req.params.orderNumber);
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(html);
+  } catch (err) {
+    res.status(404).send(`<h1>Error: ${err.message}</h1>`);
+  }
+});
+
+router.get("/admin/metrics", (req, res) => {
+  const metrics = adminService.getStudioMetrics();
+  res.json({ success: true, data: metrics });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 14. LOGISTICS COURIER ADAPTER & AWB TRACKING (20_DELIVERY_LOGISTICS.md)
+// ═══════════════════════════════════════════════════════════
+
+router.post("/delivery/manifest", (req, res) => {
+  try {
+    const { orderNumber, grossWeightG, pickupSlot } = req.body;
+    if (!orderNumber) {
+      return res.status(400).json({ success: false, error: "orderNumber is required" });
+    }
+    const manifest = logisticsCourierService.generateShippingManifest({
+      orderNumber,
+      grossWeightG,
+      pickupSlot
+    });
+    res.json({ success: true, data: manifest });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post("/delivery/carrier-webhook", (req, res) => {
+  try {
+    const result = logisticsCourierService.processTrackingWebhook(req.body);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.get("/delivery/track/:identifier", (req, res) => {
+  const details = logisticsCourierService.getTrackingDetails(req.params.identifier);
+  if (!details) {
+    return res.status(404).json({ success: false, error: "TRACKING_NOT_FOUND" });
+  }
+  res.json({ success: true, data: details });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 15. MULTI-CHANNEL NOTIFICATION DISPATCHER (30_NOTIFICATION_SYSTEM.md)
+// ═══════════════════════════════════════════════════════════
+
+router.post("/notifications/send", async (req, res) => {
+  try {
+    const { event, order, customerPhone, customerEmail } = req.body;
+    if (!event || !order) {
+      return res.status(400).json({ success: false, error: "event and order payload are required" });
+    }
+    const dispatchResult = await notificationService.dispatchOrderNotification({
+      event,
+      order,
+      customerPhone,
+      customerEmail
+    });
+    res.json({ success: true, data: dispatchResult });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get("/notifications/recent", (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
+  res.json({
+    success: true,
+    data: notificationService.getRecentNotifications(limit)
+  });
 });
 
 module.exports = router;

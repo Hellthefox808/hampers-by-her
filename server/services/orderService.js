@@ -59,6 +59,11 @@ class OrderService {
       status: ORDER_STATUS.PENDING_PAYMENT,
       items: payload.items,
       box: payload.box || null,
+      ribbon: payload.ribbon || null,
+      waxSeal: payload.waxSeal || null,
+      customMonogram: payload.customMonogram || null,
+      cardMessage: payload.cardMessage || null,
+      customer: payload.customer || null,
       customizations: payload.customizations || [],
       pricing,
       shippingAddress: payload.shippingAddress,
@@ -102,6 +107,24 @@ class OrderService {
 
   static getOrderByNumber(orderNumber) {
     return ordersDb.get(orderNumber) || null;
+  }
+
+  static getAllOrders() {
+    return Array.from(ordersDb.values());
+  }
+
+  static updateOrderStatus(orderNumber, status, note = "") {
+    const order = ordersDb.get(orderNumber);
+    if (!order) throw new Error("Order not found: " + orderNumber);
+    order.status = status;
+    order.updatedAt = new Date().toISOString();
+    if (!order.trackingTimeline) order.trackingTimeline = [];
+    order.trackingTimeline.push({
+      status,
+      timestamp: new Date().toISOString(),
+      note: note || `Order transitioned to ${status}`
+    });
+    return order;
   }
 
   static listRecentOrders(limit = 10) {

@@ -135,3 +135,20 @@
   - Expose 8 dedicated REST API endpoints in `server/routes/api.js` under `/api/v1/dsa/...` and `/api/v1/atelier/visualize-hamper`.
   - Author and verify `tests/dsa_computational_suite.test.js` (28/28 tests passing).
   - Verify 100% pass across all 161 automated tests and documentation audit (57/57 compliant).
+
+## FUP-013: Atelier Studio OS, Patron OTP Auth, Logistics Adapter & Full-Stack Storefront Integration
+- **Type**: FULL-STACK COMMERCE & OPERATIONS OS
+- **Priority**: CRITICAL
+- **Status**: COMPLETED
+- **Dependency**: FUP-012, `20_DELIVERY_LOGISTICS.md`, `23_ADMIN_DASHBOARD.md`, `25_AUTH_SECURITY.md`, `30_NOTIFICATION_SYSTEM.md`
+- **Acceptance Criteria**:
+  - Implement Customer WhatsApp OTP & Staff RBAC service (`authService.js`) and tests (`tests/auth_service.test.js`).
+  - Implement Atelier Studio Operations OS (`adminService.js`, `website/admin.html`) with mandatory QC Photo Gate and tests (`tests/admin_studio_ops.test.js`).
+  - Implement Logistics Courier Carrier Adapter (`logisticsCourierService.js`) with AWB generation, tracking webhooks, and NDR recovery (`tests/logistics_courier.test.js`).
+  - Implement Multi-Channel Notification Dispatcher (`notificationService.js`) routing across WhatsApp HSM, transactional email, and SMS.
+  - Implement interactive 11-step Bespoke Hamper Builder Engine with live 3D volume capacity calculations and procedural vector SVG rendering on storefront (`website/index.html`, `website/script.js`).
+  - Implement AI Bespoke Hamper Knapsack Recommender (`#knapsack-curator-modal`), ReDoS-safe natural language search bar, and Live AWB Tracking Modal (`#order-tracking-modal`).
+  - Expand master E2E integration test suite (`tests/e2e_integration.test.js`) to 16 complete tiers.
+  - Synchronize database Prisma schema (`schema.prisma`) and PostgreSQL DDL (`ddl.sql`) with new models (`OtpSession`, `QualityCheckRecord`, `LogisticsShipment`, `CarrierCheckpoint`, `NotificationDispatchLog`, `DsaAlgorithmMetric`).
+  - Synchronize OpenAPI 3.1 specification (`docs/api/openapi.yaml`) covering all 16 endpoints.
+  - Verify 100% pass across all 183 automated tests and documentation audit (57/57 compliant).
