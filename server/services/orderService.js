@@ -4,6 +4,7 @@
  */
 
 const { PricingEngine } = require("./pricingEngine");
+const { persistenceEngine } = require("./persistenceEngine");
 
 const ORDER_STATUS = {
   DRAFT: "DRAFT",
@@ -19,8 +20,20 @@ const ORDER_STATUS = {
   CANCELLED: "CANCELLED"
 };
 
-// In-Memory Order Store for live execution
+// In-Memory Order Store with File-Backed Crash Resiliency
 const ordersDb = new Map();
+
+// Rehydrate from persistence store on startup
+try {
+  const loaded = persistenceEngine.loadState();
+  if (loaded && Array.isArray(loaded.orders)) {
+    for (const ord of loaded.orders) {
+      if (ord.orderNumber) ordersDb.set(ord.orderNumber, ord);
+    }
+  }
+} catch (e) {
+  // Graceful fallback to fresh in-memory store
+}
 
 class OrderService {
   /**
@@ -37,11 +50,28 @@ class OrderService {
    * Create new order in PENDING_PAYMENT state
    */
   static createOrder(payload) {
-    if (!payload.items || !payload.items.length) {
+    if (!payload.items || !Array.isArray(payload.items) || payload.items.length === 0) {
       throw new Error("Cannot create order with an empty cart.");
     }
     if (!payload.shippingAddress || !payload.shippingAddress.pincode) {
       throw new Error("Shipping address with PIN code is required.");
+    }
+
+    const rawPin = String(payload.shippingAddress.pincode).trim();
+    const PIN_REGEX = /^[1-9][0-9]{5}$/;
+    if (!PIN_REGEX.test(rawPin)) {
+      throw new Error(`INVALID_PINCODE: Destination PIN code '${rawPin}' must be a valid 6-digit Indian postal code.`);
+    }
+
+    // Validate item integrity: non-negative prices and positive quantities
+    for (const item of payload.items) {
+      const price = item.pricePaise !== undefined ? item.pricePaise : (item.basePricePaise !== undefined ? item.basePricePaise : (item.price ? Math.round(item.price * 100) : 0));
+      if (price < 0) {
+        throw new Error("INVALID_ITEM_PRICE: Item prices cannot be negative.");
+      }
+      if (item.quantity !== undefined && item.quantity < 1) {
+        throw new Error("INVALID_ITEM_QUANTITY: Item quantity must be at least 1.");
+      }
     }
 
     const pricing = PricingEngine.calculate({
@@ -51,6 +81,10 @@ class OrderService {
       couponCode: payload.couponCode,
       deliveryTier: payload.deliveryTier
     });
+
+    if (pricing.totalPaise <= 0) {
+      throw new Error("INVALID_ORDER_TOTAL: Order total must be greater than zero.");
+    }
 
     const orderNumber = this.generateOrderNumber();
     const order = {
@@ -77,7 +111,32 @@ class OrderService {
     };
 
     ordersDb.set(orderNumber, order);
+    this.syncPersistence();
     return order;
+  }
+
+  /**
+   * Synchronize active orders to crash-proof atomic persistence
+   */
+  static syncPersistence() {
+    try {
+      persistenceEngine.scheduleSave({
+        orders: Array.from(ordersDb.values())
+      });
+    } catch {
+      // Non-blocking fallback
+    }
+  }
+
+  /**
+   * Immediate synchronous flush to disk
+   */
+  static flushPersistence() {
+    try {
+      persistenceEngine.flushToDisk();
+    } catch {
+      // Non-blocking fallback
+    }
   }
 
   /**
@@ -102,6 +161,7 @@ class OrderService {
     order.updatedAt = new Date().toISOString();
 
     ordersDb.set(orderNumber, order);
+    this.syncPersistence();
     return order;
   }
 
@@ -124,6 +184,7 @@ class OrderService {
       timestamp: new Date().toISOString(),
       note: note || `Order transitioned to ${status}`
     });
+    this.syncPersistence();
     return order;
   }
 

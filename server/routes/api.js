@@ -43,6 +43,67 @@ const smartRouter = new SmartPaymentRouter();
 const cacheGrid = new CacheGrid();
 
 // ═══════════════════════════════════════════════════════════
+// SLIDING-WINDOW IP RATE LIMITING MIDDLEWARE (25_AUTH_SECURITY.md)
+// ═══════════════════════════════════════════════════════════
+
+function createRateLimiter({ windowMs = 60000, maxRequests = 30, message = "Too many requests. Please slow down." }) {
+  const requests = new Map();
+
+  setInterval(() => {
+    const now = Date.now();
+    for (const [ip, timestamps] of requests.entries()) {
+      const active = timestamps.filter(t => now - t < windowMs);
+      if (active.length === 0) {
+        requests.delete(ip);
+      } else {
+        requests.set(ip, active);
+      }
+    }
+  }, windowMs).unref();
+
+  return (req, res, next) => {
+    if (process.env.DISABLE_RATE_LIMIT === "true") return next();
+
+    const clientIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress || "127.0.0.1";
+    const now = Date.now();
+    const timestamps = requests.get(clientIp) || [];
+    const validTimestamps = timestamps.filter(t => now - t < windowMs);
+
+    if (validTimestamps.length >= maxRequests) {
+      const oldest = validTimestamps[0];
+      const retryAfterSeconds = Math.ceil((windowMs - (now - oldest)) / 1000);
+      res.setHeader("Retry-After", retryAfterSeconds);
+      return res.status(429).json({
+        type: "https://hampersbyher.com/errors/rate-limit-exceeded",
+        title: "Too Many Requests",
+        status: 429,
+        detail: message,
+        retryAfterSeconds,
+        instance: req.originalUrl
+      });
+    }
+
+    validTimestamps.push(now);
+    requests.set(clientIp, validTimestamps);
+    res.setHeader("X-RateLimit-Limit", maxRequests);
+    res.setHeader("X-RateLimit-Remaining", Math.max(0, maxRequests - validTimestamps.length));
+    next();
+  };
+}
+
+const authRateLimiter = createRateLimiter({
+  windowMs: 60000,
+  maxRequests: 20,
+  message: "Excessive authentication requests. Please wait before retrying."
+});
+
+const checkoutRateLimiter = createRateLimiter({
+  windowMs: 60000,
+  maxRequests: 40,
+  message: "Too many checkout requests initiated from this IP. Please wait."
+});
+
+// ═══════════════════════════════════════════════════════════
 // 1. PRODUCT CATALOG & ENRICHED ITEM VIEW (WITH CACHE GRID)
 // ═══════════════════════════════════════════════════════════
 
@@ -149,7 +210,7 @@ router.post("/checkout/calculate", (req, res) => {
   }
 });
 
-router.post("/checkout/create-order", async (req, res) => {
+router.post("/checkout/create-order", checkoutRateLimiter, async (req, res) => {
   try {
     // Acquire atomic stock reservations for items if sku provided
     const items = req.body.items || [];
@@ -725,7 +786,7 @@ router.post("/atelier/visualize-hamper", (req, res) => {
 // 12. CUSTOMER AUTHENTICATION & PATRON RBAC (25_AUTH_SECURITY.md)
 // ═══════════════════════════════════════════════════════════
 
-router.post("/auth/request-otp", (req, res) => {
+router.post("/auth/request-otp", authRateLimiter, (req, res) => {
   try {
     const { phone, channel } = req.body;
     const result = authService.requestOtp({ phone, channel });
@@ -735,7 +796,7 @@ router.post("/auth/request-otp", (req, res) => {
   }
 });
 
-router.post("/auth/verify-otp", (req, res) => {
+router.post("/auth/verify-otp", authRateLimiter, (req, res) => {
   try {
     const { phone, otp } = req.body;
     const result = authService.verifyOtp({ phone, otp });
@@ -809,13 +870,14 @@ router.post("/admin/orders/:orderNumber/transition", (req, res) => {
   }
 });
 
-router.post("/admin/orders/:orderNumber/qc-verify", (req, res) => {
+router.post(["/admin/orders/:orderNumber/qc-verify", "/admin/orders/:orderNumber/qc-inspect"], (req, res) => {
   try {
-    const { inspectorName, photoEvidenceUrl, checklist, notes } = req.body;
+    const { inspectorName, photoEvidenceUrl, photoProofUrl, photoProofHash, checklist, notes } = req.body;
     const result = adminService.verifyStudioQcGate({
       orderNumber: req.params.orderNumber,
       inspectorName,
-      photoEvidenceUrl,
+      photoEvidenceUrl: photoEvidenceUrl || photoProofUrl,
+      photoProofHash,
       checklist,
       notes
     });

@@ -1,0 +1,1345 @@
+{
+  "version": "2.0.0",
+  "savedAt": "2026-11-17T17:30:54.008Z",
+  "orders": [
+    {
+      "id": "ord_r0slw8681",
+      "orderNumber": "HBH-20261117-9826",
+      "status": "CONFIRMED",
+      "items": [
+        {
+          "pricePaise": 395000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 395000,
+        "subtotalRupees": "3950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 395000,
+        "taxableBaseRupees": "3950.00",
+        "taxPaise": 71100,
+        "taxRupees": "711.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 466100,
+        "totalRupees": "4661.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "fullName": "Priya Sharma",
+        "phone": "9876543210",
+        "pincode": "110001",
+        "city": "New Delhi",
+        "street": "Connaught Place"
+      },
+      "buyerContact": {
+        "email": "priya@example.com",
+        "phone": "9876543210"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:23:39.683Z",
+          "note": "Order placed, awaiting payment authorization."
+        },
+        {
+          "status": "CONFIRMED",
+          "timestamp": "2026-11-17T17:23:39.684Z",
+          "note": "Payment captured successfully via UPI. Order assigned to atelier workshop."
+        }
+      ],
+      "createdAt": "2026-11-17T17:23:39.683Z",
+      "updatedAt": "2026-11-17T17:23:39.684Z",
+      "payment": {
+        "paymentId": "pay_test_998877",
+        "method": "UPI",
+        "paidAt": "2026-11-17T17:23:39.684Z",
+        "status": "CAPTURED"
+      }
+    },
+    {
+      "id": "ord_h3uyxoq6s",
+      "orderNumber": "HBH-20261117-9212",
+      "status": "CONFIRMED",
+      "items": [
+        {
+          "sku": "HBH-BOX-WEDDING-01",
+          "title": "The Vows & Vines Hamper",
+          "pricePaise": 395000,
+          "quantity": 1,
+          "personalization": {
+            "ribbon": "Natural Ecru Raw Silk",
+            "waxSeal": "Botanica",
+            "cardMessage": "Wishing you a lifetime of joy and quiet luxury."
+          }
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": {
+        "name": "Aarav Singhania",
+        "email": "aarav@singhania.in",
+        "phone": "919876543210"
+      },
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 395000,
+        "subtotalRupees": "3950.00",
+        "discountPaise": 39500,
+        "discountRupees": "395.00",
+        "taxableBasePaise": 355500,
+        "taxableBaseRupees": "3555.00",
+        "taxPaise": 63990,
+        "taxRupees": "639.90",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 419490,
+        "totalRupees": "4194.90",
+        "currency": "INR",
+        "appliedCoupon": {
+          "code": "ALMAS10",
+          "discountPaise": 39500,
+          "description": "10% off artisanal hampers up to ₹500"
+        },
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "line1": "42 Amrita Shergill Marg",
+        "city": "New Delhi",
+        "state": "Delhi",
+        "pincode": "110003"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:23:39.940Z",
+          "note": "Order placed, awaiting payment authorization."
+        },
+        {
+          "status": "CONFIRMED",
+          "timestamp": "2026-11-17T17:23:39.952Z",
+          "note": "Payment captured successfully via upi. Order assigned to atelier workshop."
+        }
+      ],
+      "createdAt": "2026-11-17T17:23:39.940Z",
+      "updatedAt": "2026-11-17T17:23:39.952Z",
+      "payment": {
+        "paymentId": "pay_rzp_1794936219950",
+        "method": "upi",
+        "paidAt": "2026-11-17T17:23:39.952Z",
+        "status": "CAPTURED"
+      },
+      "tracking": {
+        "awb": "HBH-AWB-2026-638657",
+        "carrier": "BlueDart Priority Air",
+        "estimatedDeliveryDate": "2026-11-21",
+        "labelUrl": "https://cdn.hampersbyher.com/labels/HBH-AWB-2026-638657.pdf",
+        "trackingUrl": "https://track.hampersbyher.com/HBH-AWB-2026-638657"
+      }
+    },
+    {
+      "id": "ord_53njj9wpa",
+      "orderNumber": "HBH-20261117-8656",
+      "status": "CONFIRMED",
+      "items": [
+        {
+          "pricePaise": 395000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 395000,
+        "subtotalRupees": "3950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 395000,
+        "taxableBaseRupees": "3950.00",
+        "taxPaise": 71100,
+        "taxRupees": "711.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 466100,
+        "totalRupees": "4661.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "fullName": "Priya Sharma",
+        "phone": "9876543210",
+        "pincode": "110001",
+        "city": "New Delhi",
+        "street": "Connaught Place"
+      },
+      "buyerContact": {
+        "email": "priya@example.com",
+        "phone": "9876543210"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:23:48.794Z",
+          "note": "Order placed, awaiting payment authorization."
+        },
+        {
+          "status": "CONFIRMED",
+          "timestamp": "2026-11-17T17:23:48.794Z",
+          "note": "Payment captured successfully via UPI. Order assigned to atelier workshop."
+        }
+      ],
+      "createdAt": "2026-11-17T17:23:48.794Z",
+      "updatedAt": "2026-11-17T17:23:48.794Z",
+      "payment": {
+        "paymentId": "pay_test_998877",
+        "method": "UPI",
+        "paidAt": "2026-11-17T17:23:48.794Z",
+        "status": "CAPTURED"
+      }
+    },
+    {
+      "id": "ord_r40ldbvxj",
+      "orderNumber": "HBH-20261117-4832",
+      "status": "CONFIRMED",
+      "items": [
+        {
+          "sku": "HBH-BOX-WEDDING-01",
+          "title": "The Vows & Vines Hamper",
+          "pricePaise": 395000,
+          "quantity": 1,
+          "personalization": {
+            "ribbon": "Natural Ecru Raw Silk",
+            "waxSeal": "Botanica",
+            "cardMessage": "Wishing you a lifetime of joy and quiet luxury."
+          }
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": {
+        "name": "Aarav Singhania",
+        "email": "aarav@singhania.in",
+        "phone": "919876543210"
+      },
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 395000,
+        "subtotalRupees": "3950.00",
+        "discountPaise": 39500,
+        "discountRupees": "395.00",
+        "taxableBasePaise": 355500,
+        "taxableBaseRupees": "3555.00",
+        "taxPaise": 63990,
+        "taxRupees": "639.90",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 419490,
+        "totalRupees": "4194.90",
+        "currency": "INR",
+        "appliedCoupon": {
+          "code": "ALMAS10",
+          "discountPaise": 39500,
+          "description": "10% off artisanal hampers up to ₹500"
+        },
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "line1": "42 Amrita Shergill Marg",
+        "city": "New Delhi",
+        "state": "Delhi",
+        "pincode": "110003"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:23:49.049Z",
+          "note": "Order placed, awaiting payment authorization."
+        },
+        {
+          "status": "CONFIRMED",
+          "timestamp": "2026-11-17T17:23:49.065Z",
+          "note": "Payment captured successfully via upi. Order assigned to atelier workshop."
+        }
+      ],
+      "createdAt": "2026-11-17T17:23:49.049Z",
+      "updatedAt": "2026-11-17T17:23:49.065Z",
+      "payment": {
+        "paymentId": "pay_rzp_1794936229063",
+        "method": "upi",
+        "paidAt": "2026-11-17T17:23:49.065Z",
+        "status": "CAPTURED"
+      },
+      "tracking": {
+        "awb": "HBH-AWB-2026-767715",
+        "carrier": "BlueDart Priority Air",
+        "estimatedDeliveryDate": "2026-11-21",
+        "labelUrl": "https://cdn.hampersbyher.com/labels/HBH-AWB-2026-767715.pdf",
+        "trackingUrl": "https://track.hampersbyher.com/HBH-AWB-2026-767715"
+      }
+    },
+    {
+      "id": "ord_4p3wb26mv",
+      "orderNumber": "HBH-20261117-5750",
+      "status": "PENDING_PAYMENT",
+      "items": [
+        {
+          "pricePaise": 495000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 495000,
+        "subtotalRupees": "4950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 495000,
+        "taxableBaseRupees": "4950.00",
+        "taxPaise": 89100,
+        "taxRupees": "891.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 584100,
+        "totalRupees": "5841.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:29:49.010Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:29:49.010Z",
+      "updatedAt": "2026-11-17T17:29:49.010Z"
+    },
+    {
+      "id": "ord_h93lyh1fb",
+      "orderNumber": "HBH-20261117-9987",
+      "status": "PENDING_PAYMENT",
+      "items": [
+        {
+          "pricePaise": 295000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 295000,
+        "subtotalRupees": "2950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 295000,
+        "taxableBaseRupees": "2950.00",
+        "taxPaise": 53100,
+        "taxRupees": "531.00",
+        "shippingPaise": 15000,
+        "shippingRupees": "150.00",
+        "totalPaise": 363100,
+        "totalRupees": "3631.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": false,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 4900
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:29:49.011Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:29:49.011Z",
+      "updatedAt": "2026-11-17T17:29:49.011Z"
+    },
+    {
+      "id": "ord_9nvbgkj21",
+      "orderNumber": "HBH-20261117-9128",
+      "status": "IN_PRODUCTION",
+      "items": [
+        {
+          "pricePaise": 395000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 395000,
+        "subtotalRupees": "3950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 395000,
+        "taxableBaseRupees": "3950.00",
+        "taxPaise": 71100,
+        "taxRupees": "711.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 466100,
+        "totalRupees": "4661.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:29:49.011Z",
+          "note": "Order placed, awaiting payment authorization."
+        },
+        {
+          "status": "CONFIRMED",
+          "timestamp": "2026-11-17T17:29:49.011Z",
+          "note": "Payment captured successfully via UPI. Order assigned to atelier workshop."
+        }
+      ],
+      "createdAt": "2026-11-17T17:29:49.011Z",
+      "updatedAt": "2026-11-17T17:29:49.011Z",
+      "payment": {
+        "paymentId": "pay_test_qc",
+        "method": "UPI",
+        "paidAt": "2026-11-17T17:29:49.011Z",
+        "status": "CAPTURED"
+      },
+      "timeline": [
+        {
+          "status": "IN_PRODUCTION",
+          "timestamp": "2026-11-17T17:29:49.011Z",
+          "actor": "Artisan Lead",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "ord_tzxczmmwm",
+      "orderNumber": "HBH-20261117-7869",
+      "status": "PENDING_PAYMENT",
+      "items": [
+        {
+          "pricePaise": 350000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 350000,
+        "subtotalRupees": "3500.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 350000,
+        "taxableBaseRupees": "3500.00",
+        "taxPaise": 63000,
+        "taxRupees": "630.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 413000,
+        "totalRupees": "4130.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "pincode": "799999",
+        "city": "Remote Valley"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:29:49.011Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:29:49.011Z",
+      "updatedAt": "2026-11-17T17:29:49.011Z",
+      "tracking": {
+        "awb": "HBH-AWB-2026-479819",
+        "carrier": "IndiaPost SpeedPost",
+        "estimatedDeliveryDate": "2026-11-27",
+        "labelUrl": "https://cdn.hampersbyher.com/labels/HBH-AWB-2026-479819.pdf",
+        "trackingUrl": "https://track.hampersbyher.com/HBH-AWB-2026-479819"
+      }
+    },
+    {
+      "id": "ord_vthr5tf62",
+      "orderNumber": "HBH-20261117-6739",
+      "status": "CANCELLED",
+      "items": [
+        {
+          "pricePaise": 250000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 250000,
+        "subtotalRupees": "2500.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 250000,
+        "taxableBaseRupees": "2500.00",
+        "taxPaise": 45000,
+        "taxRupees": "450.00",
+        "shippingPaise": 15000,
+        "shippingRupees": "150.00",
+        "totalPaise": 310000,
+        "totalRupees": "3100.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": false,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 49900
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:29:49.012Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:29:49.012Z",
+      "updatedAt": "2026-11-17T17:29:49.012Z"
+    },
+    {
+      "id": "ord_x7brmk6zd",
+      "orderNumber": "HBH-20261117-7863",
+      "status": "CONFIRMED",
+      "items": [
+        {
+          "id": "ITEM_PERSIST_TEST",
+          "title": "Resilient Atelier Hamper",
+          "pricePaise": 495000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 495000,
+        "subtotalRupees": "4950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 495000,
+        "taxableBaseRupees": "4950.00",
+        "taxPaise": 89100,
+        "taxRupees": "891.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 584100,
+        "totalRupees": "5841.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "fullName": "Vikramaditya Roy",
+        "line1": "Civil Lines",
+        "city": "New Delhi",
+        "pincode": "110054"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:29:49.013Z",
+          "note": "Order placed, awaiting payment authorization."
+        },
+        {
+          "status": "CONFIRMED",
+          "timestamp": "2026-11-17T17:29:49.013Z",
+          "note": "Payment captured successfully via UPI. Order assigned to atelier workshop."
+        }
+      ],
+      "createdAt": "2026-11-17T17:29:49.013Z",
+      "updatedAt": "2026-11-17T17:29:49.013Z",
+      "payment": {
+        "paymentId": "pay_persist_7788",
+        "method": "UPI",
+        "paidAt": "2026-11-17T17:29:49.013Z",
+        "status": "CAPTURED"
+      }
+    },
+    {
+      "id": "ord_taunuxwlo",
+      "orderNumber": "HBH-20261117-6028",
+      "status": "PENDING_PAYMENT",
+      "items": [
+        {
+          "pricePaise": 495000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 495000,
+        "subtotalRupees": "4950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 495000,
+        "taxableBaseRupees": "4950.00",
+        "taxPaise": 89100,
+        "taxRupees": "891.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 584100,
+        "totalRupees": "5841.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:45.024Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:45.024Z",
+      "updatedAt": "2026-11-17T17:30:45.024Z"
+    },
+    {
+      "id": "ord_5qivdb4k4",
+      "orderNumber": "HBH-20261117-5826",
+      "status": "PENDING_PAYMENT",
+      "items": [
+        {
+          "pricePaise": 295000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 295000,
+        "subtotalRupees": "2950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 295000,
+        "taxableBaseRupees": "2950.00",
+        "taxPaise": 53100,
+        "taxRupees": "531.00",
+        "shippingPaise": 15000,
+        "shippingRupees": "150.00",
+        "totalPaise": 363100,
+        "totalRupees": "3631.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": false,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 4900
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:45.024Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:45.024Z",
+      "updatedAt": "2026-11-17T17:30:45.024Z"
+    },
+    {
+      "id": "ord_uurxf4vb6",
+      "orderNumber": "HBH-20261117-8779",
+      "status": "IN_PRODUCTION",
+      "items": [
+        {
+          "pricePaise": 395000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 395000,
+        "subtotalRupees": "3950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 395000,
+        "taxableBaseRupees": "3950.00",
+        "taxPaise": 71100,
+        "taxRupees": "711.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 466100,
+        "totalRupees": "4661.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:45.024Z",
+          "note": "Order placed, awaiting payment authorization."
+        },
+        {
+          "status": "CONFIRMED",
+          "timestamp": "2026-11-17T17:30:45.025Z",
+          "note": "Payment captured successfully via UPI. Order assigned to atelier workshop."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:45.024Z",
+      "updatedAt": "2026-11-17T17:30:45.025Z",
+      "payment": {
+        "paymentId": "pay_test_qc",
+        "method": "UPI",
+        "paidAt": "2026-11-17T17:30:45.025Z",
+        "status": "CAPTURED"
+      },
+      "timeline": [
+        {
+          "status": "IN_PRODUCTION",
+          "timestamp": "2026-11-17T17:30:45.025Z",
+          "actor": "Artisan Lead",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "ord_n6dj4pp0k",
+      "orderNumber": "HBH-20261117-1016",
+      "status": "PENDING_PAYMENT",
+      "items": [
+        {
+          "pricePaise": 350000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 350000,
+        "subtotalRupees": "3500.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 350000,
+        "taxableBaseRupees": "3500.00",
+        "taxPaise": 63000,
+        "taxRupees": "630.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 413000,
+        "totalRupees": "4130.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "pincode": "990001",
+        "city": "Army Field Base"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:45.025Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:45.025Z",
+      "updatedAt": "2026-11-17T17:30:45.025Z"
+    },
+    {
+      "id": "ord_52uznrllx",
+      "orderNumber": "HBH-20261117-8973",
+      "status": "CANCELLED",
+      "items": [
+        {
+          "pricePaise": 250000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 250000,
+        "subtotalRupees": "2500.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 250000,
+        "taxableBaseRupees": "2500.00",
+        "taxPaise": 45000,
+        "taxRupees": "450.00",
+        "shippingPaise": 15000,
+        "shippingRupees": "150.00",
+        "totalPaise": 310000,
+        "totalRupees": "3100.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": false,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 49900
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:45.025Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:45.025Z",
+      "updatedAt": "2026-11-17T17:30:45.025Z"
+    },
+    {
+      "id": "ord_3zzpg3kfd",
+      "orderNumber": "HBH-20261117-1217",
+      "status": "CONFIRMED",
+      "items": [
+        {
+          "id": "ITEM_PERSIST_TEST",
+          "title": "Resilient Atelier Hamper",
+          "pricePaise": 495000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 495000,
+        "subtotalRupees": "4950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 495000,
+        "taxableBaseRupees": "4950.00",
+        "taxPaise": 89100,
+        "taxRupees": "891.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 584100,
+        "totalRupees": "5841.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "fullName": "Vikramaditya Roy",
+        "line1": "Civil Lines",
+        "city": "New Delhi",
+        "pincode": "110054"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:45.025Z",
+          "note": "Order placed, awaiting payment authorization."
+        },
+        {
+          "status": "CONFIRMED",
+          "timestamp": "2026-11-17T17:30:45.025Z",
+          "note": "Payment captured successfully via UPI. Order assigned to atelier workshop."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:45.025Z",
+      "updatedAt": "2026-11-17T17:30:45.025Z",
+      "payment": {
+        "paymentId": "pay_persist_7788",
+        "method": "UPI",
+        "paidAt": "2026-11-17T17:30:45.025Z",
+        "status": "CAPTURED"
+      }
+    },
+    {
+      "id": "ord_ejl452u9t",
+      "orderNumber": "HBH-20261117-8317",
+      "status": "PENDING_PAYMENT",
+      "items": [
+        {
+          "pricePaise": 495000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 495000,
+        "subtotalRupees": "4950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 495000,
+        "taxableBaseRupees": "4950.00",
+        "taxPaise": 89100,
+        "taxRupees": "891.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 584100,
+        "totalRupees": "5841.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:53.953Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:53.953Z",
+      "updatedAt": "2026-11-17T17:30:53.953Z"
+    },
+    {
+      "id": "ord_l4zo0g3ct",
+      "orderNumber": "HBH-20261117-7730",
+      "status": "PENDING_PAYMENT",
+      "items": [
+        {
+          "pricePaise": 295000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 295000,
+        "subtotalRupees": "2950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 295000,
+        "taxableBaseRupees": "2950.00",
+        "taxPaise": 53100,
+        "taxRupees": "531.00",
+        "shippingPaise": 15000,
+        "shippingRupees": "150.00",
+        "totalPaise": 363100,
+        "totalRupees": "3631.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": false,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 4900
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:53.953Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:53.953Z",
+      "updatedAt": "2026-11-17T17:30:53.953Z"
+    },
+    {
+      "id": "ord_101h07u6v",
+      "orderNumber": "HBH-20261117-3205",
+      "status": "IN_PRODUCTION",
+      "items": [
+        {
+          "pricePaise": 395000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 395000,
+        "subtotalRupees": "3950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 395000,
+        "taxableBaseRupees": "3950.00",
+        "taxPaise": 71100,
+        "taxRupees": "711.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 466100,
+        "totalRupees": "4661.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:53.954Z",
+          "note": "Order placed, awaiting payment authorization."
+        },
+        {
+          "status": "CONFIRMED",
+          "timestamp": "2026-11-17T17:30:53.954Z",
+          "note": "Payment captured successfully via UPI. Order assigned to atelier workshop."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:53.954Z",
+      "updatedAt": "2026-11-17T17:30:53.954Z",
+      "payment": {
+        "paymentId": "pay_test_qc",
+        "method": "UPI",
+        "paidAt": "2026-11-17T17:30:53.954Z",
+        "status": "CAPTURED"
+      },
+      "timeline": [
+        {
+          "status": "IN_PRODUCTION",
+          "timestamp": "2026-11-17T17:30:53.954Z",
+          "actor": "Artisan Lead",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "ord_er0hrnujt",
+      "orderNumber": "HBH-20261117-6367",
+      "status": "PENDING_PAYMENT",
+      "items": [
+        {
+          "pricePaise": 350000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 350000,
+        "subtotalRupees": "3500.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 350000,
+        "taxableBaseRupees": "3500.00",
+        "taxPaise": 63000,
+        "taxRupees": "630.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 413000,
+        "totalRupees": "4130.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "pincode": "990001",
+        "city": "Army Field Base"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:53.954Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:53.954Z",
+      "updatedAt": "2026-11-17T17:30:53.954Z"
+    },
+    {
+      "id": "ord_18t84qfed",
+      "orderNumber": "HBH-20261117-5954",
+      "status": "CANCELLED",
+      "items": [
+        {
+          "pricePaise": 250000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 250000,
+        "subtotalRupees": "2500.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 250000,
+        "taxableBaseRupees": "2500.00",
+        "taxPaise": 45000,
+        "taxRupees": "450.00",
+        "shippingPaise": 15000,
+        "shippingRupees": "150.00",
+        "totalPaise": 310000,
+        "totalRupees": "3100.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": false,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 49900
+      },
+      "shippingAddress": {
+        "pincode": "110001",
+        "city": "New Delhi"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:53.954Z",
+          "note": "Order placed, awaiting payment authorization."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:53.954Z",
+      "updatedAt": "2026-11-17T17:30:53.954Z"
+    },
+    {
+      "id": "ord_2i8jqxaia",
+      "orderNumber": "HBH-20261117-4256",
+      "status": "CONFIRMED",
+      "items": [
+        {
+          "id": "ITEM_PERSIST_TEST",
+          "title": "Resilient Atelier Hamper",
+          "pricePaise": 495000,
+          "quantity": 1
+        }
+      ],
+      "box": null,
+      "ribbon": null,
+      "waxSeal": null,
+      "customMonogram": null,
+      "cardMessage": null,
+      "customer": null,
+      "customizations": [],
+      "pricing": {
+        "subtotalPaise": 495000,
+        "subtotalRupees": "4950.00",
+        "discountPaise": 0,
+        "discountRupees": "0.00",
+        "taxableBasePaise": 495000,
+        "taxableBaseRupees": "4950.00",
+        "taxPaise": 89100,
+        "taxRupees": "891.00",
+        "shippingPaise": 0,
+        "shippingRupees": "0.00",
+        "totalPaise": 584100,
+        "totalRupees": "5841.00",
+        "currency": "INR",
+        "appliedCoupon": null,
+        "isFreeShippingEligible": true,
+        "freeShippingThresholdPaise": 299900,
+        "remainingForFreeShippingPaise": 0
+      },
+      "shippingAddress": {
+        "fullName": "Vikramaditya Roy",
+        "line1": "Civil Lines",
+        "city": "New Delhi",
+        "pincode": "110054"
+      },
+      "giftDetails": null,
+      "trackingTimeline": [
+        {
+          "status": "PENDING_PAYMENT",
+          "timestamp": "2026-11-17T17:30:53.954Z",
+          "note": "Order placed, awaiting payment authorization."
+        },
+        {
+          "status": "CONFIRMED",
+          "timestamp": "2026-11-17T17:30:53.954Z",
+          "note": "Payment captured successfully via UPI. Order assigned to atelier workshop."
+        }
+      ],
+      "createdAt": "2026-11-17T17:30:53.954Z",
+      "updatedAt": "2026-11-17T17:30:53.954Z",
+      "payment": {
+        "paymentId": "pay_persist_7788",
+        "method": "UPI",
+        "paidAt": "2026-11-17T17:30:53.954Z",
+        "status": "CAPTURED"
+      }
+    }
+  ],
+  "qcRecords": [],
+  "shipments": []
+}

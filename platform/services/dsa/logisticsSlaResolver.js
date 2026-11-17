@@ -60,6 +60,17 @@ function resolveDeliverySla({
   }
 
   const prefix2 = pinStr.slice(0, 2);
+
+  // Restricted military / non-civilian postal zones (Army Postal Service 90-99)
+  if (prefix2.startsWith("9")) {
+    return {
+      isServiceable: false,
+      pincode: pinStr,
+      error: "UNSERVICEABLE_PINCODE",
+      message: "Express courier delivery is unserviceable to military/APS postal zones."
+    };
+  }
+
   let matchedZone = PINCODE_ZONE_MAP.find(z => z.prefix === prefix2);
 
   if (!matchedZone) {

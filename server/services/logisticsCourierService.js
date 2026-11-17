@@ -37,6 +37,10 @@ class LogisticsCourierService {
       throw new Error(`ORDER_NOT_FOUND: Cannot generate manifest for ${orderNumber}`);
     }
 
+    if (order.status === "CANCELLED") {
+      throw new Error(`ORDER_CANCELLED: Cannot generate manifest for cancelled order ${orderNumber}`);
+    }
+
     const pincode = order.shippingAddress?.pincode || "110001";
     const sla = resolveDeliverySla({
       pincode,
@@ -86,9 +90,17 @@ class LogisticsCourierService {
       trackingUrl: `https://track.hampersbyher.com/${awb}`
     };
 
-    // Transition order to DISPATCHED if currently PACKED
-    if (order.status === "PACKED") {
+    // Transition order to DISPATCHED if currently PACKED or QUALITY_CHECKED
+    if (order.status === "PACKED" || order.status === "QUALITY_CHECKED") {
       order.status = "DISPATCHED";
+      if (!order.timeline) order.timeline = [];
+      order.timeline.push({
+        status: "DISPATCHED",
+        timestamp: new Date().toISOString(),
+        actor: manifest.carrier,
+        notes: `Carrier AWB ${manifest.awb} dispatched via ${manifest.carrier}`
+      });
+      OrderService.syncPersistence();
     }
 
     return manifest;
@@ -145,6 +157,7 @@ class LogisticsCourierService {
         actor: manifest ? manifest.carrier : "Carrier Gateway",
         notes: checkpoint.description
       });
+      OrderService.syncPersistence();
     }
 
     // Handle NDR (Non-Delivery Report)

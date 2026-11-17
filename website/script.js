@@ -108,19 +108,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const cartCountLabel = document.getElementById('cart-count-label');
   const navCartLinks = document.querySelectorAll('.nav__cart, a[href="#collections"].mobile-bar__item');
 
-  let cart = [
-    {
-      id: "prod_wedding_vows",
-      title: "The Vows & Vines Hamper",
-      subtitle: "Wedding Edition · Raw Silk",
-      priceRupees: "3,950",
-      basePricePaise: 395000,
-      image: "images/hamper-wedding.jpg",
-      quantity: 1,
-      ribbon: "Natural Ecru Raw Silk",
-      waxSeal: "Olive Branch Botanica"
-    }
-  ];
+  const CART_STORAGE_KEY = 'hbh_cart_v2';
+  function getPersistedCart() {
+    try {
+      const saved = localStorage.getItem(CART_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+    return [
+      {
+        id: "prod_wedding_vows",
+        title: "The Vows & Vines Hamper",
+        subtitle: "Wedding Edition · Raw Silk",
+        priceRupees: "3,950",
+        basePricePaise: 395000,
+        image: "images/hamper-wedding.jpg",
+        quantity: 1,
+        ribbon: "Natural Ecru Raw Silk",
+        waxSeal: "Olive Branch Botanica"
+      }
+    ];
+  }
+
+  function persistCartState() {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    } catch {}
+  }
+
+  let cart = getPersistedCart();
   let appliedCoupon = null;
 
   function openCart() {
@@ -149,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function renderCart() {
+    persistCartState();
     if (!cartItemsList) return;
     const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     if (cartCountLabel) cartCountLabel.textContent = `${totalCount} item${totalCount === 1 ? '' : 's'} selected`;
@@ -1362,6 +1383,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const pincodeStatus = document.getElementById('pincode-status');
 
   checkoutBtn?.addEventListener('click', () => {
+    if (!cart || cart.length === 0) {
+      showToast("Your gifting bag is empty. Please select a luxury hamper first.");
+      return;
+    }
     closeCart();
     checkoutOverlay?.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -1494,8 +1519,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const address = document.getElementById('co-address')?.value?.trim();
     const pin = document.getElementById('co-pincode')?.value?.trim();
 
-    if (!name || !phone || !address || !pin) {
-      showToast("Please complete required delivery fields (*)");
+    if (!name || name.length < 2) {
+      showToast("Please provide recipient name (minimum 2 characters)");
+      return;
+    }
+    const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
+    if (!cleanPhone || cleanPhone.length < 10) {
+      showToast("Please enter a valid 10-digit mobile number");
+      return;
+    }
+    const PIN_REGEX = /^[1-9][0-9]{5}$/;
+    if (!pin || !PIN_REGEX.test(pin)) {
+      showToast("Please enter a valid 6-digit Indian PIN code");
+      return;
+    }
+    if (!address || address.length < 5) {
+      showToast("Please provide complete delivery street address");
       return;
     }
     checkoutStep1.style.display = 'none';

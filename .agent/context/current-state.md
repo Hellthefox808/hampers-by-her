@@ -124,6 +124,14 @@ Build the complete digital operating system behind the luxury artisanal gifting 
       - `docs/database/schema.prisma` and `docs/database/ddl.sql` synchronized with `OtpSession`, `QualityCheckRecord`, `LogisticsShipment`, `CarrierCheckpoint`, `NotificationDispatchLog`, and `DsaAlgorithmMetric`.
       - `docs/api/openapi.yaml` expanded to document all 16 endpoints in OpenAPI 3.1.0 format.
 
+    - **Weakness Audit & Security Resilience Hardening**:
+      - **Atomic Crash Persistence Resiliency** (`server/services/persistenceEngine.js`, `server/services/orderService.js`): Debounced disk writes to `data/atelier_store.json` using atomic file renaming (`fs.renameSync`) with synchronous flush capabilities and startup rehydration.
+      - **Studio Operations OS Cockpit Hardening** (`website/admin.html`): Workshop PIN security gate (`2026`), live API sync with `/api/v1/admin/orders` and `/api/v1/admin/metrics`, real-time text search filter (order #, patron, phone), dynamic tab filtering, and QC inspection photo gate.
+      - **Storefront Client Cart Persistence & Strict Validation** (`website/script.js`): `localStorage` (`hbh_cart_v2`) state hydration, empty-cart checkout prevention, and strict regex validation for Indian mobile numbers (`/^[6-9]\d{9}$/`) and PIN codes (`/^[1-9][0-9]{5}$/`).
+      - **Sliding-Window IP Rate Limiting** (`server/routes/api.js`): Zero-dependency sliding-window IP rate limiter on sensitive endpoints (`/auth/*` throttled at 20 req/min, `/checkout/*` at 40 req/min) returning RFC 7807 problem details with `Retry-After` headers.
+      - **Security & Resilience Negative Test Suite** (`tests/security_resilience.test.js`): 16 comprehensive edge-case and negative tests covering input sanitization, attempt lockouts, tampered JWT detection, QC photo requirements, illegal status transitions, unserviceable postal zones, and persistence recovery.
+      - **Test Suite Expansion**: **199/199 passing tests across 55 test suites in 749ms (0 failures)**.
+
 ---
 
 ## 4. In Progress
