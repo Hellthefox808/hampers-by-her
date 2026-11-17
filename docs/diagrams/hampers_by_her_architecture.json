@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Hampers by Her — Artisanal Commerce & Atelier OS",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [1320, 720]
+  },
+  "components": [
+    {
+      "id": "storefront",
+      "type": "frontend",
+      "label": "Storefront & Lookbook",
+      "sublabel": "11-Step Builder · 11 Themes",
+      "pos": [48, 110],
+      "size": [210, 74]
+    },
+    {
+      "id": "studio_os",
+      "type": "frontend",
+      "label": "Atelier Studio OS",
+      "sublabel": "QC Photo Gate · Slips",
+      "pos": [48, 315],
+      "size": [210, 74]
+    },
+    {
+      "id": "voice_clients",
+      "type": "frontend",
+      "label": "Voice Concierge & APK",
+      "sublabel": "Web Audio · Android 36",
+      "pos": [48, 520],
+      "size": [210, 74]
+    },
+    {
+      "id": "api_gateway",
+      "type": "security",
+      "label": "Express API & RBAC",
+      "sublabel": "REST v1 · JWT · /metrics",
+      "pos": [375, 110],
+      "size": [220, 74]
+    },
+    {
+      "id": "voice_gateway",
+      "type": "messagebus",
+      "label": "Voice AI Gateway",
+      "sublabel": "WS PCM16 · Server-VAD",
+      "pos": [375, 520],
+      "size": [220, 74]
+    },
+    {
+      "id": "dsa_engines",
+      "type": "backend",
+      "label": "DSA & SVG Visualizer",
+      "sublabel": "3D Pack · Knapsack · Paise",
+      "pos": [705, 110],
+      "size": [220, 74]
+    },
+    {
+      "id": "domain_services",
+      "type": "backend",
+      "label": "Order & Studio Core",
+      "sublabel": "Catalog · Inventory · QC",
+      "pos": [705, 315],
+      "size": [220, 74]
+    },
+    {
+      "id": "cache_store",
+      "type": "database",
+      "label": "CacheGrid & Store",
+      "sublabel": "SingleFlight · Atomic Disk",
+      "pos": [705, 520],
+      "size": [220, 74]
+    },
+    {
+      "id": "payment_router",
+      "type": "external",
+      "label": "Smart Payment Router",
+      "sublabel": "Razorpay · Cashfree · Stripe",
+      "pos": [1045, 110],
+      "size": [226, 74]
+    },
+    {
+      "id": "meta_logistics",
+      "type": "external",
+      "label": "Meta & Courier Rails",
+      "sublabel": "WhatsApp · IG · BlueDart",
+      "pos": [1045, 315],
+      "size": [226, 74]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Node.js Modular Monolith & Platform Core",
+      "wraps": ["api_gateway", "voice_gateway", "dsa_engines", "domain_services", "cache_store"]
+    },
+    {
+      "kind": "security-group",
+      "label": "Auth & Real-Time Edge",
+      "wraps": ["api_gateway", "voice_gateway"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "storefront-api",
+      "from": "storefront",
+      "to": "api_gateway",
+      "label": "REST v1",
+      "variant": "emphasis"
+    },
+    {
+      "id": "studio-api",
+      "from": "studio_os",
+      "to": "api_gateway",
+      "label": "Bearer JWT",
+      "variant": "security"
+    },
+    {
+      "id": "voice-ws",
+      "from": "voice_clients",
+      "to": "voice_gateway",
+      "label": "WS PCM16",
+      "variant": "emphasis"
+    },
+    {
+      "id": "api-dsa",
+      "from": "api_gateway",
+      "to": "dsa_engines",
+      "label": "pack & curate"
+    },
+    {
+      "id": "api-domain",
+      "from": "api_gateway",
+      "to": "domain_services",
+      "label": "orders & QC"
+    },
+    {
+      "id": "voice-domain",
+      "from": "voice_gateway",
+      "to": "domain_services",
+      "label": "voice tools"
+    },
+    {
+      "id": "domain-store",
+      "from": "domain_services",
+      "to": "cache_store",
+      "label": "atomic sync",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 68
+    },
+    {
+      "id": "dsa-payments",
+      "from": "dsa_engines",
+      "to": "payment_router",
+      "label": "UPI / card",
+      "variant": "security"
+    },
+    {
+      "id": "domain-meta",
+      "from": "domain_services",
+      "to": "meta_logistics",
+      "label": "HSM & AWB",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Storefront & Real-Time Voice",
+      "items": [
+        "11-step Bespoke Builder + live SVG preview",
+        "WebSocket 16kHz PCM16 with Server-VAD barge-in",
+        "11 Theme Factory palettes synced across all pages"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Computational & Domain Core",
+      "items": [
+        "3D Bin-Packing, Integer Paise Ledger, Budget Knapsack",
+        "Atomic SKU reservation with HTTP 409 rollback",
+        "Mandatory Studio QC photo gate before dispatch"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Security, Telemetry & Scale",
+      "items": [
+        "Constant-time JWT/OTP/PIN & RBAC middleware",
+        "Live Prometheus v0.0.4 /metrics + event loop lag",
+        "Docker, 7-module AWS Terraform, & K8s manifests"
+      ]
+    }
+  ]
+}

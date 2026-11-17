@@ -180,6 +180,8 @@ Build the complete digital operating system behind the luxury artisanal gifting 
       - **Upstream Live Bridges (`server/services/voiceProviders.js`)**: Implemented `OpenAIRealtimeBridge` (full upstream WS relay, `session.update`, tool-call `function_call_output` loopback, `speech_started` barge-in, exponential-backoff reconnect) and `DeepgramLiveSttClient` (`nova-2`, `linear16`, `16kHz`, `vad_events=true`, exponential-backoff reconnect).
       - **Platform Voice Engine (`platform/services/voice-service/sessionManager.js`, `voiceEngine.js`)**: Fixed unreachable `RECONNECTING` state in `VALID_TRANSITIONS`, wired canonical `AUDIO_CONFIG` + clearable `AudioOutputQueue` + `AbortController` + `reconnectSession()` backoff recovery.
       - **Android Voice AI Deadlock & Queue Fixes (`VoiceAiClient.java`, `AudioStreamEngine.java`)**: Fixed critical single-executor read/write deadlock by separating `readExecutor` & `writeExecutor`, added `SSLSocketFactory` (`wss://` TLS) + exponential-backoff auto-reconnection, and upgraded `AudioStreamEngine` to a derived `CHUNK_BYTES` constant + non-blocking clearable `LinkedBlockingQueue` playback worker thread.
+    - **Interactive Standalone Architecture Diagram (`/archify`)**:
+      - Authored `docs/diagrams/hampers_by_her_architecture.json` and delivered self-contained interactive HTML diagram `docs/diagrams/hampers_by_her_architecture.html` (9/9 `showcase` artifact checks passing, 0 errors, 0 warnings, 0 crossings; `visual-check` passed across `1440×900`, `1600×1000`, `1920×1080`, and `2048×1320` in light & dark modes + perceptual visual review completed).
 
 ---
 
