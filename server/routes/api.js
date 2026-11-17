@@ -5,91 +5,73 @@ const { PricingEngine } = require("../services/pricingEngine");
 const { HamperBuilderEngine } = require("../services/hamperBuilder");
 const { DeliveryService } = require("../services/deliveryService");
 const { OrderService } = require("../services/orderService");
+const { CatalogService } = require("../services/catalogService");
+const { instagramService } = require("../services/instagramService");
+const { whatsappService } = require("../services/whatsappService");
 
-// Catalog of Curated Ready-Made Hampers
-const CURATED_HAMPERS = [
-  {
-    id: "prod_wedding_vows",
-    slug: "the-vows-and-vines-hamper",
-    title: "The Vows & Vines Hamper",
-    occasion: "Wedding",
-    theme: "Understated Botanical",
-    subtitle: "Elderflower tonic, wax-sealed card, dried hydrangea, castor-oil candle.",
-    description: "Composed specifically for quiet wedding mornings and trousseau gifting. Tied in natural ecru raw silk ribbon with hand-stamped botanical wax seal.",
-    basePricePaise: 395000,
-    priceRupees: "3,950",
-    badge: "Best Seller",
-    imageUrl: "images/hamper-wedding.jpg",
-    itemsIncluded: ["Craft Elderflower Tonic", "Amber & Vanilla Candle", "Dried Hydrangea Posy", "Wax-Sealed Greeting Card"]
-  },
-  {
-    id: "prod_corporate_wellwisher",
-    slug: "the-office-well-wisher",
-    title: "The Office Well-Wisher",
-    occasion: "Corporate",
-    theme: "Minimalist Monogram",
-    subtitle: "Single-origin cocoa, linen napkin, brass opener.",
-    description: "Refined executive desk gift. Custom monogramming available on request.",
-    basePricePaise: 215000,
-    priceRupees: "2,150",
-    badge: "Artisan Pick",
-    imageUrl: "images/hamper-corporate.jpg",
-    itemsIncluded: ["Single-Origin Roasted Hazelnut Cocoa", "Washed Raw Silk Napkins", "Handmade Brass Letter Opener"]
-  },
-  {
-    id: "prod_festive_diwali",
-    slug: "the-diwali-slow-burn",
-    title: "The Diwali Slow-Burn",
-    occasion: "Festive",
-    theme: "Terracotta Warmth",
-    subtitle: "Brass diya, dried citrus, slow-burn incense.",
-    description: "Warm artisanal glow for autumn festivals. Scented with wild sandalwood and dried orange peel.",
-    basePricePaise: 285000,
-    priceRupees: "2,850",
-    badge: "Limited Festive",
-    imageUrl: "images/hamper-festive.jpg",
-    itemsIncluded: ["Hand-Cast Brass Diya", "Slow-Burn Temple Incense", "Sun-Dried Citrus Garland", "Pressed Marigold Note"]
-  },
-  {
-    id: "prod_anniversary_letter",
-    slug: "the-ten-year-letter",
-    title: "The Ten-Year Letter",
-    occasion: "Anniversary",
-    theme: "Royal Bordeaux",
-    subtitle: "Pressed rose, small-batch mead, a letter you can keep.",
-    description: "Our signature romantic edit. Features deckle-edge paper and heirloom wax stamp.",
-    basePricePaise: 320000,
-    priceRupees: "3,200",
-    badge: "Signature",
-    imageUrl: "images/hamper-anniversary.jpg",
-    itemsIncluded: ["Pressed Kashmiri Rose", "Artisanal Confectionery", "Deckle-Edge Letter Card", "Crushed Velvet Wine Ribbon"]
-  }
-];
+// Platform Distributed Services & Scalability Subsystems
+const { SmartPaymentRouter } = require("../../platform/services/payment-service/smartRouter");
+const { CacheGrid } = require("../../platform/services/cache-service/cacheGrid");
+const { serviceMesh } = require("../../platform/services/mesh-service/serviceMesh");
+const { inventoryEngine } = require("../../platform/services/scaling-service/inventoryLock");
 
-// 1. Catalog Products
-router.get("/catalog/products", (req, res) => {
-  const { occasion, search } = req.query;
-  let items = [...CURATED_HAMPERS];
+const smartRouter = new SmartPaymentRouter();
+const cacheGrid = new CacheGrid();
 
-  if (occasion && occasion !== "all") {
-    items = items.filter(h => h.occasion.toLowerCase() === occasion.toLowerCase());
-  }
+// ═══════════════════════════════════════════════════════════
+// 1. PRODUCT CATALOG & ENRICHED ITEM VIEW (WITH CACHE GRID)
+// ═══════════════════════════════════════════════════════════
 
-  if (search) {
-    const q = search.toLowerCase();
-    items = items.filter(h => h.title.toLowerCase().includes(q) || h.subtitle.toLowerCase().includes(q));
-  }
+// List products with filtering and singleflight request coalescing
+router.get("/catalog/products", async (req, res) => {
+  const { occasion, search, limit, offset } = req.query;
+  const cacheKey = `catalog:products:${occasion || "all"}:${search || "none"}:${limit || 20}:${offset || 0}`;
+
+  const result = await cacheGrid.getOrSet(cacheKey, () => {
+    return CatalogService.getProducts({
+      occasion,
+      search,
+      limit: limit ? parseInt(limit, 10) : 20,
+      offset: offset ? parseInt(offset, 10) : 0
+    });
+  }, 60000);
 
   res.json({
     success: true,
     data: {
-      count: items.length,
-      items
+      count: result.total,
+      items: result.items
     }
   });
 });
 
-// 2. Hamper Builder Options
+// Enriched Item Detail View (PDP) with cache
+router.get("/catalog/products/:id", async (req, res) => {
+  const cacheKey = `catalog:product:${req.params.id}`;
+  const cached = await cacheGrid.getOrSet(cacheKey, () => {
+    const item = CatalogService.getProductById(req.params.id);
+    if (!item) return null;
+    const recommendations = CatalogService.getRecommendations(item.id);
+    return { ...item, recommendations };
+  }, 60000);
+
+  if (!cached) {
+    return res.status(404).json({
+      success: false,
+      error: { code: "PRODUCT_NOT_FOUND", message: `Hamper not found: ${req.params.id}` }
+    });
+  }
+
+  res.json({
+    success: true,
+    data: cached
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 2. BESPOKE HAMPER BUILDER
+// ═══════════════════════════════════════════════════════════
+
 router.get("/builder/options", (req, res) => {
   res.json({
     success: true,
@@ -97,7 +79,6 @@ router.get("/builder/options", (req, res) => {
   });
 });
 
-// 3. Hamper Builder Step Validation
 router.post("/builder/validate-step", (req, res) => {
   try {
     const result = HamperBuilderEngine.validateConfiguration(req.body);
@@ -113,7 +94,10 @@ router.post("/builder/validate-step", (req, res) => {
   }
 });
 
-// 4. Delivery PIN Code Check
+// ═══════════════════════════════════════════════════════════
+// 3. LOGISTICS & DELIVERY SERVICEABILITY
+// ═══════════════════════════════════════════════════════════
+
 router.get("/delivery/serviceability/:pincode", (req, res) => {
   const result = DeliveryService.checkPincode(req.params.pincode);
   res.json({
@@ -122,7 +106,10 @@ router.get("/delivery/serviceability/:pincode", (req, res) => {
   });
 });
 
-// 5. Checkout Price Calculation
+// ═══════════════════════════════════════════════════════════
+// 4. CART & CHECKOUT
+// ═══════════════════════════════════════════════════════════
+
 router.post("/checkout/calculate", (req, res) => {
   try {
     const pricing = PricingEngine.calculate(req.body);
@@ -138,9 +125,19 @@ router.post("/checkout/calculate", (req, res) => {
   }
 });
 
-// 6. Create Order (Pending Payment)
-router.post("/checkout/create-order", (req, res) => {
+router.post("/checkout/create-order", async (req, res) => {
   try {
+    // Acquire atomic stock reservations for items if sku provided
+    const items = req.body.items || [];
+    for (const item of items) {
+      if (item.sku) {
+        if (inventoryEngine.getStock(item.sku).total === 0) {
+          inventoryEngine.setStock(item.sku, 100);
+        }
+        await inventoryEngine.reserve(item.sku, item.quantity || 1, req.body.customer?.email || "guest");
+      }
+    }
+
     const order = OrderService.createOrder(req.body);
     res.status(201).json({
       success: true,
@@ -160,8 +157,7 @@ router.post("/checkout/create-order", (req, res) => {
   }
 });
 
-// 7. Payment Verification Handshake
-router.post("/payments/verify", (req, res) => {
+router.post("/payments/verify", async (req, res) => {
   const { orderNumber, paymentId, method } = req.body;
   if (!orderNumber) {
     return res.status(400).json({ success: false, error: { message: "orderNumber is required" } });
@@ -169,6 +165,12 @@ router.post("/payments/verify", (req, res) => {
 
   try {
     const order = OrderService.confirmPayment(orderNumber, { paymentId, method });
+
+    // Programmatically trigger WhatsApp HSM notification asynchronously
+    whatsappService.notifyOrderEvent(order, "ORDER_CONFIRMED").catch(err => {
+      console.warn("WhatsApp notification error (non-blocking):", err.message);
+    });
+
     res.json({
       success: true,
       data: {
@@ -186,7 +188,6 @@ router.post("/payments/verify", (req, res) => {
   }
 });
 
-// 8. Order Tracking Lookup
 router.get("/orders/:orderNumber", (req, res) => {
   const order = OrderService.getOrderByNumber(req.params.orderNumber);
   if (!order) {
@@ -198,12 +199,170 @@ router.get("/orders/:orderNumber", (req, res) => {
   res.json({ success: true, data: order });
 });
 
-// 9. Available Coupons
 router.get("/coupons", (req, res) => {
   res.json({ success: true, data: PricingEngine.getAvailableCoupons() });
 });
 
-// 10. Voice AI Status & Capabilities
+// ═══════════════════════════════════════════════════════════
+// 5. INSTAGRAM GRAPH API & LEAD AUTOMATION
+// ═══════════════════════════════════════════════════════════
+
+// Live Instagram Feed
+router.get("/instagram/feed", (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
+  res.json(instagramService.getFeed({ limit }));
+});
+
+// Manual/Cron Instagram Media Sync
+router.post("/instagram/sync", async (req, res) => {
+  const { accessToken, accountId } = req.body || {};
+  const result = await instagramService.syncMedia({ accessToken, accountId });
+  res.json(result);
+});
+
+// Meta Webhook Challenge Handshake (GET)
+router.get("/instagram/webhook", (req, res) => {
+  const verification = instagramService.verifyWebhookChallenge(req.query);
+  if (verification.success) {
+    return res.status(200).send(verification.challenge);
+  }
+  return res.status(403).json({ error: verification.error });
+});
+
+// Meta Webhook Event Handler (POST)
+router.post("/instagram/webhook", (req, res) => {
+  const signature = req.headers["x-hub-signature-256"];
+  const isValid = instagramService.verifyWebhookSignature(req.rawBody, signature);
+
+  if (!isValid && process.env.NODE_ENV === "production") {
+    return res.status(401).json({ error: "Invalid signature" });
+  }
+
+  const result = instagramService.processIncomingWebhook(req.body);
+  // Meta requires immediate 200 OK
+  res.status(200).json(result);
+});
+
+// Captured CRM Leads from Instagram
+router.get("/instagram/leads", (req, res) => {
+  res.json({
+    success: true,
+    data: instagramService.getLeads()
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 6. WHATSAPP BUSINESS CLOUD API & ATELIER CONCIERGE
+// ═══════════════════════════════════════════════════════════
+
+// Meta Webhook Challenge Handshake (GET)
+router.get("/whatsapp/webhook", (req, res) => {
+  const verification = whatsappService.verifyWebhookChallenge(req.query);
+  if (verification.success) {
+    return res.status(200).send(verification.challenge);
+  }
+  return res.status(403).json({ error: verification.error });
+});
+
+// Meta Inbound Webhook Event Handler (POST)
+router.post("/whatsapp/webhook", async (req, res) => {
+  const signature = req.headers["x-hub-signature-256"];
+  const isValid = whatsappService.verifyWebhookSignature(req.rawBody, signature);
+
+  if (!isValid && process.env.NODE_ENV === "production") {
+    return res.status(401).json({ error: "Invalid signature" });
+  }
+
+  const result = await whatsappService.handleIncomingWebhook(req.body);
+  res.status(200).json(result);
+});
+
+// PDP Item WhatsApp Inquiry (Dispatches pre-filled inquiry to atelier)
+router.post("/whatsapp/inquire", async (req, res) => {
+  const { phone, productId, customerName, ribbon, waxSeal, pinCode } = req.body;
+  if (!productId) {
+    return res.status(400).json({ success: false, error: "productId is required" });
+  }
+
+  const product = CatalogService.getProductById(productId);
+  if (!product) {
+    return res.status(404).json({ success: false, error: "Product not found" });
+  }
+
+  const targetPhone = phone || "919876543210";
+  const inquiryText = `Inquiry from ${customerName || "a Patron"} for *${product.title}* (₹${product.priceRupees}).\n` +
+    `• Ribbon: ${ribbon || "Natural Silk"}\n` +
+    `• Wax Seal: ${waxSeal || "Botanica"}\n` +
+    `• PIN Code: ${pinCode || "Not specified"}\n\n` +
+    `Product Link: https://hampersbyher.com/#collections?highlight=${product.id}`;
+
+  const sendResult = await whatsappService.sendTextMessage(targetPhone, inquiryText, true);
+
+  res.json({
+    success: true,
+    data: {
+      inquirySent: sendResult.success,
+      inquiryText,
+      waMeUrl: `https://wa.me/919876543210?text=${encodeURIComponent(inquiryText)}`
+    }
+  });
+});
+
+// Outbound Transactional Notification Dispatch
+router.post("/whatsapp/notify/order", async (req, res) => {
+  const { orderNumber, eventType } = req.body;
+  const order = OrderService.getOrderByNumber(orderNumber);
+  if (!order) {
+    return res.status(404).json({ success: false, error: "Order not found" });
+  }
+
+  const result = await whatsappService.notifyOrderEvent(order, eventType || "ORDER_CONFIRMED");
+  res.json({ success: true, result });
+});
+
+// Simulated Incoming Message (for testing / development)
+router.post("/whatsapp/simulate-incoming", async (req, res) => {
+  const { from, name, text } = req.body;
+  if (!from || !text) {
+    return res.status(400).json({ success: false, error: "from and text are required" });
+  }
+
+  const simulatedPayload = {
+    object: "whatsapp_business_account",
+    entry: [
+      {
+        id: "WABA_SIMULATED_123",
+        changes: [
+          {
+            field: "messages",
+            value: {
+              messaging_product: "whatsapp",
+              metadata: { display_phone_number: "919876543210", phone_number_id: "100293847592019" },
+              contacts: [{ profile: { name: name || "Test Patron" }, wa_id: from }],
+              messages: [
+                {
+                  from,
+                  id: `wamid.SIM_${Date.now()}`,
+                  timestamp: Math.floor(Date.now() / 1000).toString(),
+                  text: { body: text },
+                  type: "text"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  };
+
+  const result = await whatsappService.handleIncomingWebhook(simulatedPayload);
+  res.json({ success: true, data: result });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 7. VOICE AI STATUS & TELEMETRY
+// ═══════════════════════════════════════════════════════════
+
 router.get("/voice/status", (req, res) => {
   res.json({
     success: true,
@@ -226,6 +385,121 @@ router.get("/voice/status", (req, res) => {
         "estimateDelivery"
       ]
     }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 8. MULTI-GATEWAY SMART PAYMENT ROUTER
+// ═══════════════════════════════════════════════════════════
+
+router.post("/payments/initiate", (req, res) => {
+  const { orderId, amountPaise, currency, clientType, idempotencyKey } = req.body;
+  if (!orderId || !amountPaise) {
+    return res.status(400).json({
+      success: false,
+      error: "orderId and amountPaise are required"
+    });
+  }
+
+  const session = smartRouter.routeCheckout({
+    orderId,
+    amountPaise,
+    currency: currency || "INR",
+    clientType: clientType || "mobile",
+    idempotencyKey
+  });
+
+  const responseData = {
+    ...session,
+    actionUrl: session.actionUrl || session.upiPayload?.deepLink,
+    qrCodeString: session.upiPayload?.qrString,
+    expiresInSeconds: session.upiPayload?.refreshIntervalSec
+  };
+
+  res.json({
+    success: true,
+    data: responseData
+  });
+});
+
+router.get("/payments/gateways/health", (req, res) => {
+  res.json({
+    success: true,
+    data: smartRouter.getHealthStatus()
+  });
+});
+
+router.post("/payments/smart-webhook", (req, res) => {
+  const gateway = req.headers["x-gateway"] || "razorpay";
+  const signature = req.headers["x-signature"] || req.headers["x-hub-signature-256"];
+  const timestamp = parseInt(req.headers["x-timestamp"] || "0", 10);
+
+  const verification = smartRouter.verifyWebhook({
+    gateway,
+    rawBody: req.rawBody,
+    signature,
+    timestamp
+  });
+
+  if (!verification.valid && process.env.NODE_ENV === "production") {
+    return res.status(401).json({ success: false, error: verification.reason });
+  }
+
+  res.json({
+    success: true,
+    data: {
+      gateway,
+      signatureVerified: verification.valid,
+      reason: verification.reason,
+      processed: true
+    }
+  });
+});
+
+router.post("/payments/refund", async (req, res) => {
+  const { orderId, refundAmountPaise, vpa } = req.body;
+  if (!orderId || !refundAmountPaise) {
+    return res.status(400).json({ success: false, error: "orderId and refundAmountPaise are required" });
+  }
+
+  const result = await smartRouter.processInstantRefund({
+    orderId,
+    amountPaise: refundAmountPaise,
+    vpa: vpa || "customer@upi"
+  });
+  res.json({ success: true, data: result });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 9. PLATFORM OBSERVABILITY, SERVICE MESH & CACHE TELEMETRY
+// ═══════════════════════════════════════════════════════════
+
+router.get("/system/health", async (req, res) => {
+  const meshHealth = await serviceMesh.getSystemHealth();
+  res.json({
+    success: true,
+    data: {
+      status: meshHealth.status === "HEALTHY" ? "healthy" : "degraded",
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+      cacheMetrics: cacheGrid.getMetrics(),
+      mesh: meshHealth
+    }
+  });
+});
+
+router.get("/system/mesh/health", async (req, res) => {
+  const meshHealth = await serviceMesh.getSystemHealth();
+  res.json({
+    success: true,
+    data: meshHealth
+  });
+});
+
+router.get("/system/cache/metrics", (req, res) => {
+  res.json({
+    success: true,
+    data: cacheGrid.getMetrics()
   });
 });
 

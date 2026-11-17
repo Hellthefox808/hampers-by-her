@@ -1,0 +1,36 @@
+name: Hampers by Her CI Quality Gate
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  verify:
+    name: Verify Quality Gates (Docs Audit, Full Regression Suite, APK Integrity)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Audit All 44 Architectural Specifications (Section 40)
+        run: npm run audit:docs
+
+      - name: Execute Full Commerce & Platform Test Suite (133 Tests)
+        run: npm test
+
+      - name: Verify Android Voice AI APK Packaging
+        run: npm run build:apk
+
+      - name: Execute Complete Master Verification Pipeline
+        run: npm run verify

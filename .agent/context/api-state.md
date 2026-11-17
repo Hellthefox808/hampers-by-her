@@ -1,21 +1,57 @@
-# API STATE — Hampers by Her
+# API STATE — Hampers by Her Digital Commerce Ecosystem
 
 ## 1. Specification & Contract
 - **Contract Source**: `docs/api/openapi.yaml` (OpenAPI 3.1.0).
 - **Target URL**:
-  - Production: `https://api.hampersbyher.com/v1`
-  - Staging: `https://staging-api.hampersbyher.com/v1`
+  - Production: `https://api.hampersbyher.com/api/v1`
+  - Staging: `https://staging-api.hampersbyher.com/api/v1`
+  - Local Dev / Test: `http://localhost:3000/api/v1`
 
-## 2. Key Endpoint Groups
-- `GET /catalog/products`: Filtered catalog with occasion, recipient, and cursor pagination.
-- `POST /builder/validate-step`: Real-time 11-step configuration validation and volume fullness score.
-- `POST /checkout/create-order`: Idempotent order creation with server-side pricing calculation.
-- `POST /payments/razorpay/webhook`: Razorpay webhook signature verification and async processing.
-- `POST /whatsapp/webhook`: Inbound WhatsApp messaging, NDR responses, and customer support routing.
-- `GET /delivery/serviceability/{pincode}`: Redis-cached Indian PIN code serviceability lookup.
-- `GET /admin/orders`: RBAC-protected operational dashboard feed for atelier fulfillments.
+## 2. Active REST & WebSocket Endpoint Inventory
+### A. Product Catalog & PDP
+- `GET /catalog/products`: Filtered catalog with occasion, recipient, and cursor pagination. Coalesced via SingleFlight L1/L2 CacheGrid (60s TTL).
+- `GET /catalog/products/:id`: Enriched Item Detail View (PDP) with multi-angle gallery, inclusions, sourcing provenance, and ribbon/seal matrices. SingleFlight cached.
 
-## 3. Standards & Security
-- **Error Model**: RFC 7807 problem details (`application/problem+json`).
-- **Headers**: Mandatory `X-Request-ID` and `Idempotency-Key` (for non-safe mutations).
-- **Rate Limiting**: 100 requests/minute per IP on public endpoints, 10 req/min on checkout & auth.
+### B. Bespoke Hamper Builder
+- `GET /builder/options`: Returns available keepsake boxes, ribbons, wax seals, and luxury gourmet items.
+- `POST /builder/validate-step`: Validates 11-step configuration, computes 3D volume capacity and packing fullness score.
+
+### C. Checkout & Pricing Engine
+- `POST /checkout/calculate`: Computes server-authoritative integer paise totals, ALMAS10 coupon discount cap, shipping surcharge, and 18% GST.
+- `POST /checkout/create-order`: Atomic order creation with `inventoryEngine` stock reservations in `PENDING_PAYMENT` state.
+
+### D. Orders & Fulfillment
+- `GET /orders/:orderNumber`: Fetches order state, item breakdown, shipping address, and tracking status.
+
+### E. Smart Payment Gateway Router
+- `POST /payments/initiate`: Smart routing selecting optimal rail:
+  - Mobile client -> Compliant `upi://pay` deep link for instant Google Pay / PhonePe / Paytm invocation.
+  - Desktop client -> Dynamic UPI QR code string with 180s auto-refresh interval.
+  - International / NRI client (USD / AED) -> Stripe International with FEMA export purpose code `P0104`.
+  - Enforces SHA-256 idempotency protection against duplicate submissions.
+- `POST /payments/verify`: Verifies payment settlement and transitions order to `CONFIRMED`.
+- `POST /payments/smart-webhook`: Ingests asynchronous gateway webhooks with constant-time HMAC-SHA256 signature verification and $\le 300$s replay skew rejection.
+- `POST /payments/refund`: Dispatches instant refund across original payment rail.
+- `GET /payments/gateways/health`: Real-time health status, success rates, and active gateways (Razorpay, Cashfree, Stripe).
+
+### F. Logistics & Serviceability
+- `GET /delivery/serviceability/:pincode`: 6-digit Indian PIN code delivery verification with zone SLA classification (Metro Air vs Regional Surface).
+
+### G. Meta WhatsApp Business Cloud API
+- `GET /whatsapp/webhook`: Meta webhook challenge verification handshake.
+- `POST /whatsapp/webhook`: Inbound customer message webhook ingestion.
+- `POST /whatsapp/simulate-incoming`: Test/sandbox runner for 2-way conversational concierge (`STATUS <orderNumber>`, `DELIVERY <pincode>`, `AGENT` escalation).
+
+### H. Meta Instagram Graph API
+- `GET /instagram/feed`: Curated live reel and post grid from `@hampers._by_her`.
+- `GET /instagram/webhook`: Meta Webhook challenge handshake.
+- `POST /instagram/webhook`: Ingestion of Instagram DM leads with automated intent classification (`PRICING`, `WEDDING`, `CORPORATE_BULK`, etc.).
+
+### I. Atelier Voice AI WebSocket Gateway
+- `GET /voice/status`: Real-time operational status and model capabilities.
+- `WS /voice/stream`: Full-duplex WebSocket stream supporting 16kHz PCM16 bidirectional audio, VAD 30ms frames, luxury voice tools, and barge-in abort.
+
+### J. Platform Observability & Service Mesh
+- `GET /system/health`: Aggregated platform health including memory RSS, uptime, cache metrics, and service mesh statuses.
+- `GET /system/mesh/health`: Direct probe of all registered microservices in the service mesh.
+- `GET /system/cache/metrics`: Hit/miss ratios, eviction count, and active keys across CacheGrid.

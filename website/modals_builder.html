@@ -1,0 +1,310 @@
+
+  <!-- ═══════════════ BESPOKE HAMPER BUILDER ATELIER MODAL ═══════════════ -->
+  <div id="builder-overlay" class="modal-overlay">
+    <div class="builder-modal" role="dialog" aria-modal="true" aria-labelledby="builder-modal-title">
+      <header class="builder-modal__head">
+        <div>
+          <span class="mono-label" id="builder-step-indicator">Step 1 of 11 &middot; Box Selection</span>
+          <h2 id="builder-modal-title" class="cart-drawer__title" style="margin: 2px 0 0;">The Bespoke Atelier</h2>
+        </div>
+        <button id="builder-close-btn" class="cart-drawer__close" aria-label="Close atelier">&times;</button>
+      </header>
+
+      <div class="builder-modal__progress-bar">
+        <div id="builder-progress" class="builder-modal__progress-fill" style="width: 9%;"></div>
+      </div>
+
+      <!-- Live 3D Capacity & Volume Meter -->
+      <div style="padding: 12px 28px 0;">
+        <div class="fullness-widget">
+          <div style="font-size: 0.8rem; font-weight: 500;">
+            <span class="mono-label">Packing Volume:</span>
+            <strong id="fullness-text" style="margin-left: 6px; font-family: 'JetBrains Mono', monospace;">0 / 5,200 cm³</strong>
+          </div>
+          <div class="fullness-meter">
+            <div id="fullness-bar" class="fullness-meter__bar" style="width: 0%;"></div>
+          </div>
+          <span id="fullness-badge" class="fullness-badge UNDERFILLED">Underfilled</span>
+        </div>
+        <div id="builder-collision-alert" style="display: none; padding: 8px 12px; margin-bottom: 12px; border-radius: 6px; font-size: 0.78rem; background: #FFF4E5; color: #8A4B00; border: 1px solid #FFE0B2;"></div>
+      </div>
+
+      <div class="builder-modal__body">
+        <!-- STEP 1: Box Base -->
+        <div class="builder-step-pane active" data-step="1">
+          <h3 class="display-text" style="font-size: 1.3rem;">1. Choose Your Box Vessel</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Every composition begins with an heirloom-grade presentation box.</p>
+          <div class="builder-card-grid">
+            <div class="select-card selected" data-box-id="BOX_KRAFT_RIGID" data-price="45000" data-capacity="5200">
+              <div class="select-card__icon">📦</div>
+              <div class="select-card__title">Classic Rigid Kraft Box</div>
+              <div class="select-card__desc">FSC-certified recycled kraft board with magnetic catch (28 &times; 22 &times; 10 cm).</div>
+              <div class="select-card__price">₹ 450</div>
+            </div>
+            <div class="select-card" data-box-id="BOX_LINEN_KEEPSAKE" data-price="95000" data-capacity="8200">
+              <div class="select-card__icon">🪵</div>
+              <div class="select-card__title">Linen-Lined Pine Keepsake</div>
+              <div class="select-card__desc">Natural pine with raw ecru linen lining and antique brass hinges (32 &times; 25 &times; 12 cm).</div>
+              <div class="select-card__price">₹ 950</div>
+            </div>
+            <div class="select-card" data-box-id="BOX_VELVET_BORDEAUX" data-price="145000" data-capacity="11800">
+              <div class="select-card__icon">✨</div>
+              <div class="select-card__title">Royal Bordeaux Velvet Casket</div>
+              <div class="select-card__desc">Deep wine velvet wrap with gold foiled crest and ribbon clasp (35 &times; 28 &times; 14 cm).</div>
+              <div class="select-card__price">₹ 1,450</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Paper Shred Fill -->
+        <div class="builder-step-pane" data-step="2">
+          <h3 class="display-text" style="font-size: 1.3rem;">2. Nesting Paper Shred</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Cushioning that cradles each artisanal item inside.</p>
+          <div class="builder-card-grid">
+            <div class="select-card selected" data-shred="SHRED_ECRU" data-price="0">
+              <div class="select-card__icon">🌾</div>
+              <div class="select-card__title">Warm Ecru Shred</div>
+              <div class="select-card__desc">Unbleached natural cotton paper crinkles. Gentle &amp; timeless.</div>
+              <div class="select-card__price">Included</div>
+            </div>
+            <div class="select-card" data-shred="SHRED_GOLD" data-price="10000">
+              <div class="select-card__icon">🌟</div>
+              <div class="select-card__title">Golden Honeycomb Paper</div>
+              <div class="select-card__desc">Geometric die-cut kraft paper with subtle gold lustre.</div>
+              <div class="select-card__price">+ ₹ 100</div>
+            </div>
+            <div class="select-card" data-shred="SHRED_BORDEAUX" data-price="10000">
+              <div class="select-card__icon">🍷</div>
+              <div class="select-card__title">Deep Wine Crinkle</div>
+              <div class="select-card__desc">Saturated bordeaux paper shred for dramatic, intimate reveals.</div>
+              <div class="select-card__price">+ ₹ 100</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Confections & Beverages -->
+        <div class="builder-step-pane" data-step="3">
+          <h3 class="display-text" style="font-size: 1.3rem;">3. Confections &amp; Slow Sips</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Select culinary delights crafted by independent makers.</p>
+          <div class="builder-card-grid">
+            <div class="select-card" data-item-id="ITEM_CHOCO_DARK_HAZELNUT" data-price="42000" data-volume="450">
+              <div class="select-card__icon">🍫</div>
+              <div class="select-card__title">Single-Origin Hazelnut Dark Cocoa</div>
+              <div class="select-card__desc">70% Idukki cocoa bar studded with slow-roasted Oregon hazelnuts.</div>
+              <div class="select-card__price">₹ 420 &middot; 450 cm³</div>
+            </div>
+            <div class="select-card" data-item-id="ITEM_TEA_ROSE_BLUSH" data-price="49000" data-volume="600">
+              <div class="select-card__icon">🫖</div>
+              <div class="select-card__title">Himalayan Rose Blush Tisane</div>
+              <div class="select-card__desc">Organic loose-leaf whole buds with soothing chamomile &amp; peppermint.</div>
+              <div class="select-card__price">₹ 490 &middot; 600 cm³</div>
+            </div>
+            <div class="select-card" data-item-id="ITEM_TONIC_ELDERFLOWER" data-price="34000" data-volume="700">
+              <div class="select-card__icon">🍾</div>
+              <div class="select-card__title">Elderflower &amp; Pear Sparkling Tonic</div>
+              <div class="select-card__desc">Cold-pressed botanical aperitif bottled in amber glass.</div>
+              <div class="select-card__price">₹ 340 &middot; 700 cm³</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Scents & Botanicals -->
+        <div class="builder-step-pane" data-step="4">
+          <h3 class="display-text" style="font-size: 1.3rem;">4. Ambient Aromatics</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Enchanting notes that fill the room when the lid is lifted.</p>
+          <div class="builder-card-grid">
+            <div class="select-card" data-item-id="ITEM_CANDLE_AMBER" data-price="68000" data-volume="750">
+              <div class="select-card__icon">🕯️</div>
+              <div class="select-card__title">Amber &amp; Vanilla Castor Candle</div>
+              <div class="select-card__desc">Hand-poured into amber tumbler with wooden crackling wick (40hr burn).</div>
+              <div class="select-card__price">₹ 680 &middot; 750 cm³</div>
+            </div>
+            <div class="select-card" data-item-id="ITEM_BATH_SALTS" data-price="62000" data-volume="850">
+              <div class="select-card__icon">🛁</div>
+              <div class="select-card__title">French Clay &amp; Bergamot Bath Soak</div>
+              <div class="select-card__desc">Epsom crystal salts blended with cold-pressed Calabrian bergamot.</div>
+              <div class="select-card__price">₹ 620 &middot; 850 cm³</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: Keepsakes & Textiles -->
+        <div class="builder-step-pane" data-step="5">
+          <h3 class="display-text" style="font-size: 1.3rem;">5. Lasting Keepsakes</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Treasures kept long after the treats have disappeared.</p>
+          <div class="builder-card-grid">
+            <div class="select-card" data-item-id="ITEM_BRASS_BELL" data-price="55000" data-volume="350">
+              <div class="select-card__icon">🔔</div>
+              <div class="select-card__title">Hand-Etched Vintage Brass Bell</div>
+              <div class="select-card__desc">Artisanal sand-cast bell paperweight with melodic ring.</div>
+              <div class="select-card__price">₹ 550 &middot; 350 cm³</div>
+            </div>
+            <div class="select-card" data-item-id="ITEM_SILK_NAPKIN" data-price="38000" data-volume="300">
+              <div class="select-card__icon">🧣</div>
+              <div class="select-card__title">Washed Raw Silk Napkins (Set of 2)</div>
+              <div class="select-card__desc">Frayed edge Mulberry silk squares dyed with natural walnut bark.</div>
+              <div class="select-card__price">₹ 380 &middot; 300 cm³</div>
+            </div>
+            <div class="select-card" data-item-id="ITEM_LEATHER_JOURNAL" data-price="79000" data-volume="500">
+              <div class="select-card__icon">📖</div>
+              <div class="select-card__title">Full-Grain Leather Pocket Journal</div>
+              <div class="select-card__desc">Handmade cotton rag deckle paper bound in supple saddle leather.</div>
+              <div class="select-card__price">₹ 790 &middot; 500 cm³</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 6: Ribbon Selection -->
+        <div class="builder-step-pane" data-step="6">
+          <h3 class="display-text" style="font-size: 1.3rem;">6. Signature Ribbon Finish</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Tied by hand in our signature double-loop French knot.</p>
+          <div class="swatch-group">
+            <div class="swatch-item selected" data-ribbon-id="RIB_SATIN_CREAM" data-price="0">
+              <div class="swatch-circle" style="background: #F5F2EB;"></div>
+              <span style="font-size: 0.8rem; font-weight: 500;">Warm Ivory Satin</span>
+              <span class="mono-label">Included</span>
+            </div>
+            <div class="swatch-item" data-ribbon-id="RIB_VELVET_BORDEAUX" data-price="15000">
+              <div class="swatch-circle" style="background: #4A1E29;"></div>
+              <span style="font-size: 0.8rem; font-weight: 500;">Crushed Bordeaux</span>
+              <span class="mono-label">+ ₹ 150</span>
+            </div>
+            <div class="swatch-item" data-ribbon-id="RIB_RAW_GOLD" data-price="12000">
+              <div class="swatch-circle" style="background: #C89D42;"></div>
+              <span style="font-size: 0.8rem; font-weight: 500;">Clay Gold Silk</span>
+              <span class="mono-label">+ ₹ 120</span>
+            </div>
+            <div class="swatch-item" data-ribbon-id="RIB_GROSGRAIN_FOREST" data-price="10000">
+              <div class="swatch-circle" style="background: #2E5A44;"></div>
+              <span style="font-size: 0.8rem; font-weight: 500;">Forest Pine</span>
+              <span class="mono-label">+ ₹ 100</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 7: Wax Seal Crest -->
+        <div class="builder-step-pane" data-step="7">
+          <h3 class="display-text" style="font-size: 1.3rem;">7. Wax Seal Crest</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Hand-melted sealing wax stamped with an antique brass seal.</p>
+          <div class="builder-card-grid">
+            <div class="select-card selected" data-wax-id="WAX_BOTANICAL_GOLD" data-price="12000">
+              <div class="select-card__icon">🌿</div>
+              <div class="select-card__title">Botanical Olive Sprig</div>
+              <div class="select-card__desc">Shimmering antique gold metallic wax with fine leaf detail.</div>
+              <div class="select-card__price">₹ 120</div>
+            </div>
+            <div class="select-card" data-wax-id="WAX_CREST_BORDEAUX" data-price="15000">
+              <div class="select-card__icon">🛡️</div>
+              <div class="select-card__title">Atelier Monogram Crest</div>
+              <div class="select-card__desc">Deep bordeaux wax stamped with the iconic HBH insignia.</div>
+              <div class="select-card__price">₹ 150</div>
+            </div>
+            <div class="select-card" data-wax-id="WAX_HEART_ROSE" data-price="12000">
+              <div class="select-card__icon">🤍</div>
+              <div class="select-card__title">Minimalist Heart</div>
+              <div class="select-card__desc">Matte rose blush wax stamp for romantic sentiments.</div>
+              <div class="select-card__price">₹ 120</div>
+            </div>
+            <div class="select-card" data-wax-id="WAX_FLORAL_SAGE" data-price="12000">
+              <div class="select-card__icon">🌸</div>
+              <div class="select-card__title">Wildflower Wreath</div>
+              <div class="select-card__desc">Calming sage green wax with intricate wild blossom ring.</div>
+              <div class="select-card__price">₹ 120</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 8: Dried Florals -->
+        <div class="builder-step-pane" data-step="8">
+          <h3 class="display-text" style="font-size: 1.3rem;">8. Botanical Sprig Tuck</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Tucked beneath the ribbon bow on the exterior lid.</p>
+          <div class="builder-card-grid">
+            <div class="select-card selected" data-botanical="BOT_BABYS_BREATH" data-price="0">
+              <div class="select-card__icon">☁️</div>
+              <div class="select-card__title">Preserved Baby's Breath</div>
+              <div class="select-card__desc">Delicate cloud of white dried gypsophila florets.</div>
+              <div class="select-card__price">Included</div>
+            </div>
+            <div class="select-card" data-botanical="BOT_LAVENDER" data-price="8000">
+              <div class="select-card__icon">🌾</div>
+              <div class="select-card__title">French Lavender Sprig</div>
+              <div class="select-card__desc">Fragrant dried Provence lavender stems with purple tint.</div>
+              <div class="select-card__price">+ ₹ 80</div>
+            </div>
+            <div class="select-card" data-botanical="BOT_WHEAT" data-price="8000">
+              <div class="select-card__icon">🌾</div>
+              <div class="select-card__title">Golden Wheat Stalks</div>
+              <div class="select-card__desc">Rustic sun-dried golden sheaves symbolizing abundance.</div>
+              <div class="select-card__price">+ ₹ 80</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 9: Calligraphy Note -->
+        <div class="builder-step-pane" data-step="9">
+          <h3 class="display-text" style="font-size: 1.3rem;">9. Handwritten Calligraphy Card</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Penned with dip-pen sepia ink on 300gsm cotton deckled paper.</p>
+          <div class="card-writing-box">
+            <div class="form-row" style="margin-bottom: 12px;">
+              <div>
+                <label class="form-label" for="card-to-input">To (Recipient Name)</label>
+                <input type="text" id="card-to-input" class="form-input" placeholder="e.g. My Dearest Almas">
+              </div>
+              <div>
+                <label class="form-label" for="card-from-input">From (Sender Name)</label>
+                <input type="text" id="card-from-input" class="form-input" placeholder="e.g. With Love, Kabir">
+              </div>
+            </div>
+            <label class="form-label" for="card-message-textarea">Your Personal Note</label>
+            <textarea id="card-message-textarea" class="card-writing-textarea" maxlength="280" placeholder="Write your words here... They will be penned by hand exactly as written."></textarea>
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.75rem; color: var(--text-tertiary);">
+              <span>Max 280 characters</span>
+              <span id="card-char-counter">0 / 280</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 10: Polaroid Photo -->
+        <div class="builder-step-pane" data-step="10">
+          <h3 class="display-text" style="font-size: 1.3rem;">10. Polaroid Keepsake Print</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Tuck a real printed Fujifilm square photo inside the inner lid.</p>
+          <div style="text-align: center; margin-top: 14px;">
+            <div class="polaroid-slip">
+              <img id="polaroid-preview-img" src="images/hero-hamper.jpg" alt="Polaroid Memory" class="polaroid-slip__img">
+              <input type="text" id="polaroid-caption-input" class="form-input" style="font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.8rem; text-align: center; padding: 4px;" placeholder="Add caption...">
+            </div>
+            <label class="btn btn--outline btn--sm" style="cursor: pointer; display: inline-block; margin-top: 8px;">
+              Choose Photo
+              <input type="file" id="polaroid-upload-input" accept="image/*" style="display: none;">
+            </label>
+            <p class="mono-label" style="margin-top: 8px;">Optional &middot; Printed on archival instant film (+ ₹ 120)</p>
+          </div>
+        </div>
+
+        <!-- STEP 11: Final Review -->
+        <div class="builder-step-pane" data-step="11">
+          <h3 class="display-text" style="font-size: 1.3rem;">11. Review Your Composition</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Every element confirmed, ready to be hand-tied in our studio.</p>
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
+            <div id="builder-summary-breakdown" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+              <!-- Injected by script -->
+            </div>
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border-accent); display: flex; justify-content: space-between; align-items: baseline;">
+              <span style="font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600;">Atelier Total</span>
+              <span id="builder-final-total" style="font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 700; color: var(--color-bordeaux);">₹ 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="builder-modal__foot">
+        <button id="builder-prev-btn" class="btn btn--outline btn--sm" style="visibility: hidden;">&larr; Previous</button>
+        <div class="builder-price-ticker">
+          <span class="mono-label" style="font-size: 0.7rem; display: block; line-height: 1;">Current Total</span>
+          <span id="builder-price-ticker-val">₹ 450</span>
+        </div>
+        <button id="builder-next-btn" class="btn btn--bordeaux btn--sm">Next Step &rarr;</button>
+        <button id="builder-finish-btn" class="btn btn--primary btn--sm" style="display: none;">Add Hamper to Bag &rarr;</button>
+      </footer>
+    </div>
+  </div>

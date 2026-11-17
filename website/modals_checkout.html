@@ -1,0 +1,148 @@
+
+  <!-- ═══════════════ 2-STEP CHECKOUT MODAL ═══════════════ -->
+  <div id="checkout-overlay" class="modal-overlay">
+    <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <h2 id="checkout-title" class="cart-drawer__title" style="margin: 0;">Checkout Atelier</h2>
+        <button id="checkout-close-btn" class="cart-drawer__close" aria-label="Close checkout">&times;</button>
+      </div>
+
+      <!-- Step 1: Address & PIN Verification -->
+      <div id="checkout-step-1">
+        <p class="mono-label" style="margin-bottom: 12px;">Step 1 &middot; Recipient &amp; Delivery Destination</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="co-recipient-name">Recipient Name *</label>
+            <input type="text" id="co-recipient-name" class="form-input" placeholder="e.g. Almas Fatima" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="co-recipient-phone">Mobile Phone *</label>
+            <input type="tel" id="co-recipient-phone" class="form-input" placeholder="e.g. 9876543210" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="co-address">Street Address / Suite / Landmark *</label>
+          <input type="text" id="co-address" class="form-input" placeholder="e.g. Flat 402, Rosewood Manor, 12th Main Road" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="co-pincode">6-Digit Indian PIN Code *</label>
+            <input type="text" id="co-pincode" class="form-input" maxlength="6" placeholder="e.g. 110001 or 400001" required>
+            <div id="pincode-status" style="font-size: 0.78rem; margin-top: 4px; display: none;"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="co-city">City &amp; State *</label>
+            <input type="text" id="co-city" class="form-input" placeholder="Auto-fills from PIN" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="co-special-inst">Delivery Instructions (Optional)</label>
+          <input type="text" id="co-special-inst" class="form-input" placeholder="e.g. Please ring bell twice, fragile hamper.">
+        </div>
+
+        <button id="checkout-proceed-btn" class="btn btn--bordeaux btn--block" style="margin-top: 14px;">
+          Continue to Payment &rarr;
+        </button>
+      </div>
+
+      <!-- Step 2: Payment Simulation -->
+      <div id="checkout-step-2" style="display: none;">
+        <p class="mono-label" style="margin-bottom: 12px;">Step 2 &middot; Secure Payment Selection</p>
+        
+        <div style="background: var(--bg-surface); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>Payable Amount:</span>
+            <strong id="co-final-amount" style="font-family: 'JetBrains Mono', monospace; color: var(--color-bordeaux);">₹ 0</strong>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary);">Includes all taxes &middot; Razorpay 256-bit SSL Encrypted</div>
+        </div>
+
+        <label class="form-label">Select Payment Method</label>
+        <div class="payment-methods">
+          <div class="payment-method-card selected" data-method="UPI">
+            <div style="font-size: 1.4rem;">📱</div>
+            <strong style="font-size: 0.85rem; display: block; margin-top: 4px;">Instant UPI</strong>
+            <span style="font-size: 0.72rem; color: var(--text-tertiary);">GPay / PhonePe / Paytm</span>
+          </div>
+          <div class="payment-method-card" data-method="CARD">
+            <div style="font-size: 1.4rem;">💳</div>
+            <strong style="font-size: 0.85rem; display: block; margin-top: 4px;">Cards</strong>
+            <span style="font-size: 0.72rem; color: var(--text-tertiary);">Visa / Mastercard / RuPay</span>
+          </div>
+          <div class="payment-method-card" data-method="NETBANKING">
+            <div style="font-size: 1.4rem;">🏛️</div>
+            <strong style="font-size: 0.85rem; display: block; margin-top: 4px;">Net Banking</strong>
+            <span style="font-size: 0.72rem; color: var(--text-tertiary);">All Indian Banks</span>
+          </div>
+        </div>
+
+        <div id="upi-qr-box" style="text-align: center; margin: 18px 0; padding: 16px; background: #FAF6F5; border-radius: 8px; border: 1px dashed var(--border-accent);">
+          <p class="mono-label" style="margin-bottom: 6px;">Simulated UPI QR &middot; Scan &amp; Pay</p>
+          <div style="display: inline-block; padding: 8px; background: #fff; border: 1px solid #ddd; border-radius: 4px;">
+            <svg width="120" height="120" viewBox="0 0 100 100">
+              <rect width="100" height="100" fill="#ffffff"/>
+              <rect x="10" y="10" width="30" height="30" fill="#4A1E29"/>
+              <rect x="15" y="15" width="20" height="20" fill="#ffffff"/>
+              <rect x="20" y="20" width="10" height="10" fill="#4A1E29"/>
+              <rect x="60" y="10" width="30" height="30" fill="#4A1E29"/>
+              <rect x="65" y="15" width="20" height="20" fill="#ffffff"/>
+              <rect x="70" y="20" width="10" height="10" fill="#4A1E29"/>
+              <rect x="10" y="60" width="30" height="30" fill="#4A1E29"/>
+              <rect x="15" y="65" width="20" height="20" fill="#ffffff"/>
+              <rect x="20" y="70" width="10" height="10" fill="#4A1E29"/>
+              <rect x="45" y="45" width="10" height="10" fill="#C89D42"/>
+              <rect x="60" y="60" width="12" height="12" fill="#4A1E29"/>
+              <rect x="75" y="75" width="15" height="15" fill="#4A1E29"/>
+            </svg>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 6px;">VPA: <code>hampersbyher@icici</code></p>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button id="checkout-back-btn" class="btn btn--outline btn--sm">&larr; Back</button>
+          <button id="checkout-pay-btn" class="btn btn--bordeaux btn--block">
+            Confirm &amp; Authorize Payment &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Order Confirmation Timeline -->
+      <div id="checkout-step-3" style="display: none; text-align: center; padding: 14px 0;">
+        <div style="font-size: 2.8rem; margin-bottom: 8px;">✨</div>
+        <h3 class="display-text" style="font-size: 1.5rem; color: var(--color-bordeaux);">Composition Confirmed</h3>
+        <p class="mono-label" id="confirmed-order-number" style="font-size: 0.95rem; margin: 8px 0;">Order # HBH-20260918-9182</p>
+        <p class="text-secondary" style="font-size: 0.88rem; max-width: 420px; margin: 0 auto 20px;">
+          Your artisanal hamper is now scheduled with our master binder. We will compose, press with sealing wax, and dispatch with express priority.
+        </p>
+
+        <div style="text-align: left; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
+          <p class="mono-label" style="margin-bottom: 12px;">Live Atelier Timeline</p>
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.82rem;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span style="color: var(--color-success);">✓</span>
+              <span><strong>Payment Received:</strong> Authorised via Razorpay Secure</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span style="color: var(--color-gold);">●</span>
+              <span><strong>Studio Queue:</strong> Hand-curation and calligraphy in progress</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; color: var(--text-tertiary);">
+              <span>○</span>
+              <span><strong>Sealing &amp; Ribboning:</strong> Wax crest application</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; color: var(--text-tertiary);">
+              <span>○</span>
+              <span><strong>Air Courier Dispatch:</strong> BlueDart / Delhivery Express</span>
+            </div>
+          </div>
+        </div>
+
+        <a id="confirmed-whatsapp-btn" href="https://wa.me/?text=Hi%20Hampers%20by%20Her,%20I%20just%20placed%20order" target="_blank" class="btn btn--primary btn--block">
+          Chat with Atelier on WhatsApp &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
