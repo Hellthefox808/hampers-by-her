@@ -76,7 +76,7 @@ function generateHamperPreviewSvg({
   const safeRecipient = escapeXml(recipientName);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" width="${width}" height="${height}">
   <defs>
     <!-- Studio Ambient Radial Shadow -->
     <radialGradient id="studioShadow" cx="50%" cy="85%" r="45%">

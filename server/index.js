@@ -70,10 +70,12 @@ app.use((req, res, next) => {
       statusCode: res.statusCode,
       durationMs: ms
     };
-    if (process.env.LOG_FORMAT === "json") {
-      console.log(JSON.stringify(logEntry));
-    } else {
-      console.log(`[${logEntry.timestamp}] [${logEntry.requestId}] ${logEntry.method} ${req.url} ${logEntry.statusCode} - ${ms}ms`);
+    if ((process.env.LOG_LEVEL || "").trim().toLowerCase() !== "silent") {
+      if (process.env.LOG_FORMAT === "json") {
+        console.log(JSON.stringify(logEntry));
+      } else {
+        console.log(`[${logEntry.timestamp}] [${logEntry.requestId}] ${logEntry.method} ${req.url} ${logEntry.statusCode} - ${ms}ms`);
+      }
     }
   });
   next();

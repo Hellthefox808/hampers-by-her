@@ -1107,8 +1107,8 @@ button {
 /* ═══════════════ ANIMATIONS ═══════════════ */
 @keyframes rise {
   from {
-    opacity: 0;
-    transform: translateY(24px);
+    opacity: 0.92;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -1117,16 +1117,22 @@ button {
 }
 
 @keyframes fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0.94;
+    transform: scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .anim-rise {
-  animation: rise 700ms var(--ease-gift) both;
+  animation: rise 360ms var(--ease-gift) both;
 }
 
 .anim-fade {
-  animation: fade 900ms var(--ease-gift) both;
+  animation: fade 420ms var(--ease-gift) both;
 }
 
 /* Intersection Observer animation trigger */
@@ -1210,9 +1216,36 @@ button {
 
 /* Small mobile adjustments */
 @media (max-width: 767px) {
+  .nav {
+    width: calc(100% - 16px);
+    border-radius: 20px;
+  }
+  .nav__inner {
+    height: 56px;
+    padding: 0 14px;
+    gap: 8px;
+  }
+  .nav__logo {
+    font-size: 1.12rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .nav__admin-badge {
+    display: none !important;
+  }
+  .nav__actions {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .nav__actions .btn--sm {
+    padding: 7px 14px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
   .hero__trust { gap: 16px; flex-wrap: wrap; }
   .footer__bottom-inner { flex-direction: column; gap: 8px; text-align: center; }
-  body { padding-bottom: 72px; }
+  body { padding-bottom: 84px; }
 
   .products-grid {
     grid-template-columns: 1fr;

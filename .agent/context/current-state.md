@@ -156,6 +156,16 @@ Build the complete digital operating system behind the luxury artisanal gifting 
       - **Transactional Inventory Rollback & Studio Persistence (`server/routes/api.js`, `server/services/adminService.js`, `server/services/orderService.js`)**: Enforced HTTP `409 INSUFFICIENT_STOCK` and atomic rollback of earlier SKU reservations on partial checkout failure; persisted studio status transitions via `OrderService.syncPersistence()`; upgraded order numbers to `crypto.randomInt`.
       - **HTTP Hardening & Reproducible Benchmarks (`server/index.js`, `scripts/benchmark_runtime.js`, `tests/elite_adversarial_audit.test.js`)**: Stripped `X-Powered-By`, added `X-Request-Id` correlation, CSP, configurable CORS allowlist, RFC 7807 JSON 404 on `/api/*`, and Express 4 `asyncHandler` wrappers. Measured real localhost p50/p95/p99 latencies via `npm run benchmark` and replaced unverified numbers in `docs/reports/PERFORMANCE_BENCHMARK_REPORT.md` & `SECURITY_AUDIT_REPORT.md` with strict `VERIFIED` / `UNVERIFIED` epistemic classifications.
       - **Verified Quality Gate**: **240/240 tests passing across 64 suites (0 failures)**, **57/57 Section 40 specifications compliant (100%)**.
+    - **Live Playwright Headless Chromium E2E & Visual QA (`/webapp-testing`)**:
+      - **Full-Stack Browser Verification**: Executed native Python Playwright suite managed by `with_server.py` against live `http://localhost:3000` covering desktop (`1440×900`), mobile (`390×844`), PDP modal + cart persistence, 11-step Bespoke Builder + Step 11 SVG preview, AI Knapsack Curator, Natural Language Intent Search, 4D Unboxing Theater, and Admin Studio OS JWT auth & live orders (**27/27 assertions passing, 0 pageerrors, 0 unexpected console errors, 0 failed HTTP >=400 requests**).
+      - **Visual & Contract Defects Found & Remediated**:
+        1. Eliminated above-the-fold desktop hero paint delay (`opacity: 0` animation hide) and full-page scroll-reveal invisible section voids (`website/styles.css`, `website/script.js`, `website/index.html` `fetchpriority="high"`).
+        2. Fixed mobile (`390px`) single-line floating navbar wrapping and removed mobile WhatsApp FAB overlap over `.mobile-bar` dock (`website/styles.css`, `website/styles_ext.css`).
+        3. Fixed AI Knapsack Curator frontend-backend contract mismatch (`₹ NaN` / 0 items), centered `.knapsack-modal` & `.tracking-modal`, and unwrapped Natural Language Intent Search response (`website/script.js`, `website/styles_ext.css`).
+        4. Locked `viewBox="0 0 800 600"` in `platform/services/atelier-visualizer/previewGenerator.js` and responsive SVG sizing in `website/styles_ext.css` to eliminate Step 11 SVG cropping.
+        5. Formatted Admin Studio OS revenue KPI with `₹` Indian grouping (`₹ 90,023.80`), added non-empty inclusion fallbacks, and added explicit error surface in `fetchOrders()` (`website/admin.html`).
+        6. Added `LOG_LEVEL=silent` support in `server/index.js` to prevent stdout pipe-buffer stalls under non-draining test supervisors.
+      - **Measured Browser CWV (Localhost Chromium)**: Desktop `LCP 892ms`, `CLS 0.0169`; Mobile `LCP 556ms`, `CLS 0.0000` — documented in `docs/reports/PERFORMANCE_BENCHMARK_REPORT.md`.
 
 ---
 

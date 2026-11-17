@@ -6,6 +6,15 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // ── Global Toast Notification ──
   const toastEl = document.getElementById('hbh-toast');
   function showToast(message) {
@@ -50,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
   mobileOverlay?.addEventListener('click', closeMenu);
   mobileLinks?.forEach(link => link.addEventListener('click', closeMenu));
 
-  // ── Scroll Reveal Observer ──
+  // ── Scroll Reveal Observer (Progressive: never hides sections in blank voids) ──
   const revealElements = document.querySelectorAll(
     '.product-card, .bespoke-card, .builder, .whatsapp-card, .stories-grid'
   );
@@ -58,18 +67,23 @@ document.addEventListener('DOMContentLoaded', () => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible');
-        entry.target.style.opacity = '1';
         entry.target.style.transform = 'translateY(0)';
         revealObserver.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  }, { threshold: 0.05, rootMargin: '0px 0px 80px 0px' });
 
   revealElements.forEach((el) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(24px)';
-    el.style.transition = 'opacity 700ms cubic-bezier(0.32, 0.72, 0, 1), transform 700ms cubic-bezier(0.32, 0.72, 0, 1)';
-    revealObserver.observe(el);
+    const rect = el.getBoundingClientRect();
+    el.style.opacity = '1';
+    if (rect.top > window.innerHeight * 0.95) {
+      el.style.transform = 'translateY(14px)';
+      el.style.transition = 'transform 520ms cubic-bezier(0.32, 0.72, 0, 1)';
+      revealObserver.observe(el);
+    } else {
+      el.classList.add('visible');
+      el.style.transform = 'translateY(0)';
+    }
   });
 
   // ── Testimonial Carousel ──
@@ -1682,19 +1696,32 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if (data.success && data.data) {
-        lastKnapsackComposition = data.data;
+        const d = data.data;
+        const curatedItems = Array.isArray(d.items)
+          ? d.items
+          : (Array.isArray(d.selectedItems) ? d.selectedItems : []);
+        const totalPaise = Number(d.totalPricePaise ?? d.totalCostPaise ?? 0);
+        const harmonyScore = Number(d.averageHarmonyScore ?? d.harmonyScore ?? 94.5);
+
+        lastKnapsackComposition = { ...d, selectedItems: curatedItems };
         knapsackResultsContainer.style.display = 'block';
         if (knapsackHarmonyScore) {
-          knapsackHarmonyScore.textContent = `Harmony Score: ${(data.data.harmonyScore || 94.5).toFixed(1)} / 100`;
+          knapsackHarmonyScore.textContent = `Harmony Score: ${harmonyScore.toFixed(1)} / 100`;
         }
         if (knapsackTotalPrice) {
-          knapsackTotalPrice.textContent = `₹ ${Math.round(data.data.totalCostPaise / 100).toLocaleString('en-IN')}`;
+          knapsackTotalPrice.textContent = `₹ ${Math.round(totalPaise / 100).toLocaleString('en-IN')}`;
         }
-        if (knapsackItemsList && Array.isArray(data.data.selectedItems)) {
-          knapsackItemsList.innerHTML = data.data.selectedItems.map(item => `
+        if (knapsackItemsList) {
+          const boxRow = d.box ? `
+            <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dotted #E2D9D2; font-weight: 600;">
+              <span>📦 ${escapeHtml(d.box.name || "Keepsake Vessel")} (Box)</span>
+              <span style="font-family: 'JetBrains Mono', monospace;">₹ ${Math.round(Number(d.box.pricePaise || 0) / 100).toLocaleString('en-IN')}</span>
+            </div>
+          ` : '';
+          knapsackItemsList.innerHTML = boxRow + curatedItems.map(item => `
             <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dotted #E2D9D2;">
-              <span>• ${item.name} (${item.category || "Inclusion"})</span>
-              <span style="font-family: 'JetBrains Mono', monospace;">₹ ${Math.round(item.pricePaise / 100).toLocaleString('en-IN')}</span>
+              <span>• ${escapeHtml(item.name)} (${escapeHtml(item.category || "Inclusion")})</span>
+              <span style="font-family: 'JetBrains Mono', monospace;">₹ ${Math.round(Number(item.pricePaise || 0) / 100).toLocaleString('en-IN')}</span>
             </div>
           `).join('');
         }
@@ -1745,15 +1772,20 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if (data.success && data.data) {
-        const intent = data.data;
+        const intent = data.data.intent || data.data;
+        const priceCapRupees = intent.maxPricePaise
+          ? Math.round(Number(intent.maxPricePaise) / 100)
+          : intent.priceCapRupees;
         if (searchIntentPills) {
           searchIntentPills.style.display = 'flex';
           let chips = '';
-          if (intent.occasion) chips += `<span class="intent-chip">Occasion: ${intent.occasion}</span>`;
-          if (intent.recipient) chips += `<span class="intent-chip">Recipient: ${intent.recipient}</span>`;
-          if (intent.priceCapRupees) chips += `<span class="intent-chip">Cap: ₹${intent.priceCapRupees.toLocaleString('en-IN')}</span>`;
-          if (intent.isLuxury) chips += `<span class="intent-chip">✨ Luxury Tier</span>`;
-          searchIntentPills.innerHTML = chips || `<span class="intent-chip">Tokens: ${query}</span>`;
+          if (intent.occasion) chips += `<span class="intent-chip">Occasion: ${escapeHtml(intent.occasion)}</span>`;
+          if (intent.recipient) chips += `<span class="intent-chip">Recipient: ${escapeHtml(intent.recipient)}</span>`;
+          if (priceCapRupees) chips += `<span class="intent-chip">Cap: ₹${Number(priceCapRupees).toLocaleString('en-IN')}</span>`;
+          if (intent.isLuxury || (Array.isArray(intent.tones) && intent.tones.includes('luxury'))) {
+            chips += `<span class="intent-chip">✨ Luxury Tier</span>`;
+          }
+          searchIntentPills.innerHTML = chips || `<span class="intent-chip">Tokens: ${escapeHtml(query)}</span>`;
         }
 
         // Filter cards in grid

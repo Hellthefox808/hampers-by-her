@@ -1,8 +1,9 @@
 # PERFORMANCE BENCHMARK REPORT — Hampers by Her Commerce Ecosystem
 
 > **Epistemic Evidence Classification (`/system-like-fabel` Section 0 & 16)**:
-> - **VERIFIED**: Directly executed and measured via `npm run benchmark` (`scripts/benchmark_runtime.js`) and `npm test` on Node.js `v26.13.1` (`win32 x64`, localhost loopback, 100 iterations per endpoint after 5 warmup requests, 0 errors).
-> - **UNVERIFIED**: Browser Core Web Vitals (LCP, INP, CLS) and multi-region AWS load tests require live headless Lighthouse / k6 runs against deployed cloud infrastructure; budgets below are architectural targets, not claimed field measurements.
+> - **VERIFIED (Local Runtime)**: Directly executed and measured via `npm run benchmark` (`scripts/benchmark_runtime.js`) and `npm test` on Node.js `v26.13.1` (`win32 x64`, localhost loopback, 100 iterations per endpoint after 5 warmup requests, 0 errors).
+> - **VERIFIED (Local Headless Chromium Browser)**: Directly measured via Playwright headless Chromium (`1440x900` desktop and `390x844` mobile viewports) against live `http://localhost:3000` managed by `with_server.py` (27/27 E2E browser assertions passing, 0 uncaught errors).
+> - **UNVERIFIED (Production Field / Cloud Load)**: Real-user INP (Interaction to Next Paint) across mid-tier mobile devices, CDN/4G network latency, and multi-region AWS k6 load tests require deployed cloud infrastructure.
 
 ---
 
@@ -23,13 +24,18 @@ Executed via `npm run benchmark` (`scripts/benchmark_runtime.js`):
 
 ---
 
-## 2. Frontend Core Web Vitals (CWV) Budgets (UNVERIFIED in Live Browser)
+## 2. Frontend Core Web Vitals (CWV) — Headless Chromium Telemetry (Localhost)
 
-| Metric | Target Budget | Measurement Status | Implemented Architecture Controls |
-| :--- | :---: | :---: | :--- |
-| **Largest Contentful Paint (LCP)** | $\le 2.2\text{s}$ | **UNVERIFIED (Requires Lighthouse CI)** | Inline SVG visualizer, `Cache-Control: public, max-age=86400`, zero heavy bundler overhead |
-| **Interaction to Next Paint (INP)** | $\le 150\text{ms}$ | **UNVERIFIED (Requires Lighthouse CI)** | `requestAnimationFrame` debounced 4D tilt, decoupled Web Audio API synthesis |
-| **Cumulative Layout Shift (CLS)** | $\le 0.05$ | **UNVERIFIED (Requires Lighthouse CI)** | Fixed aspect ratio card media slots and deterministic modal dimensions |
+Measured via Playwright Headless Chromium (`PerformanceObserver` for `largest-contentful-paint` and `layout-shift`, plus Navigation & Paint Timing APIs) against live `http://localhost:3000`:
+
+| Metric | Target Budget | Desktop (`1440×900`) | Mobile (`390×844`) | Status | Implemented Controls |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Time to First Byte (TTFB)** | $\le 200\text{ms}$ | `12ms` | `2ms` | **VERIFIED (Localhost)** | Express static caching (`max-age=86400`), lightweight server |
+| **First Contentful Paint (FCP)** | $\le 1,800\text{ms}$ | `892ms` | `556ms` | **VERIFIED (Localhost)** | Immediate above-the-fold hero render (zero `opacity: 0` paint gate) |
+| **Largest Contentful Paint (LCP)** | $\le 2,200\text{ms}$ | `892ms` | `556ms` | **VERIFIED (Localhost)** | `fetchpriority="high"` + explicit `width`/`height` on `hero-hamper.jpg` |
+| **Cumulative Layout Shift (CLS)** | $\le 0.10$ | `0.0169` | `0.0000` | **VERIFIED (Localhost)** | Fixed aspect ratio card media slots, centered modal sheets |
+| **DOMContentLoaded / Load** | $\le 2,500\text{ms}$ | `556ms` / `955ms` | `521ms` / `989ms` | **VERIFIED (Localhost)** | Zero heavy bundler overhead, inline SVG procedural visualizer |
+| **Interaction to Next Paint (INP)** | $\le 150\text{ms}$ | — | — | **UNVERIFIED (Requires Field RUM / Lighthouse)** | `requestAnimationFrame` debounced 4D tilt, decoupled Web Audio API |
 
 ---
 

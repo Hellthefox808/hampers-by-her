@@ -431,7 +431,10 @@
         const json = await res.json();
         if (json.success && json.data) {
           const m = json.data;
-          document.getElementById("kpi-revenue").textContent = m.revenue?.formattedRupees || "₹ 0";
+          const revPaise = Number(m.revenue?.totalPaise ?? 0);
+          const revNum = revPaise > 0 ? revPaise / 100 : Number(String(m.revenue?.formattedRupees || "0").replace(/[^0-9.-]/g, "")) || 0;
+          const formattedInr = `₹ ${revNum.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          document.getElementById("kpi-revenue").textContent = formattedInr;
           document.getElementById("kpi-qc").textContent = `${m.pipeline?.inProduction || 0} Orders`;
           document.getElementById("kpi-prod").textContent = `${m.pipeline?.inProduction || 0} Orders`;
           document.getElementById("kpi-dispatch").textContent = `${m.pipeline?.qualityChecked || 0} Orders`;
@@ -454,6 +457,11 @@
           allOrders = json.data.orders;
           updateTabCounts();
           renderOrders();
+        } else {
+          const container = document.getElementById("orders-grid");
+          if (container) {
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 48px; color: #C5221F;">⚠ Unable to load studio orders (${escapeHtml(json.error || `HTTP ${res.status}`)}).</div>`;
+          }
         }
       } catch (e) {
         const container = document.getElementById("orders-grid");
@@ -518,9 +526,13 @@
         const safeStatus = escapeHtml(order.status || "UNKNOWN");
         const patronName = escapeHtml(order.customer?.name || order.shippingAddress?.recipientName || order.shippingAddress?.fullName || "Valued Patron");
         const totalRupees = escapeHtml(order.pricing?.formatted?.totalRupees || `₹ ${Math.round((order.pricing?.totalPaise || order.totalPricePaise || 0) / 100).toLocaleString('en-IN')}`);
-        const itemsSummary = escapeHtml(Array.isArray(order.items) 
-          ? order.items.map(i => i.title || i.name).join(", ") 
-          : "Gourmet Selections");
+        const parsedItems = Array.isArray(order.items)
+          ? order.items
+              .map(i => (typeof i === "string" ? i : (i?.title || i?.name || i?.sku || i?.id || "")))
+              .map(s => String(s).trim())
+              .filter(Boolean)
+          : [];
+        const itemsSummary = escapeHtml(parsedItems.length > 0 ? parsedItems.join(", ") : "Curated Artisanal Selection");
 
         const boxText = escapeHtml(order.box?.name || "Rigid Keepsake");
         const ribbonText = escapeHtml(order.ribbon?.name || order.ribbon || "Burgundy Merlot Silk");
