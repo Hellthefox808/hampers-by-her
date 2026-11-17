@@ -45,6 +45,26 @@
   --radius-xl: 20px;
   --radius-pill: 9999px;
 
+  /* Apple Glassmorphism & Liquid Glass Tokens */
+  --glass-canvas: rgba(253, 251, 247, 0.72);
+  --glass-surface: rgba(255, 255, 255, 0.68);
+  --glass-surface-translucent: rgba(255, 255, 255, 0.52);
+  --glass-surface-raised: rgba(255, 255, 255, 0.82);
+  --glass-bordeaux: rgba(74, 30, 41, 0.88);
+  --glass-bordeaux-translucent: rgba(74, 30, 41, 0.72);
+  --glass-gold: rgba(243, 235, 216, 0.68);
+  --glass-blur-sm: blur(12px) saturate(180%);
+  --glass-blur-md: blur(24px) saturate(190%) contrast(102%);
+  --glass-blur-lg: blur(36px) saturate(200%) contrast(105%);
+  --glass-border-hairline: 1px solid rgba(255, 255, 255, 0.55);
+  --glass-border-gold: 1px solid rgba(212, 175, 55, 0.35);
+  --glass-border-dark: 1px solid rgba(74, 30, 41, 0.12);
+  --glass-inner-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
+  --glass-inner-specular-bordeaux: inset 0 1px 1px 0 rgba(241, 209, 117, 0.4);
+  --glass-shadow-floating: 0 20px 48px -12px rgba(74, 30, 41, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
+  --glass-shadow-hover: 0 32px 64px -16px rgba(74, 30, 41, 0.18), inset 0 1px 2px 0 rgba(255, 255, 255, 0.95);
+  --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+
   /* Typography Scale */
   --text-display: clamp(2.75rem, 6vw, 5.25rem);
   --text-h1: clamp(2rem, 4vw, 2.75rem);
@@ -88,6 +108,12 @@ body {
   font-size: var(--text-body);
   color: var(--text-primary);
   background-color: var(--bg-canvas);
+  background-image: 
+    radial-gradient(at 10% 15%, rgba(243, 235, 216, 0.5) 0px, transparent 45%),
+    radial-gradient(at 90% 10%, rgba(232, 213, 196, 0.4) 0px, transparent 45%),
+    radial-gradient(at 85% 65%, rgba(74, 30, 41, 0.05) 0px, transparent 50%),
+    radial-gradient(at 15% 85%, rgba(200, 157, 66, 0.08) 0px, transparent 50%);
+  background-attachment: fixed;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -208,7 +234,7 @@ button {
   transform: scaleX(1);
 }
 
-/* ── Buttons ── */
+/* ── Buttons (Apple HIG Tactile Springs) ── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -217,9 +243,14 @@ button {
   border-radius: var(--radius-pill);
   font-size: var(--text-caption);
   font-weight: 500;
-  transition: all var(--transition-med);
+  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+.btn:active {
+  transform: scale(0.97);
 }
 
 .btn__arrow {
@@ -232,64 +263,96 @@ button {
 }
 
 .btn--bordeaux {
-  background: var(--color-bordeaux);
+  background: linear-gradient(135deg, #5A2432 0%, #4A1E29 50%, #36141D 100%);
   color: var(--text-inverse);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.3), 0 6px 20px -4px rgba(74, 30, 41, 0.35);
 }
 .btn--bordeaux:hover {
-  background: var(--color-bordeaux-hover);
+  background: linear-gradient(135deg, #6B2B3B 0%, #52222E 50%, #3E1721 100%);
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.4), 0 10px 28px -4px rgba(74, 30, 41, 0.45);
+  transform: translateY(-2px);
 }
 
 .btn--dark {
-  background: var(--text-primary);
+  background: linear-gradient(135deg, #2E2829 0%, #1A1718 100%);
   color: var(--text-inverse);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 .btn--dark:hover {
   background: #111;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
 }
 
 .btn--primary {
-  background: var(--text-primary);
+  background: linear-gradient(135deg, #322A2D 0%, #221E1F 100%);
   color: var(--bg-canvas);
-  padding: 10px 20px;
-  font-size: 12px;
+  padding: 10px 22px;
+  font-size: 11px;
   font-family: 'JetBrains Mono', monospace;
   text-transform: uppercase;
   letter-spacing: 0.15em;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.25), 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+.btn--primary:hover {
+  background: linear-gradient(135deg, #44393D 0%, #2D2829 100%);
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.35), 0 8px 20px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
 }
 
 .btn--outline {
-  border: 1px solid rgba(34, 30, 31, 0.2);
-  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  padding: 10px 20px;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  color: var(--text-primary);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.8), 0 2px 8px rgba(74, 30, 41, 0.04);
 }
 .btn--outline:hover {
-  background: var(--text-primary);
-  color: var(--bg-canvas);
-  border-color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: var(--color-gold);
+  color: var(--color-bordeaux);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.95), 0 6px 18px rgba(200, 157, 66, 0.18);
 }
 
 .btn--sm { padding: 12px 24px; }
 .btn--xs { padding: 8px 18px; font-size: 11px; }
 
-/* ═══════════════ NAVIGATION ═══════════════ */
+/* ═══════════════ NAVIGATION (Apple Vision Pro Floating Glass) ═══════════════ */
 .nav {
   position: sticky;
-  top: 0;
+  top: 10px;
   z-index: 100;
-  background: rgba(253, 251, 247, 0.55);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(34, 30, 31, 0.08);
-  transition: background 300ms ease;
+  width: calc(100% - 24px);
+  max-width: 1240px;
+  margin: 0 auto;
+  border-radius: 24px;
+  background: rgba(253, 251, 247, 0.72);
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.8), 0 14px 36px -10px rgba(74, 30, 41, 0.08);
+  transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .nav.scrolled {
-  background: rgba(253, 251, 247, 0.85);
-  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border-color: rgba(212, 175, 55, 0.28);
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.95), 0 18px 48px -10px rgba(74, 30, 41, 0.14);
+  transform: translateY(-2px);
 }
 
 .nav__inner {
@@ -297,15 +360,17 @@ button {
   align-items: center;
   justify-content: space-between;
   height: 64px;
+  padding: 0 24px;
   gap: 24px;
 }
 
 .nav__logo {
   font-family: 'Playfair Display', Georgia, serif;
   font-style: italic;
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   letter-spacing: -0.02em;
   font-weight: 500;
+  color: var(--color-bordeaux);
 }
 
 .nav__links {
@@ -324,11 +389,25 @@ button {
 
 .nav__cart {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--text-secondary);
+  letter-spacing: 0.12em;
+  color: var(--color-bordeaux);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 2px 8px rgba(74, 30, 41, 0.04);
+  transition: all 250ms ease;
   display: none;
+}
+.nav__cart:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--color-gold);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(200, 157, 66, 0.18);
 }
 
 .nav__hamburger {
@@ -559,6 +638,21 @@ button {
 .product-card {
   animation: rise 700ms var(--ease-gift) both;
   animation-delay: var(--delay, 0ms);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding: 14px;
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.8), 0 12px 32px -8px rgba(74, 30, 41, 0.06);
+  transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(212, 175, 55, 0.35);
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.95), 0 24px 52px -12px rgba(74, 30, 41, 0.15);
+  transform: translateY(-4px);
 }
 
 .product-card__image-wrap {
@@ -593,9 +687,12 @@ button {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  background: var(--bg-canvas);
+  background: rgba(253, 251, 247, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .badge--gold {
@@ -959,22 +1056,25 @@ button {
   color: var(--text-secondary);
 }
 
-/* ═══════════════ MOBILE STICKY BAR ═══════════════ */
+/* ═══════════════ MOBILE STICKY BAR (Apple Dynamic Island Dock) ═══════════════ */
 .mobile-bar {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 12px;
+  left: 14px;
+  right: 14px;
   z-index: 90;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background: rgba(253, 251, 247, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border-subtle);
-  padding: 8px 0;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 36px;
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.95), 0 16px 40px -8px rgba(74, 30, 41, 0.16);
+  padding: 8px 12px;
   padding-bottom: max(8px, env(safe-area-inset-bottom));
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mobile-bar__item {
@@ -982,21 +1082,26 @@ button {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   font-size: 10px;
   font-family: 'JetBrains Mono', monospace;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-secondary);
-  transition: color var(--transition-fast);
+  transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
   min-width: 48px;
   min-height: 48px;
   justify-content: center;
+  border-radius: 20px;
+}
+.mobile-bar__item:active {
+  transform: scale(0.92);
 }
 
 .mobile-bar__item:hover,
 .mobile-bar__item--accent {
   color: var(--color-bordeaux);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 /* ═══════════════ ANIMATIONS ═══════════════ */
