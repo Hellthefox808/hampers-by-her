@@ -19,6 +19,9 @@ describe("Hampers by Her Production Infrastructure & DevOps Suite", () => {
   const alertsConfigPath = path.join(rootDir, "infra", "observability", "alerts.yml");
   const deployVerifyScriptPath = path.join(rootDir, "infra", "scripts", "deploy_verify.sh");
   const backupRestoreScriptPath = path.join(rootDir, "infra", "scripts", "backup_restore.sh");
+  const k8sDir = path.join(rootDir, "infra", "k8s");
+  const githubDir = path.join(rootDir, ".github");
+  const reportsDir = path.join(rootDir, "docs", "reports");
 
   // ---------------------------------------------------------------------------
   // 1. Dockerfile Security & Multi-Stage Architecture
@@ -202,6 +205,153 @@ describe("Hampers by Her Production Infrastructure & DevOps Suite", () => {
       const content = fs.readFileSync(backupRestoreScriptPath, "utf8");
       assert.ok(content.includes("create-db-cluster-snapshot"), "Must execute Aurora cluster snapshot");
       assert.ok(content.includes("data/backups"), "Must back up local atelier store");
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 6. Kubernetes Enterprise Manifests (infra/k8s/)
+  // ---------------------------------------------------------------------------
+  describe("6. Kubernetes Enterprise Manifests", () => {
+    test("namespace.yaml enforces restricted Pod Security Standards", () => {
+      const nsPath = path.join(k8sDir, "namespace.yaml");
+      assert.ok(fs.existsSync(nsPath), "namespace.yaml must exist");
+      const content = fs.readFileSync(nsPath, "utf8");
+      assert.ok(content.includes("kind: Namespace"), "Must define Namespace kind");
+      assert.ok(content.includes("name: hampers-by-her"), "Must define hampers-by-her namespace");
+      assert.ok(content.includes("pod-security.kubernetes.io/enforce: restricted"), "Must enforce restricted PSS");
+    });
+
+    test("configmap.yaml and secret.yaml.example configure runtime environment safely", () => {
+      const cmPath = path.join(k8sDir, "configmap.yaml");
+      const secPath = path.join(k8sDir, "secret.yaml.example");
+      assert.ok(fs.existsSync(cmPath), "configmap.yaml must exist");
+      assert.ok(fs.existsSync(secPath), "secret.yaml.example must exist");
+      const cmContent = fs.readFileSync(cmPath, "utf8");
+      const secContent = fs.readFileSync(secPath, "utf8");
+      assert.ok(cmContent.includes("NODE_ENV: \"production\""), "ConfigMap must set NODE_ENV=production");
+      assert.ok(cmContent.includes("AWS_REGION: \"ap-south-1\""), "ConfigMap must set ap-south-1 region");
+      assert.ok(secContent.includes("kind: Secret"), "Must declare Kubernetes Secret template");
+      assert.ok(secContent.includes("DATABASE_URL"), "Must declare DATABASE_URL key");
+      assert.ok(secContent.includes("JWT_SECRET"), "Must declare JWT_SECRET key");
+    });
+
+    test("deployment.yaml enforces zero-downtime rolling updates, non-root security, and health probes", () => {
+      const depPath = path.join(k8sDir, "deployment.yaml");
+      assert.ok(fs.existsSync(depPath), "deployment.yaml must exist");
+      const content = fs.readFileSync(depPath, "utf8");
+      assert.ok(content.includes("replicas: 3"), "Must run 3 initial replicas");
+      assert.ok(content.includes("type: RollingUpdate"), "Must use RollingUpdate strategy");
+      assert.ok(content.includes("maxSurge: 1"), "Must allow maxSurge: 1");
+      assert.ok(content.includes("maxUnavailable: 0"), "Must enforce zero-downtime maxUnavailable: 0");
+      assert.ok(content.includes("runAsNonRoot: true"), "Must enforce runAsNonRoot");
+      assert.ok(content.includes("runAsUser: 1000"), "Must run as UID 1000");
+      assert.ok(content.includes("allowPrivilegeEscalation: false"), "Must disallow privilege escalation");
+      assert.ok(content.includes("- ALL"), "Must drop ALL Linux capabilities");
+      assert.ok(content.includes("livenessProbe:"), "Must define livenessProbe");
+      assert.ok(content.includes("readinessProbe:"), "Must define readinessProbe");
+      assert.ok(content.includes("path: /health"), "Probes must target /health");
+    });
+
+    test("service.yaml exposes ClusterIP on port 3000", () => {
+      const svcPath = path.join(k8sDir, "service.yaml");
+      assert.ok(fs.existsSync(svcPath), "service.yaml must exist");
+      const content = fs.readFileSync(svcPath, "utf8");
+      assert.ok(content.includes("kind: Service"), "Must define Service kind");
+      assert.ok(content.includes("type: ClusterIP"), "Must use ClusterIP type");
+      assert.ok(content.includes("port: 3000"), "Must expose port 3000");
+    });
+
+    test("hpa.yaml configures autoscaling/v2 from 2 to 12 replicas on CPU and Memory", () => {
+      const hpaPath = path.join(k8sDir, "hpa.yaml");
+      assert.ok(fs.existsSync(hpaPath), "hpa.yaml must exist");
+      const content = fs.readFileSync(hpaPath, "utf8");
+      assert.ok(content.includes("apiVersion: autoscaling/v2"), "Must use autoscaling/v2");
+      assert.ok(content.includes("minReplicas: 2"), "Must set minReplicas: 2");
+      assert.ok(content.includes("maxReplicas: 12"), "Must set maxReplicas: 12");
+      assert.ok(content.includes("averageUtilization: 65"), "Must target 65% CPU utilization");
+      assert.ok(content.includes("averageUtilization: 75"), "Must target 75% Memory utilization");
+    });
+
+    test("ingress.yaml configures AWS ALB with HTTPS redirect and health checks", () => {
+      const ingPath = path.join(k8sDir, "ingress.yaml");
+      assert.ok(fs.existsSync(ingPath), "ingress.yaml must exist");
+      const content = fs.readFileSync(ingPath, "utf8");
+      assert.ok(content.includes("kind: Ingress"), "Must define Ingress kind");
+      assert.ok(content.includes("alb.ingress.kubernetes.io/ssl-redirect: \"443\""), "Must redirect HTTP to HTTPS");
+      assert.ok(content.includes("alb.ingress.kubernetes.io/healthcheck-path: \"/health\""), "Must healthcheck /health");
+      assert.ok(content.includes("host: hampersbyher.com"), "Must route hampersbyher.com");
+    });
+
+    test("pdb.yaml enforces PodDisruptionBudget with minAvailable: 2", () => {
+      const pdbPath = path.join(k8sDir, "pdb.yaml");
+      assert.ok(fs.existsSync(pdbPath), "pdb.yaml must exist");
+      const content = fs.readFileSync(pdbPath, "utf8");
+      assert.ok(content.includes("kind: PodDisruptionBudget"), "Must define PodDisruptionBudget");
+      assert.ok(content.includes("minAvailable: 2"), "Must preserve at least 2 available pods");
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 7. CI/CD DevSecOps Workflows, GitHub Governance & Section 26 Reports
+  // ---------------------------------------------------------------------------
+  describe("7. CI/CD Workflows, GitHub Governance & Deliverable Reports", () => {
+    test("CI workflow runs docs audit, test suite, Trivy scan, and Terraform format check", () => {
+      const ciPath = path.join(githubDir, "workflows", "ci.yml");
+      assert.ok(fs.existsSync(ciPath), "ci.yml must exist");
+      const content = fs.readFileSync(ciPath, "utf8");
+      assert.ok(content.includes("npm run audit:docs"), "CI must run documentation audit");
+      assert.ok(content.includes("npm test"), "CI must execute regression tests");
+      assert.ok(content.includes("aquasecurity/trivy-action"), "CI must run Trivy container security scan");
+      assert.ok(content.includes("terraform fmt -check -recursive infra/terraform/"), "CI must lint Terraform IaC");
+    });
+
+    test("Deploy workflow uses keyless AWS OIDC, ECR push, ECS rolling deploy, and health guard", () => {
+      const deployPath = path.join(githubDir, "workflows", "deploy.yml");
+      assert.ok(fs.existsSync(deployPath), "deploy.yml must exist");
+      const content = fs.readFileSync(deployPath, "utf8");
+      assert.ok(content.includes("id-token: write"), "Deploy must enable OIDC id-token permission");
+      assert.ok(content.includes("aws-actions/configure-aws-credentials@v4"), "Deploy must use AWS OIDC action");
+      assert.ok(content.includes("aws-actions/amazon-ecs-deploy-task-definition@v2"), "Deploy must roll ECS service");
+      assert.ok(content.includes("https://hampersbyher.com/health"), "Deploy must verify live /health endpoint");
+    });
+
+    test("GitHub repository governance files (README, CONTRIBUTING, CHANGELOG, CODEOWNERS, templates) exist", () => {
+      const governanceFiles = [
+        path.join(rootDir, "README.md"),
+        path.join(rootDir, "CONTRIBUTING.md"),
+        path.join(rootDir, "CHANGELOG.md"),
+        path.join(githubDir, "CODEOWNERS"),
+        path.join(githubDir, "pull_request_template.md"),
+        path.join(githubDir, "ISSUE_TEMPLATE", "bug_report.md"),
+        path.join(githubDir, "ISSUE_TEMPLATE", "feature_request.md"),
+      ];
+      for (const filePath of governanceFiles) {
+        assert.ok(fs.existsSync(filePath), `Governance file must exist: ${path.basename(filePath)}`);
+        const content = fs.readFileSync(filePath, "utf8");
+        assert.ok(content.trim().length > 100, `Governance file must be substantive: ${path.basename(filePath)}`);
+      }
+    });
+
+    test("All 10 Section 26 Master Deliverable Reports exist in docs/reports/ and are complete", () => {
+      const requiredReports = [
+        "EXECUTIVE_SUMMARY.md",
+        "SECURITY_AUDIT_REPORT.md",
+        "PERFORMANCE_BENCHMARK_REPORT.md",
+        "ACCESSIBILITY_WCAG_REPORT.md",
+        "TESTING_COVERAGE_REPORT.md",
+        "DEPLOYMENT_READINESS_REPORT.md",
+        "GITHUB_READINESS_REPORT.md",
+        "RISK_REGISTER.md",
+        "TECHNICAL_DEBT_REPORT.md",
+        "RELEASE_NOTES_v2.0.0.md",
+      ];
+      for (const report of requiredReports) {
+        const fullPath = path.join(reportsDir, report);
+        assert.ok(fs.existsSync(fullPath), `Deliverable report must exist: ${report}`);
+        const content = fs.readFileSync(fullPath, "utf8");
+        assert.ok(content.trim().length > 300, `Deliverable report must be comprehensive: ${report}`);
+        assert.ok(!content.includes("TODO"), `Zero-Placeholder violation (TODO) in ${report}`);
+      }
     });
   });
 });

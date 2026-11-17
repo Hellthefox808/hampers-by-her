@@ -31,7 +31,7 @@ jobs:
       - name: Audit All 44 Architectural Specifications (Section 40)
         run: npm run audit:docs
 
-      - name: Execute Full Commerce & Platform Test Suite (199 Tests)
+      - name: Execute Full Commerce, Platform & Infrastructure Test Suite
         run: npm test
 
       - name: Verify Android Voice AI APK Packaging

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hbh-app-service
+  namespace: hampers-by-her
+  labels:
+    app.kubernetes.io/name: hampers-by-her
+    app.kubernetes.io/component: web-api
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: hampers-by-her
+    app.kubernetes.io/component: web-api

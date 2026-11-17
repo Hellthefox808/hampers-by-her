@@ -1,0 +1,33 @@
+# ==============================================================================
+# HAMPERS BY HER — CODEOWNERS GOVERNANCE
+# ==============================================================================
+
+# Global Project Leads
+*                       @hampersbyher/lead-architects @hampersbyher/core-maintainers
+
+# Frontend & UI/UX Systems
+/website/               @hampersbyher/frontend-engineers
+/website/styles.css     @hampersbyher/frontend-engineers @hampersbyher/design-system-team
+/website/styles_ext.css @hampersbyher/frontend-engineers @hampersbyher/design-system-team
+
+# Backend Services & Domain Engines
+/server/                @hampersbyher/backend-engineers
+/platform/              @hampersbyher/backend-engineers @hampersbyher/dsa-specialists
+
+# Database Schemas & Migrations
+/docs/database/         @hampersbyher/database-architects
+/platform/database/     @hampersbyher/database-architects
+
+# Infrastructure, Docker & Cloud
+/Dockerfile             @hampersbyher/devops-sre-team
+/docker-compose.yml     @hampersbyher/devops-sre-team
+/infra/                 @hampersbyher/devops-sre-team
+/.github/workflows/     @hampersbyher/devops-sre-team
+
+# Mobile Android Voice AI Engine
+/android/               @hampersbyher/mobile-android-team
+/dist/                  @hampersbyher/release-managers
+
+# Specifications & Architecture Documentation
+/*.md                   @hampersbyher/lead-architects
+/docs/                  @hampersbyher/lead-architects

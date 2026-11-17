@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: hbh-app-pdb
+  namespace: hampers-by-her
+  labels:
+    app.kubernetes.io/name: hampers-by-her
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hampers-by-her
+      app.kubernetes.io/component: web-api

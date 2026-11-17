@@ -19,7 +19,14 @@
   - `modules/database`: Aurora Serverless v2 PostgreSQL 16 cluster and Multi-AZ ElastiCache Redis 7.2.
   - `modules/storage_cdn`: S3 media derivatives bucket with OAC and CloudFront distribution.
 
-## 3. Local Development & Air-Gapped Emulation (`docker-compose.yml`)
+## 3. Kubernetes Enterprise Orchestration (`infra/k8s/`)
+- **Namespace & Security**: `namespace.yaml` enforcing restricted Pod Security Standards (`pod-security.kubernetes.io/enforce: restricted`).
+- **Configuration & Secrets**: `configmap.yaml` and `secret.yaml.example` for environment separation and sealed secrets.
+- **Workloads**: `deployment.yaml` running 3 replicas, zero-downtime rolling update strategy (`maxSurge: 1`, `maxUnavailable: 0`), non-root user execution (`runAsUser: 1000`, `allowPrivilegeEscalation: false`, drop `ALL` capabilities), and HTTP `/health` liveness/readiness probes.
+- **Service & Ingress**: `service.yaml` (ClusterIP port 3000) and `ingress.yaml` (AWS ALB controller with SSL redirect and health checks).
+- **Auto-Scaling & Resilience**: `hpa.yaml` (Horizontal Pod Autoscaler 2 to 12 replicas on 65% CPU / 75% RAM) and `pdb.yaml` (PodDisruptionBudget with `minAvailable: 2`).
+
+## 4. Local Development & Air-Gapped Emulation (`docker-compose.yml`)
 - **App**: `hbh-app-server` running on port 3000 with live volume mounts and healthchecks.
 - **PostgreSQL**: `hbh-postgres-db` (`pgvector/pgvector:pg16`) with automatic DDL and schema bootstrapping.
 - **Redis**: `hbh-redis-cache` (`redis:7.2-alpine`) with AOF persistence, password authentication, and 256MB LRU memory cap.
@@ -27,7 +34,7 @@
 - **Prometheus**: `hbh-prometheus-sre` scraping app, redis, and database metrics with alerting rules.
 - **Networks**: `hbh-frontend-net` and `hbh-backend-net` enforcing network isolation.
 
-## 4. SRE & Observability Infrastructure (`infra/observability/`)
+## 5. SRE & Observability Infrastructure (`infra/observability/`)
 - **Prometheus Scrapes** (`prometheus.yml`): Target configuration for `hbh-app:3000/metrics`, `redis:6379`, and `postgres:5432`.
 - **SRE Alerting Rules** (`alerts.yml`):
   - `ServiceDown`: Heartbeat failure $>1\text{m}$.
@@ -37,6 +44,10 @@
   - `RedisMemorySaturation`: Memory utilization $>90\%$.
   - `PostgresConnectionPoolSaturation`: DB active connection pool $>85\%$.
 
-## 5. Operational Automation Scripts (`infra/scripts/`)
+## 6. Operational Automation Scripts (`infra/scripts/`)
 - `deploy_verify.sh`: Production Canary and smoke deployment healthcheck poller.
 - `backup_restore.sh`: Disaster recovery on-demand Aurora snapshot trigger and local store persistence backup.
+
+## 7. CI/CD & DevSecOps Workflows (`.github/workflows/`)
+- `ci.yml`: Architectural specification audit (Section 40), 230 automated regression tests, Android Voice AI APK verification, Trivy container vulnerability scan, and Terraform format verification.
+- `deploy.yml`: AWS OIDC keyless authentication, Amazon ECR build and push, AWS ECS Fargate zero-downtime rolling deployment, and automated post-deployment health check rollback guard.

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hbh-app-config
+  namespace: hampers-by-her
+  labels:
+    app.kubernetes.io/name: hampers-by-her
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  HOST: "0.0.0.0"
+  AWS_REGION: "ap-south-1"
+  RATE_LIMIT_MAX_AUTH: "20"
+  RATE_LIMIT_MAX_CHECKOUT: "40"
+  S3_BUCKET_NAME: "hampers-by-her-production-media-store"
