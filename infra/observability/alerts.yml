@@ -1,0 +1,91 @@
+# ==============================================================================
+# HAMPERS BY HER — SRE ALERTING RULES
+# Enforces SLIs & SLOs Across Availability, Latency, Saturation, and Errors
+# ==============================================================================
+
+groups:
+  - name: hampers_by_her_critical_alerts
+    rules:
+      # ------------------------------------------------------------------------
+      # 1. Service Availability (Heartbeat)
+      # ------------------------------------------------------------------------
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          tier: platform
+        annotations:
+          summary: "Instance {{ $labels.instance }} of service {{ $labels.service }} is down"
+          description: "Service has been unreachable for more than 1 minute. Automated container recovery engaged."
+
+      # ------------------------------------------------------------------------
+      # 2. HTTP Error Rate Breach (SLO: 99.9% Success)
+      # ------------------------------------------------------------------------
+      - alert: HighHttpErrorRate
+        expr: >
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total[5m])) * 100 > 1.0
+        for: 2m
+        labels:
+          severity: critical
+          tier: api
+        annotations:
+          summary: "HTTP 5xx error rate exceeds 1% (Breaching 99.9% SLO)"
+          description: "Current error rate is {{ $value }}% over a 5m sliding window. Check atelier crash logs."
+
+      # ------------------------------------------------------------------------
+      # 3. High Latency P99 Degradation (SLO: P99 < 500ms)
+      # ------------------------------------------------------------------------
+      - alert: HighApiLatencyP99
+        expr: >
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 3m
+        labels:
+          severity: warning
+          tier: api
+        annotations:
+          summary: "API 99th percentile response time is above 500ms"
+          description: "P99 latency has degraded to {{ $value }}s. Investigate slow DB queries or Redis locks."
+
+      # ------------------------------------------------------------------------
+      # 4. Node.js Event Loop Lag (Adaptive Load Shedding Guard)
+      # ------------------------------------------------------------------------
+      - alert: HighEventLoopLag
+        expr: nodejs_eventloop_lag_seconds > 0.070
+        for: 1m
+        labels:
+          severity: critical
+          tier: compute
+        annotations:
+          summary: "Node.js Event Loop lag exceeds 70ms load shedding threshold"
+          description: "Event loop latency is {{ $value }}s. Background tasks are being shed to protect payment checkout."
+
+      # ------------------------------------------------------------------------
+      # 5. Redis Cache Memory Saturation (>90%)
+      # ------------------------------------------------------------------------
+      - alert: RedisMemorySaturation
+        expr: >
+          redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          tier: cache
+        annotations:
+          summary: "Redis memory utilization is above 90%"
+          description: "Redis cache memory used is at {{ $value }}%. SingleFlight eviction policy active."
+
+      # ------------------------------------------------------------------------
+      # 6. Database Connection Pool Exhaustion (>85%)
+      # ------------------------------------------------------------------------
+      - alert: PostgresConnectionPoolSaturation
+        expr: >
+          pg_stat_activity_count / pg_settings_max_connections * 100 > 85
+        for: 3m
+        labels:
+          severity: critical
+          tier: database
+        annotations:
+          summary: "Aurora PostgreSQL connection pool is over 85% capacity"
+          description: "Active connections are at {{ $value }}% of maximum allowed. Inspect PgBouncer pooling."

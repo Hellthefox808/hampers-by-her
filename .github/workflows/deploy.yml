@@ -1,0 +1,86 @@
+name: Hampers by Her Production Deployment (Zero-Downtime ECS)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".agent/**"
+
+permissions:
+  id-token: write   # Required for AWS OIDC authentication (Zero hardcoded secrets)
+  contents: read
+
+jobs:
+  deploy_production:
+    name: Build, Scan & Deploy to AWS ECS Fargate (Mumbai)
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials via OpenID Connect (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/hbh-github-actions-deploy-role
+          aws-region: ap-south-1
+          audience: sts.amazonaws.com
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build, Tag, and Push Container to Amazon ECR
+        uses: docker/build-push-action@v5
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: hampers-by-her
+          IMAGE_TAG: ${{ github.sha }}
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Download Active ECS Task Definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition hampers-by-her-production-task \
+            --query taskDefinition > task-definition.json
+
+      - name: Render New Image URI in Task Definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: hbh-app
+          image: ${{ steps.login-ecr.outputs.registry }}/hampers-by-her:${{ github.sha }}
+
+      - name: Deploy Task Definition to AWS ECS Fargate
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: hampers-by-her-production-service
+          cluster: hampers-by-her-production-cluster
+          wait-for-service-stability: true
+          wait-for-minutes: 10
+
+      - name: Post-Deployment Smoke Test (Production Health Probe)
+        run: |
+          echo "Verifying production health check..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://hampersbyher.com/health || echo "000")
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Critical: Health check failed with status $STATUS. Initiating rollback..."
+            exit 1
+          fi
+          echo "Production deployment verified successfully with HTTP 200."

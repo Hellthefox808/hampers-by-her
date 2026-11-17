@@ -1,0 +1,14 @@
+variable "project_name" { type = string }
+variable "environment" { type = string }
+variable "container_image" { type = string }
+variable "container_cpu" { type = number }
+variable "container_memory" { type = number }
+variable "min_tasks" { type = number }
+variable "max_tasks" { type = number }
+variable "private_app_subnet_ids" { type = list(string) }
+variable "ecs_security_group_id" { type = string }
+variable "target_group_arn" { type = string }
+variable "ecs_execution_role_arn" { type = string }
+variable "ecs_task_role_arn" { type = string }
+variable "database_endpoint" { type = string }
+variable "redis_endpoint" { type = string }

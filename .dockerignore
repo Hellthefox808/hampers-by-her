@@ -1,0 +1,48 @@
+# ==============================================================================
+# HAMPERS BY HER — DOCKER IGNORE MANIFEST
+# ==============================================================================
+
+# Version Control & Metadata
+.git
+.gitignore
+.gitattributes
+.github
+.agent
+.codelens
+.conda
+.nex
+.kombai
+.vscode
+
+# Node modules & build artifacts
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Android build outputs & local toolchains (handled in separate APK pipeline)
+android/
+!dist/HampersByHer-VoiceAI.apk
+dist/*.idsig
+dist/unaligned*.apk
+
+# Tests & Coverage reports
+tests/
+platform/tests/
+coverage/
+.nyc_output/
+
+# Logs & Temporary Scratch
+logs/*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+
+# Documentation markdown (specs are audited in builder stage, not needed in raw runner)
+*.md
+docs/**/*.mermaid
+docs/**/*.txt
+!docs/database/
+!docs/api/

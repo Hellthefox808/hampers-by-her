@@ -1,0 +1,165 @@
+# ==============================================================================
+# HAMPERS BY HER — LOCAL FULL-STACK DOCKER COMPOSE ORCHESTRATION
+# Complete Local-First Development Environment with Postgres 16 (pgvector),
+# Redis 7.2 (AOF), LocalStack (AWS S3/KMS/Secrets), App, and Prometheus SRE
+# ==============================================================================
+
+name: hampers-by-her-stack
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Hampers by Her Core Application Runtime
+  # ----------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: hbh-app-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - HOST=0.0.0.0
+      - DATABASE_URL=postgresql://hbh_admin:hbh_secret_2026@postgres:5432/hampers_by_her?sslmode=disable
+      - REDIS_URL=redis://:hbh_redis_secret@redis:6379/0
+      - JWT_SECRET=atelier_development_super_secret_key_2026_xyz
+      - AWS_REGION=ap-south-1
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - S3_BUCKET_NAME=hbh-local-media-bucket
+      - RATE_LIMIT_MAX_AUTH=100
+      - RATE_LIMIT_MAX_CHECKOUT=200
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - frontend-net
+      - backend-net
+    volumes:
+      - ./data:/usr/src/app/data
+      - ./logs:/usr/src/app/logs
+
+  # ----------------------------------------------------------------------------
+  # 2. PostgreSQL 16 with pgvector Extension
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: hbh-postgres-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=hbh_admin
+      - POSTGRES_PASSWORD=hbh_secret_2026
+      - POSTGRES_DB=hampers_by_her
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docs/database/ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql:ro
+      - ./platform/database/schemas/schema.sql:/docker-entrypoint-initdb.d/02-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hbh_admin -d hampers_by_her"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend-net
+
+  # ----------------------------------------------------------------------------
+  # 3. Redis 7.2 In-Memory Caching & Distributed Locks
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7.2-alpine
+    container_name: hbh-redis-cache
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --requirepass hbh_redis_secret
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "hbh_redis_secret", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - backend-net
+
+  # ----------------------------------------------------------------------------
+  # 4. LocalStack AWS Cloud Emulation (Offline Air-Gap Resilience)
+  # ----------------------------------------------------------------------------
+  localstack:
+    image: localstack/localstack:latest
+    container_name: hbh-localstack-aws
+    restart: unless-stopped
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,secretsmanager,sqs,kms
+      - AWS_DEFAULT_REGION=ap-south-1
+      - PERSISTENCE=1
+    volumes:
+      - localstackdata:/var/lib/localstack
+    networks:
+      - backend-net
+
+  # ----------------------------------------------------------------------------
+  # 5. Prometheus Metrics & SRE Observability Collector
+  # ----------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: hbh-prometheus-sre
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/observability/alerts.yml:/etc/prometheus/alerts.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    networks:
+      - frontend-net
+      - backend-net
+
+# ------------------------------------------------------------------------------
+# Isolated Networks (Least Privilege Microsegmentation)
+# ------------------------------------------------------------------------------
+networks:
+  frontend-net:
+    driver: bridge
+    name: hbh-frontend-net
+  backend-net:
+    driver: bridge
+    name: hbh-backend-net
+
+# ------------------------------------------------------------------------------
+# Persistent Volume Mounts
+# ------------------------------------------------------------------------------
+volumes:
+  pgdata:
+    name: hbh-pgdata-vol
+  redisdata:
+    name: hbh-redisdata-vol
+  localstackdata:
+    name: hbh-localstack-vol

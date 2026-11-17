@@ -1,0 +1,46 @@
+# ==============================================================================
+# HAMPERS BY HER — PROMETHEUS SRE SCRAPE CONFIGURATION
+# Monitors Core Application Metrics, Redis Engine, Postgres DB, and System Telemetry
+# ==============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+rule_files:
+  - "/etc/prometheus/alerts.yml"
+
+scrape_configs:
+  # ----------------------------------------------------------------------------
+  # 1. Hampers by Her Monolith / Node.js Process Telemetry
+  # ----------------------------------------------------------------------------
+  - job_name: "hbh-app"
+    metrics_path: "/metrics"
+    scheme: "http"
+    static_configs:
+      - targets: ["app:3000"]
+        labels:
+          environment: "production"
+          service: "commerce-monolith"
+          region: "ap-south-1"
+
+  # ----------------------------------------------------------------------------
+  # 2. Redis Cache & Distributed Lock Telemetry
+  # ----------------------------------------------------------------------------
+  - job_name: "hbh-redis"
+    static_configs:
+      - targets: ["redis:6379"]
+        labels:
+          environment: "production"
+          service: "cache-grid"
+
+  # ----------------------------------------------------------------------------
+  # 3. PostgreSQL Database Connection Pool & Query Telemetry
+  # ----------------------------------------------------------------------------
+  - job_name: "hbh-postgres"
+    static_configs:
+      - targets: ["postgres:5432"]
+        labels:
+          environment: "production"
+          service: "primary-aurora-db"

@@ -1,0 +1,23 @@
+# ==============================================================================
+# HAMPERS BY HER — TERRAFORM VARIABLES EXAMPLE
+# Copy to terraform.tfvars and customize for staging/production deployments
+# ==============================================================================
+
+aws_region         = "ap-south-1"
+environment        = "production"
+project_name       = "hampers-by-her"
+domain_name        = "hampersbyher.com"
+vpc_cidr           = "10.0.0.0/16"
+availability_zones = ["ap-south-1a", "ap-south-1b", "ap-south-1c"]
+
+# Sizing & Scaling (Fargate: 1 vCPU, 2GB RAM; Auto-scales between 2 and 12 tasks)
+container_image    = "123456789012.dkr.ecr.ap-south-1.amazonaws.com/hampers-by-her:2.0.0"
+container_cpu      = 1024
+container_memory   = 2048
+min_tasks          = 2
+max_tasks          = 12
+
+# Database Capacity (0.5 to 16 ACUs = up to 32GB RAM dynamically)
+aurora_min_acu     = 0.5
+aurora_max_acu     = 16.0
+redis_node_type    = "cache.t4g.medium"

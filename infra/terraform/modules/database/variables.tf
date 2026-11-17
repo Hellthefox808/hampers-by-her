@@ -1,0 +1,9 @@
+variable "project_name" { type = string }
+variable "environment" { type = string }
+variable "db_subnet_group_name" { type = string }
+variable "redis_subnet_group_name" { type = string }
+variable "aurora_security_group_id" { type = string }
+variable "redis_security_group_id" { type = string }
+variable "aurora_min_acu" { type = number }
+variable "aurora_max_acu" { type = number }
+variable "redis_node_type" { type = string }
