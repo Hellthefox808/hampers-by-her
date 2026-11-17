@@ -161,6 +161,7 @@ const { VoiceAiGateway } = require("./services/voiceAiGateway");
 
 const httpServer = http.createServer(app);
 const voiceGateway = new VoiceAiGateway(httpServer);
+app.locals.voiceGateway = voiceGateway;
 
 if (require.main === module) {
   httpServer.listen(PORT, () => {

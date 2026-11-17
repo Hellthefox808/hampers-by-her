@@ -166,6 +166,12 @@ Build the complete digital operating system behind the luxury artisanal gifting 
         5. Formatted Admin Studio OS revenue KPI with `₹` Indian grouping (`₹ 90,023.80`), added non-empty inclusion fallbacks, and added explicit error surface in `fetchOrders()` (`website/admin.html`).
         6. Added `LOG_LEVEL=silent` support in `server/index.js` to prevent stdout pipe-buffer stalls under non-draining test supervisors.
       - **Measured Browser CWV (Localhost Chromium)**: Desktop `LCP 892ms`, `CLS 0.0169`; Mobile `LCP 556ms`, `CLS 0.0000` — documented in `docs/reports/PERFORMANCE_BENCHMARK_REPORT.md`.
+    - **Production Voice AI Architecture & Storefront Concierge (`/voice-ai-development`)**:
+      - **Provider & Audio Infrastructure (`server/services/voiceProviders.js`)**: Exported canonical `AUDIO_CONFIG` (16kHz/24kHz PCM16, 100ms chunks), configurable `DEFAULT_VAD_CONFIG`, clearable `AudioOutputQueue`, ~50-char sentence streaming buffer (`splitIntoStreamingSegments`), OpenAI Realtime API session builder, Deepgram Nova-2 + ElevenLabs Turbo v2.5 streaming TTS bridge, HS256 LiveKit WebRTC room JWT generator, and constant-time Vapi webhook secret verification.
+      - **Real-Time Voice Gateway Upgrade (`server/services/voiceAiGateway.js`)**: Added cooperative `AbortController` mid-stream barge-in cancellation (both `response.cancel` and Server-VAD high-RMS audio interruption), silence auto-endpointing, real TTFA telemetry, and real domain tool execution (`tokenizeSearchIntent`, `optimizeHamperForBudget`, `DeliveryService.checkPincode` fixing broken `validatePincode`, `OrderService.getOrderByNumber`, `logisticsCourierService`).
+      - **Voice REST Endpoints (`server/routes/api.js`)**: Upgraded `GET /api/v1/voice/status`, added `POST /api/v1/voice/vapi/webhook`, staff-protected `GET /api/v1/voice/vapi/transcripts`, and `POST /api/v1/voice/livekit/token`.
+      - **Web Storefront Real-Time Voice Concierge (`website/index.html`, `website/styles_ext.css`, `website/script.js`)**: Built Apple VisionOS `#voice-concierge-modal` with breathing Voice Orb, exponential-backoff WebSocket reconnection, clearable Web Audio PCM16 streaming playback queue, live microphone PCM16 downsampler, explicit Barge-In interrupt button, TTFA pill (`3ms` localhost), and clickable hamper action cards.
+      - **Verification**: **245/245 unit & integration tests passing**, **29/29 Playwright Chromium E2E assertions passing** (including live WebSocket Voice Concierge & screenshot QA), and **57/57 Section 40 documentation specs passing**.
 
 ---
 

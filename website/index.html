@@ -125,7 +125,8 @@
           <span style="font-size: 1rem; margin-right: 4px;">🔎</span>
           <input type="text" id="natural-search-input" placeholder="Type intent: e.g. 'wedding gift for sister under 4000' or 'festive luxury box'..." aria-label="Search hampers by intent">
           <button id="natural-search-btn" class="btn btn--outline btn--xs" style="margin-right: 6px;">Search</button>
-          <button id="btn-open-knapsack-curator" class="btn btn--bordeaux btn--xs">✨ AI Hamper Curator</button>
+          <button id="btn-open-knapsack-curator" class="btn btn--bordeaux btn--xs" style="margin-right: 6px;">✨ AI Hamper Curator</button>
+          <button id="btn-open-voice-concierge" class="btn btn--outline btn--xs" style="border-color: var(--color-gold); color: var(--color-bordeaux);">🎙️ Voice Concierge</button>
         </div>
         <div id="search-intent-pills" class="search-intent-pills" style="display: none;"></div>
       </div>
@@ -1233,6 +1234,54 @@
           <p id="unboxing-instruction-title" style="margin: 0; font-weight: 500;">Step 1: Untie the Bordeaux Raw Silk Ribbon</p>
           <p id="unboxing-instruction-sub" class="unboxing-instruction">Click on the ribbon to release the silk binding &rarr;</p>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ATELIER REAL-TIME VOICE AI CONCIERGE MODAL ═══════════════ -->
+  <div id="voice-concierge-modal" class="modal-overlay">
+    <div class="voice-modal" role="dialog" aria-modal="true" aria-labelledby="voice-modal-title">
+      <div class="voice-modal__head">
+        <div>
+          <span class="mono-label" style="font-size: 0.7rem; color: var(--color-gold);">Real-Time PCM16 · Server-VAD · Barge-In</span>
+          <h2 id="voice-modal-title" class="cart-drawer__title" style="margin: 2px 0 0;">Eleanor — Atelier Voice Concierge</h2>
+        </div>
+        <button id="voice-close-btn" class="cart-drawer__close" aria-label="Close voice concierge">&times;</button>
+      </div>
+
+      <div class="voice-orb-stage">
+        <div id="voice-orb" class="voice-orb" role="img" aria-label="Voice concierge status orb">
+          <span id="voice-orb-icon" style="font-size: 1.7rem;">🎙️</span>
+        </div>
+        <div class="voice-status-row">
+          <span id="voice-status-pill" class="voice-status-pill">Ready to Connect</span>
+          <span id="voice-ttfa-pill" class="mono-label" style="font-size: 0.72rem; color: var(--text-secondary);">TTFA: —</span>
+        </div>
+      </div>
+
+      <div class="voice-quick-prompts">
+        <button type="button" class="voice-prompt-chip" data-voice-prompt="I need a luxury wedding hamper under ₹4,000">💍 Wedding under ₹4,000</button>
+        <button type="button" class="voice-prompt-chip" data-voice-prompt="Curate a custom hamper under 3500">✨ Curate custom ₹3,500</button>
+        <button type="button" class="voice-prompt-chip" data-voice-prompt="Can you deliver to pincode 400001?">🚚 Delivery to 400001</button>
+        <button type="button" class="voice-prompt-chip" data-voice-prompt="Track my order status">📦 Track my order</button>
+      </div>
+
+      <div id="voice-transcript-feed" class="voice-transcript-feed" aria-live="polite">
+        <div class="voice-msg voice-msg--assistant">
+          <strong>Eleanor:</strong> Welcome to Hampers by Her. Tap the microphone to speak live over WebSocket PCM16, or choose a prompt below.
+        </div>
+      </div>
+
+      <div id="voice-action-cards" class="voice-action-cards" style="display: none;"></div>
+
+      <div class="voice-controls-row">
+        <button type="button" id="voice-mic-btn" class="btn btn--bordeaux btn--sm">🎙️ Start Live Mic</button>
+        <button type="button" id="voice-interrupt-btn" class="btn btn--outline btn--sm" disabled>✋ Interrupt (Barge-In)</button>
+      </div>
+
+      <div class="voice-text-row">
+        <input type="text" id="voice-text-input" class="form-input" placeholder="Or type a voice turn (e.g. 'anniversary gift with handwritten card')..." aria-label="Send voice concierge message">
+        <button type="button" id="voice-send-btn" class="btn btn--primary btn--sm">Send &rarr;</button>
       </div>
     </div>
   </div>

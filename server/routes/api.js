@@ -12,6 +12,12 @@ const { authService } = require("../services/authService");
 const { adminService } = require("../services/adminService");
 const { logisticsCourierService } = require("../services/logisticsCourierService");
 const { notificationService } = require("../services/notificationService");
+const {
+  AUDIO_CONFIG,
+  DEFAULT_VAD_CONFIG,
+  createLiveKitAccessToken,
+  verifyVapiSecret
+} = require("../services/voiceProviders");
 
 // Platform Distributed Services & Scalability Subsystems
 const { SmartPaymentRouter } = require("../../platform/services/payment-service/smartRouter");
@@ -552,32 +558,134 @@ router.post("/whatsapp/simulate-incoming", asyncHandler(async (req, res) => {
 }));
 
 // ═══════════════════════════════════════════════════════════
-// 7. VOICE AI STATUS & TELEMETRY
+// 7. VOICE AI STATUS, VAPI WEBHOOK & LIVEKIT WEBRTC TOKENS
 // ═══════════════════════════════════════════════════════════
 
 router.get("/voice/status", (req, res) => {
+  const gateway = req.app?.locals?.voiceGateway;
+  const liveTelemetry = gateway ? gateway.getMetrics() : null;
+
   res.json({
     success: true,
     data: {
       status: "operational",
-      version: "1.0.0",
+      version: "2.0.0",
       websocketEndpoint: "/api/v1/voice/stream",
-      supportedFormats: ["pcm16"],
-      sampleRates: [16000, 24000],
-      activeEngine: process.env.OPENAI_API_KEY ? "openai_realtime" : "local_atelier_sandbox",
+      vapiWebhookEndpoint: "/api/v1/voice/vapi/webhook",
+      livekitTokenEndpoint: "/api/v1/voice/livekit/token",
+      supportedFormats: [AUDIO_CONFIG.ENCODING],
+      sampleRates: [AUDIO_CONFIG.CLIENT_SAMPLE_RATE_HZ, AUDIO_CONFIG.REALTIME_SAMPLE_RATE_HZ],
+      audioConfig: {
+        encoding: AUDIO_CONFIG.ENCODING,
+        clientSampleRateHz: AUDIO_CONFIG.CLIENT_SAMPLE_RATE_HZ,
+        realtimeSampleRateHz: AUDIO_CONFIG.REALTIME_SAMPLE_RATE_HZ,
+        channels: AUDIO_CONFIG.CHANNELS,
+        frameDurationMs: AUDIO_CONFIG.FRAME_DURATION_MS,
+        clientChunkBytes: AUDIO_CONFIG.CLIENT_CHUNK_BYTES
+      },
+      vadDefaults: { ...DEFAULT_VAD_CONFIG },
+      activeEngine: process.env.OPENAI_API_KEY
+        ? "openai_realtime"
+        : (process.env.DEEPGRAM_API_KEY && process.env.ELEVENLABS_API_KEY
+          ? "deepgram_elevenlabs_pipeline"
+          : "local_atelier_sandbox"),
       models: [
         { id: "gpt-4o-realtime-preview", type: "speech-to-speech", active: Boolean(process.env.OPENAI_API_KEY) },
+        { id: "deepgram-nova-2", type: "streaming-stt", active: Boolean(process.env.DEEPGRAM_API_KEY) },
+        { id: "eleven_turbo_v2_5", type: "streaming-tts", active: Boolean(process.env.ELEVENLABS_API_KEY) },
         { id: "hampers-atelier-sandbox-v1", type: "domain-orchestrator", active: true }
       ],
       tools: [
         "searchHampers",
+        "curateBudgetHamper",
         "customizeHamper",
         "dictateCardMessage",
         "checkOrderStatus",
         "estimateDelivery"
-      ]
+      ],
+      telemetry: liveTelemetry
     }
   });
+});
+
+// Vapi Voice Agent Webhook (function-call tool dispatch + end-of-call-report archival)
+router.post("/voice/vapi/webhook", (req, res) => {
+  const providedSecret = req.headers["x-vapi-secret"];
+  if (!verifyVapiSecret(providedSecret)) {
+    return res.status(401).json({
+      success: false,
+      error: "INVALID_VAPI_WEBHOOK_SECRET"
+    });
+  }
+
+  const gateway = req.app?.locals?.voiceGateway;
+  const payload = req.body || {};
+  const msg = payload.message || payload;
+  const eventType = msg.type || payload.type;
+
+  if (eventType === "function-call") {
+    const fnCall = msg.functionCall || payload.functionCall || {};
+    const name = fnCall.name;
+    const args = fnCall.parameters || fnCall.arguments || {};
+    if (!name) {
+      return res.status(400).json({ success: false, error: "functionCall.name is required" });
+    }
+    const result = gateway
+      ? gateway.executeToolCall(name, args)
+      : { error: "Voice gateway unavailable" };
+    return res.json({ result });
+  }
+
+  if (eventType === "end-of-call-report") {
+    const callObj = msg.call || payload.call || {};
+    const archived = gateway
+      ? gateway.archiveCallTranscript({
+          callId: callObj.id || payload.callId,
+          transcript: msg.transcript || payload.transcript || "",
+          summary: msg.summary || payload.summary || "",
+          durationSeconds: msg.durationSeconds || payload.durationSeconds || 0,
+          provider: "vapi"
+        })
+      : null;
+    return res.json({ ok: true, archived });
+  }
+
+  return res.json({ ok: true, eventType: eventType || "ack" });
+});
+
+// Staff-protected access to archived Vapi / Voice AI call transcripts
+router.get("/voice/vapi/transcripts", requireStaffPermission("orders:read"), (req, res) => {
+  const gateway = req.app?.locals?.voiceGateway;
+  const transcripts = gateway ? gateway.getTranscripts() : [];
+  res.json({
+    success: true,
+    data: {
+      count: transcripts.length,
+      transcripts
+    }
+  });
+});
+
+// LiveKit WebRTC Room Access Token Generator (HS256 JWT with audio/data room grants)
+router.post("/voice/livekit/token", (req, res) => {
+  try {
+    const { roomName, participantName, ttlSeconds } = req.body || {};
+    const tokenBundle = createLiveKitAccessToken({
+      roomName: roomName || "atelier-concierge-lobby",
+      participantName: participantName || `patron_${Date.now()}`,
+      ttlSeconds: ttlSeconds ? Number(ttlSeconds) : 3600
+    });
+    res.json({
+      success: true,
+      data: tokenBundle
+    });
+  } catch (err) {
+    const status = err.message.startsWith("LIVEKIT_NOT_CONFIGURED") ? 503 : 400;
+    res.status(status).json({
+      success: false,
+      error: err.message
+    });
+  }
 });
 
 // ═══════════════════════════════════════════════════════════
