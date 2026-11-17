@@ -1,11 +1,17 @@
 /**
  * Hampers by Her Atelier AI Platform — Multimodal Real-Time Voice Engine
- * Dual-mode architecture, VAD barge-in interruption, and Voice-to-RAG integration.
+ * Dual-mode architecture, canonical PCM16 constants, clearable AudioOutputQueue,
+ * cooperative AbortController barge-in, exponential-backoff reconnection, and Voice-to-RAG.
  */
 
 const { EventEmitter } = require("events");
 const { VoiceActivityDetector } = require("./vad");
 const { VoiceSessionManager } = require("./sessionManager");
+const {
+  AUDIO_CONFIG,
+  AudioOutputQueue,
+  splitIntoStreamingSegments
+} = require("../../../server/services/voiceProviders");
 
 class VoiceEngine extends EventEmitter {
   constructor({ modelGateway, hybridRetriever, dbClient } = {}) {
@@ -19,9 +25,13 @@ class VoiceEngine extends EventEmitter {
   /**
    * Create and initialize a new voice session
    */
-  createSession({ sessionId, tenantId, userId, architecture = "CHAINED_PIPELINE" }) {
+  createSession({ sessionId, tenantId, userId, architecture = "CHAINED_PIPELINE", vadOptions = {} }) {
     const sessionManager = new VoiceSessionManager({ sessionId, tenantId, userId });
-    const vad = new VoiceActivityDetector({ energyThreshold: 0.012 });
+    const vad = new VoiceActivityDetector({
+      sampleRate: AUDIO_CONFIG.CLIENT_SAMPLE_RATE_HZ,
+      energyThreshold: 0.012,
+      ...vadOptions
+    });
 
     const session = {
       sessionId,
@@ -31,8 +41,10 @@ class VoiceEngine extends EventEmitter {
       manager: sessionManager,
       vad,
       audioBuffer: [],
+      outputQueue: new AudioOutputQueue(),
       isAssistantSpeaking: false,
-      activePlaybackCancelToken: null
+      activeAbortController: null,
+      reconnectAttempts: 0
     };
 
     // Transition state
@@ -46,22 +58,61 @@ class VoiceEngine extends EventEmitter {
   }
 
   /**
+   * Drive deterministic reconnection recovery with exponential backoff metadata.
+   */
+  reconnectSession(sessionId, reason = "transient_network_drop") {
+    const session = this.activeSessions.get(sessionId);
+    if (!session) throw new Error(`Unknown session: ${sessionId}`);
+
+    if (session.activeAbortController) {
+      session.activeAbortController.abort();
+      session.activeAbortController = null;
+    }
+    const droppedFrames = session.outputQueue.clear();
+    session.isAssistantSpeaking = false;
+    session.reconnectAttempts += 1;
+
+    const backoffMs = Math.min(8000, 500 * Math.pow(2, session.reconnectAttempts - 1));
+    session.manager.transitionTo("RECONNECTING", `${reason} (backoff ${backoffMs}ms)`);
+    session.manager.transitionTo("CONNECTED", "WebSocket transport restored");
+    session.manager.transitionTo("LISTENING", "Resumed audio capture");
+
+    this.emit("session_reconnected", {
+      sessionId,
+      attempt: session.reconnectAttempts,
+      backoffMs,
+      droppedFrames
+    });
+
+    return {
+      sessionId,
+      state: session.manager.state,
+      attempt: session.reconnectAttempts,
+      backoffMs,
+      droppedFrames
+    };
+  }
+
+  /**
    * Ingest streaming PCM16 audio chunk from client
    */
   async ingestAudioChunk(sessionId, pcmChunk) {
     const session = this.activeSessions.get(sessionId);
     if (!session) throw new Error(`Unknown session: ${sessionId}`);
 
-    // Run VAD on incoming audio frame
     const vadResult = session.vad.processFrame(pcmChunk);
 
     // Conversational Barge-In Check
     if (vadResult.event === "SPEECH_STARTED") {
       if (session.isAssistantSpeaking) {
-        // Halt active assistant synthesis immediately
         session.isAssistantSpeaking = false;
+        if (session.activeAbortController) {
+          session.activeAbortController.abort();
+          session.activeAbortController = null;
+        }
+        const droppedFrames = session.outputQueue.clear();
         session.manager.transitionTo("INTERRUPTED", "User barge-in detected via VAD");
-        this.emit("assistant_playback_aborted", { sessionId });
+        this.emit("assistant_playback_aborted", { sessionId, droppedFrames });
         session.manager.transitionTo("LISTENING");
       }
       session.audioBuffer = []; // Fresh turn buffer
@@ -75,7 +126,6 @@ class VoiceEngine extends EventEmitter {
       const fullAudio = Buffer.concat(session.audioBuffer);
       session.audioBuffer = [];
 
-      // Process Turn
       const turnResult = await this._processUserTurn(session, fullAudio);
       return turnResult;
     }
@@ -84,17 +134,15 @@ class VoiceEngine extends EventEmitter {
   }
 
   /**
-   * Process complete user speech turn
+   * Process complete user speech turn with RAG grounding & streaming sentence-buffered TTS
    */
   async _processUserTurn(session, audioBuffer) {
-    // 1. Speech-to-Text (Simulated / Whisper)
     const transcript = this._simulateSttTranscription(audioBuffer);
     session.manager.startTurn("USER");
     session.manager.completeTurn(transcript);
 
     this.emit("user_transcript_final", { sessionId: session.sessionId, transcript });
 
-    // 2. Voice-to-RAG Integration
     let evidenceContext = "";
     if (this.hybridRetriever) {
       try {
@@ -106,25 +154,18 @@ class VoiceEngine extends EventEmitter {
         });
         if (ragResult.fusedResults && ragResult.fusedResults.length > 0) {
           evidenceContext = ragResult.fusedResults
-            .map(r => `[Document ${r.chunk.document_id}]: ${r.chunk.content}`)
+            .map((r) => `[Document ${r.chunk.document_id}]: ${r.chunk.content}`)
             .join("\n\n");
         }
-      } catch (err) {
+      } catch {
         // Non-blocking retrieval failure
       }
     }
 
-    // 3. LLM Completion via Model Gateway
     session.manager.transitionTo("RESPONDING");
     session.isAssistantSpeaking = true;
-
-    const messages = [
-      {
-        role: "system",
-        content: `You are the Hampers by Her Enterprise Voice Concierge. Speak in natural, concise sentences. Ground your answers strictly on evidence:\n${evidenceContext}`
-      },
-      { role: "user", content: transcript }
-    ];
+    const abortController = new AbortController();
+    session.activeAbortController = abortController;
 
     let replyText = `I have reviewed the information regarding: ${transcript}. `;
     if (evidenceContext) {
@@ -133,21 +174,29 @@ class VoiceEngine extends EventEmitter {
       replyText += "Our enterprise GTM pipeline is active and ready for your commands.";
     }
 
-    // 4. Chunk text into sentences for low-latency streaming TTS
-    const sentences = this._splitIntoSentences(replyText);
+    const sentences = splitIntoStreamingSegments(replyText, 50);
     const audioDeltas = [];
 
     for (const sentence of sentences) {
-      if (!session.isAssistantSpeaking) {
-        // Aborted mid-turn by barge-in
+      if (!session.isAssistantSpeaking || abortController.signal.aborted) {
         break;
       }
       const audioChunk = this._simulateTtsSynthesis(sentence);
-      audioDeltas.push({ sentence, audioBytes: audioChunk.length });
-      this.emit("assistant_audio_delta", { sessionId: session.sessionId, sentence, audioChunk });
+      session.outputQueue.enqueue(audioChunk);
+      const nextChunk = session.outputQueue.dequeue();
+      if (!nextChunk) break;
+
+      audioDeltas.push({ sentence, audioBytes: nextChunk.length });
+      this.emit("assistant_audio_delta", {
+        sessionId: session.sessionId,
+        sentence,
+        audioChunk: nextChunk,
+        sampleRateHz: AUDIO_CONFIG.CLIENT_SAMPLE_RATE_HZ
+      });
     }
 
     session.isAssistantSpeaking = false;
+    session.activeAbortController = null;
     session.manager.startTurn("ASSISTANT");
     session.manager.completeTurn(replyText);
     session.manager.transitionTo("LISTENING");
@@ -156,12 +205,9 @@ class VoiceEngine extends EventEmitter {
       transcript,
       replyText,
       sentencesCount: sentences.length,
-      audioDeltasDispatched: audioDeltas.length
+      audioDeltasDispatched: audioDeltas.length,
+      sampleRateHz: AUDIO_CONFIG.CLIENT_SAMPLE_RATE_HZ
     };
-  }
-
-  _splitIntoSentences(text) {
-    return text.match(/[^.!?]+[.!?]+(\s|$)/g) || [text];
   }
 
   _simulateSttTranscription(audioBuffer) {
@@ -172,11 +218,10 @@ class VoiceEngine extends EventEmitter {
   }
 
   _simulateTtsSynthesis(sentence) {
-    // Generate synthetic PCM16 sine-wave beep for sentence duration
-    const sampleRate = 16000;
+    const sampleRate = AUDIO_CONFIG.CLIENT_SAMPLE_RATE_HZ;
     const durationSec = Math.max(0.2, sentence.length * 0.04);
     const numSamples = Math.floor(sampleRate * durationSec);
-    const buf = Buffer.alloc(numSamples * 2);
+    const buf = Buffer.alloc(numSamples * AUDIO_CONFIG.BYTES_PER_SAMPLE);
 
     for (let i = 0; i < numSamples; i++) {
       const sample = Math.sin((2 * Math.PI * 440 * i) / sampleRate) * 16384;

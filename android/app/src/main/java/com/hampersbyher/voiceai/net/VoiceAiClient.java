@@ -18,22 +18,29 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Native RFC-6455 WebSocket client engineered specifically for Voice AI streaming:
  * - Zero external dependencies (runs directly on Android ART runtime).
+ * - Separate read & write executors (prevents send deadlock during blocking reads).
+ * - Full ws:// and wss:// TLS support with exponential-backoff auto-reconnection.
  * - Bi-directional binary PCM16 and JSON messaging.
  * - Auto-dispatches UI updates to the Android Main Looper.
  */
 public class VoiceAiClient {
     private static final String TAG = "VoiceAiClient";
+    private static final int MAX_RECONNECT_ATTEMPTS = 5;
+    private static final long BASE_RECONNECT_MS = 500L;
 
     public interface Callback {
         void onConnected(String sessionId);
@@ -48,8 +55,13 @@ public class VoiceAiClient {
 
     private final Callback callback;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService readExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService writeExecutor = Executors.newSingleThreadExecutor();
+    private final ScheduledExecutorService reconnectScheduler = Executors.newSingleThreadScheduledExecutor();
     private final AtomicBoolean isConnected = new AtomicBoolean(false);
+    private final AtomicBoolean shouldReconnect = new AtomicBoolean(false);
+    private final AtomicInteger reconnectAttempt = new AtomicInteger(0);
+    private volatile String lastUrl;
     private Socket socket;
     private OutputStream outputStream;
     private InputStream inputStream;
@@ -60,14 +72,25 @@ public class VoiceAiClient {
     }
 
     public void connect(String urlStr) {
-        networkExecutor.execute(() -> {
+        this.lastUrl = urlStr;
+        this.shouldReconnect.set(true);
+        this.reconnectAttempt.set(0);
+        openConnection(urlStr);
+    }
+
+    private void openConnection(String urlStr) {
+        readExecutor.execute(() -> {
             try {
                 URI uri = new URI(urlStr);
+                boolean isTls = "wss".equalsIgnoreCase(uri.getScheme());
                 String host = uri.getHost();
-                int port = uri.getPort() > 0 ? uri.getPort() : 80;
+                int port = uri.getPort() > 0 ? uri.getPort() : (isTls ? 443 : 80);
                 String path = uri.getPath() != null && !uri.getPath().isEmpty() ? uri.getPath() : "/";
 
-                socket = new Socket(host, port);
+                socket = isTls
+                        ? SSLSocketFactory.getDefault().createSocket(host, port)
+                        : new Socket(host, port);
+                socket.setTcpNoDelay(true);
                 outputStream = new BufferedOutputStream(socket.getOutputStream());
                 inputStream = new BufferedInputStream(socket.getInputStream());
 
@@ -105,19 +128,20 @@ public class VoiceAiClient {
                 String headerStr = headerBuffer.toString(StandardCharsets.UTF_8.name());
                 if (!headerStr.contains("101 Switching Protocols")) {
                     postError("Handshake failed: " + headerStr);
-                    close();
+                    handleDisconnectAndMaybeReconnect();
                     return;
                 }
 
+                reconnectAttempt.set(0);
                 isConnected.set(true);
 
-                // Start Frame Reader Loop
+                // Start Frame Reader Loop on dedicated read thread
                 readFrames();
 
             } catch (Exception e) {
                 Log.e(TAG, "Connection error: " + e.getMessage());
                 postError("Connection error: " + e.getMessage());
-                close();
+                handleDisconnectAndMaybeReconnect();
             }
         });
     }
@@ -164,7 +188,7 @@ public class VoiceAiClient {
         } catch (Exception e) {
             Log.e(TAG, "Frame reader error: " + e.getMessage());
         } finally {
-            close();
+            handleDisconnectAndMaybeReconnect();
         }
     }
 
@@ -259,7 +283,7 @@ public class VoiceAiClient {
 
     public synchronized void sendAudioChunk(byte[] pcmData) {
         if (!isConnected.get() || pcmData == null) return;
-        networkExecutor.execute(() -> {
+        writeExecutor.execute(() -> {
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("type", "input_audio_buffer.append");
@@ -273,7 +297,7 @@ public class VoiceAiClient {
 
     public synchronized void commitAudioTurn(String clientTranscript) {
         if (!isConnected.get()) return;
-        networkExecutor.execute(() -> {
+        writeExecutor.execute(() -> {
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("type", "input_audio_buffer.commit");
@@ -289,7 +313,7 @@ public class VoiceAiClient {
 
     public synchronized void sendTextQuery(String query) {
         if (!isConnected.get()) return;
-        networkExecutor.execute(() -> {
+        writeExecutor.execute(() -> {
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("type", "conversation.item.create");
@@ -307,7 +331,7 @@ public class VoiceAiClient {
 
     public synchronized void cancelAssistant() {
         if (!isConnected.get()) return;
-        networkExecutor.execute(() -> {
+        writeExecutor.execute(() -> {
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("type", "response.cancel");
@@ -356,13 +380,39 @@ public class VoiceAiClient {
         }
     }
 
-    public void close() {
-        if (!isConnected.getAndSet(false)) return;
+    private void closeTransportQuietly() {
+        isConnected.set(false);
         try {
             if (outputStream != null) outputStream.close();
             if (inputStream != null) inputStream.close();
             if (socket != null && !socket.isClosed()) socket.close();
         } catch (Exception ignored) {}
+    }
+
+    private void handleDisconnectAndMaybeReconnect() {
+        closeTransportQuietly();
+        if (shouldReconnect.get() && lastUrl != null) {
+            int attempt = reconnectAttempt.incrementAndGet();
+            if (attempt <= MAX_RECONNECT_ATTEMPTS) {
+                long delayMs = Math.min(8000L, BASE_RECONNECT_MS * (1L << (attempt - 1)));
+                Log.w(TAG, "Scheduling WebSocket reconnect attempt " + attempt + " in " + delayMs + "ms");
+                reconnectScheduler.schedule(() -> {
+                    if (shouldReconnect.get()) {
+                        openConnection(lastUrl);
+                    }
+                }, delayMs, TimeUnit.MILLISECONDS);
+                return;
+            }
+        }
         mainHandler.post(callback::onDisconnected);
+    }
+
+    public void close() {
+        shouldReconnect.set(false);
+        boolean wasConnected = isConnected.getAndSet(false);
+        closeTransportQuietly();
+        if (wasConnected) {
+            mainHandler.post(callback::onDisconnected);
+        }
     }
 }

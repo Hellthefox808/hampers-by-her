@@ -8,18 +8,22 @@ import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.util.Log;
 
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Low-latency audio streaming engine:
- * - Records 16-bit linear PCM at 16kHz mono.
+ * - Records 16-bit linear PCM at 16kHz mono using documented constants.
  * - Streams audio to listener with RMS amplitude telemetry.
- * - Plays streaming audio chunks via AudioTrack in MODE_STREAM.
- * - Supports instant barge-in / speech interruption cancellation.
+ * - Uses a clearable non-blocking LinkedBlockingQueue + dedicated playback thread
+ *   for zero-jank AudioTrack MODE_STREAM output and instant barge-in queue clearing.
  */
 public class AudioStreamEngine {
     private static final String TAG = "AudioStreamEngine";
     public static final int SAMPLE_RATE = 16000;
+    public static final int BYTES_PER_SAMPLE = 2;
+    public static final int FRAME_DURATION_MS = 100;
+    public static final int CHUNK_BYTES = (SAMPLE_RATE * BYTES_PER_SAMPLE * FRAME_DURATION_MS) / 1000; // 3200B
     public static final int CHANNEL_CONFIG_IN = AudioFormat.CHANNEL_IN_MONO;
     public static final int CHANNEL_CONFIG_OUT = AudioFormat.CHANNEL_OUT_MONO;
     public static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
@@ -34,14 +38,47 @@ public class AudioStreamEngine {
     private AudioRecord audioRecord;
     private AudioTrack audioTrack;
     private Thread recordingThread;
+    private Thread playbackThread;
+    private final LinkedBlockingQueue<byte[]> playbackQueue = new LinkedBlockingQueue<>();
     private final AtomicBoolean isRecording = new AtomicBoolean(false);
     private final AtomicBoolean isPlaying = new AtomicBoolean(false);
+    private final AtomicBoolean playbackWorkerActive = new AtomicBoolean(false);
     private final VoiceActivityDetector vad = new VoiceActivityDetector();
     private AudioListener listener;
 
     public AudioStreamEngine(AudioListener listener) {
         this.listener = listener;
         initAudioTrack();
+        startPlaybackWorker();
+    }
+
+    private void startPlaybackWorker() {
+        if (playbackWorkerActive.getAndSet(true)) return;
+        playbackThread = new Thread(() -> {
+            while (playbackWorkerActive.get()) {
+                try {
+                    byte[] pcmData = playbackQueue.take();
+                    if (!playbackWorkerActive.get() || pcmData.length == 0) continue;
+                    synchronized (this) {
+                        if (audioTrack == null || audioTrack.getState() != AudioTrack.STATE_INITIALIZED) {
+                            initAudioTrack();
+                        }
+                        if (audioTrack != null) {
+                            isPlaying.set(true);
+                            audioTrack.write(pcmData, 0, pcmData.length);
+                        }
+                    }
+                    if (playbackQueue.isEmpty()) {
+                        isPlaying.set(false);
+                    }
+                } catch (InterruptedException ie) {
+                    if (!playbackWorkerActive.get()) break;
+                } catch (Exception e) {
+                    Log.e(TAG, "Playback worker error: " + e.getMessage());
+                }
+            }
+        }, "AudioPlaybackThread");
+        playbackThread.start();
     }
 
     private void initAudioTrack() {
@@ -78,7 +115,7 @@ public class AudioStreamEngine {
 
         try {
             int minBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG_IN, AUDIO_FORMAT);
-            int bufferSize = Math.max(minBufferSize * 2, 3200); // 100ms chunks at 16kHz 16-bit mono
+            int bufferSize = Math.max(minBufferSize * 2, CHUNK_BYTES);
 
             audioRecord = new AudioRecord(
                     MediaRecorder.AudioSource.MIC,
@@ -98,7 +135,7 @@ public class AudioStreamEngine {
             vad.reset();
 
             recordingThread = new Thread(() -> {
-                byte[] buffer = new byte[3200]; // 100ms at 16kHz
+                byte[] buffer = new byte[CHUNK_BYTES];
                 boolean wasSpeaking = false;
 
                 while (isRecording.get()) {
@@ -153,27 +190,18 @@ public class AudioStreamEngine {
     }
 
     /**
-     * Plays a streaming audio chunk received from the Voice AI gateway.
+     * Enqueues a streaming audio chunk to the non-blocking playback worker queue.
      */
-    public synchronized void playAudioChunk(byte[] pcmData) {
+    public void playAudioChunk(byte[] pcmData) {
         if (pcmData == null || pcmData.length == 0) return;
-        try {
-            if (audioTrack == null || audioTrack.getState() != AudioTrack.STATE_INITIALIZED) {
-                initAudioTrack();
-            }
-            if (audioTrack != null) {
-                isPlaying.set(true);
-                audioTrack.write(pcmData, 0, pcmData.length);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error playing audio chunk: " + e.getMessage());
-        }
+        playbackQueue.offer(pcmData);
     }
 
     /**
-     * Instantly aborts playback upon customer barge-in / speech interruption.
+     * Instantly clears the outbound playback queue and flushes AudioTrack upon customer barge-in.
      */
     public synchronized void abortPlayback() {
+        playbackQueue.clear();
         try {
             if (audioTrack != null) {
                 audioTrack.pause();
@@ -186,6 +214,10 @@ public class AudioStreamEngine {
         }
     }
 
+    public int getPendingPlaybackChunks() {
+        return playbackQueue.size();
+    }
+
     public boolean isRecording() {
         return isRecording.get();
     }
@@ -196,6 +228,12 @@ public class AudioStreamEngine {
 
     public void release() {
         stopRecording();
+        playbackWorkerActive.set(false);
+        playbackQueue.clear();
+        if (playbackThread != null) {
+            playbackThread.interrupt();
+            playbackThread = null;
+        }
         if (audioTrack != null) {
             try {
                 audioTrack.stop();

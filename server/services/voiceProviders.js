@@ -13,6 +13,8 @@
  */
 
 const crypto = require("crypto");
+const { EventEmitter } = require("events");
+const WebSocket = require("ws");
 
 /**
  * Documented canonical audio format constants across Android APK, Web Audio API, and cloud providers.
@@ -374,6 +376,217 @@ function verifyVapiSecret(providedSecret) {
   return crypto.timingSafeEqual(a, b);
 }
 
+/**
+ * Production OpenAI Realtime API WebSocket Bridge with exponential-backoff reconnection,
+ * tool-call execution forwarding, and Server-VAD barge-in cancellation.
+ */
+class OpenAIRealtimeBridge extends EventEmitter {
+  constructor({ apiKey = process.env.OPENAI_API_KEY, vadOverrides = {}, executeToolCall, maxReconnects = 5 } = {}) {
+    super();
+    this.apiKey = apiKey;
+    this.sessionTemplate = buildOpenAIRealtimeSessionConfig(vadOverrides);
+    this.executeToolCall = executeToolCall || (() => ({ ok: true }));
+    this.maxReconnects = maxReconnects;
+    this.reconnectAttempt = 0;
+    this.reconnectTimer = null;
+    this.shouldStayConnected = false;
+    this.ws = null;
+  }
+
+  connect() {
+    if (!this.apiKey) {
+      throw new Error("OPENAI_API_KEY_MISSING: Set OPENAI_API_KEY to connect live OpenAI Realtime API.");
+    }
+    this.shouldStayConnected = true;
+    this.ws = new WebSocket(this.sessionTemplate.url, {
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        "OpenAI-Beta": "realtime=v1"
+      }
+    });
+
+    this.ws.on("open", () => {
+      this.reconnectAttempt = 0;
+      this.sendJson({ type: "session.update", session: this.sessionTemplate.session });
+      this.emit("connected");
+    });
+
+    this.ws.on("message", (raw) => {
+      try {
+        const event = JSON.parse(raw.toString());
+        this.handleUpstreamEvent(event);
+      } catch (err) {
+        this.emit("error", err);
+      }
+    });
+
+    this.ws.on("error", (err) => {
+      this.emit("error", err);
+    });
+
+    this.ws.on("close", () => {
+      this.ws = null;
+      if (this.shouldStayConnected && this.reconnectAttempt < this.maxReconnects) {
+        const backoffMs = Math.min(8000, 500 * Math.pow(2, this.reconnectAttempt));
+        this.reconnectAttempt++;
+        this.emit("reconnecting", { attempt: this.reconnectAttempt, backoffMs });
+        this.reconnectTimer = setTimeout(() => this.connect(), backoffMs);
+      } else {
+        this.emit("disconnected");
+      }
+    });
+  }
+
+  handleUpstreamEvent(event) {
+    if (!event || !event.type) return;
+    if (event.type === "response.audio.delta" && event.delta) {
+      this.emit("audio_delta", Buffer.from(event.delta, "base64"));
+    } else if (event.type === "response.audio_transcript.done") {
+      this.emit("transcript_done", event.transcript || "");
+    } else if (event.type === "input_audio_buffer.speech_started") {
+      this.emit("speech_started");
+    } else if (event.type === "response.function_call_arguments.done") {
+      try {
+        const args = event.arguments ? JSON.parse(event.arguments) : {};
+        const result = this.executeToolCall(event.name, args);
+        this.sendJson({
+          type: "conversation.item.create",
+          item: {
+            type: "function_call_output",
+            call_id: event.call_id,
+            output: JSON.stringify(result)
+          }
+        });
+        this.sendJson({ type: "response.create" });
+        this.emit("tool_executed", { name: event.name, args, result });
+      } catch (err) {
+        this.emit("error", err);
+      }
+    }
+    this.emit("event", event);
+  }
+
+  appendAudio(pcmBuffer) {
+    this.sendJson({
+      type: "input_audio_buffer.append",
+      audio: Buffer.from(pcmBuffer).toString("base64")
+    });
+  }
+
+  cancelResponse() {
+    this.sendJson({ type: "response.cancel" });
+  }
+
+  sendJson(payload) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(payload));
+    }
+  }
+
+  close() {
+    this.shouldStayConnected = false;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.ws) {
+      try { this.ws.close(); } catch {}
+      this.ws = null;
+    }
+  }
+}
+
+/**
+ * Production Deepgram Nova-2 Live Streaming STT Client with exponential-backoff reconnection.
+ */
+class DeepgramLiveSttClient extends EventEmitter {
+  constructor({ apiKey = process.env.DEEPGRAM_API_KEY, maxReconnects = 5 } = {}) {
+    super();
+    this.apiKey = apiKey;
+    this.config = buildDeepgramStreamConfig();
+    this.maxReconnects = maxReconnects;
+    this.reconnectAttempt = 0;
+    this.reconnectTimer = null;
+    this.shouldStayConnected = false;
+    this.ws = null;
+  }
+
+  getStreamUrl() {
+    const params = new URLSearchParams({
+      model: this.config.model,
+      language: this.config.language,
+      smart_format: String(this.config.smart_format),
+      interim_results: String(this.config.interim_results),
+      utterance_end_ms: String(this.config.utterance_end_ms),
+      vad_events: String(this.config.vad_events),
+      encoding: this.config.encoding,
+      sample_rate: String(this.config.sample_rate),
+      channels: String(this.config.channels)
+    });
+    return `wss://api.deepgram.com/v1/listen?${params.toString()}`;
+  }
+
+  connect() {
+    if (!this.apiKey) {
+      throw new Error("DEEPGRAM_API_KEY_MISSING: Set DEEPGRAM_API_KEY to connect live Deepgram Nova-2 STT.");
+    }
+    this.shouldStayConnected = true;
+    this.ws = new WebSocket(this.getStreamUrl(), {
+      headers: { Authorization: `Token ${this.apiKey}` }
+    });
+
+    this.ws.on("open", () => {
+      this.reconnectAttempt = 0;
+      this.emit("connected");
+    });
+
+    this.ws.on("message", (raw) => {
+      try {
+        const payload = JSON.parse(raw.toString());
+        const transcript = payload.channel?.alternatives?.[0]?.transcript;
+        if (transcript) {
+          this.emit("transcript", { transcript, isFinal: Boolean(payload.is_final) });
+        }
+        if (payload.type === "SpeechStarted") this.emit("speech_started");
+        if (payload.type === "UtteranceEnd") this.emit("utterance_end");
+      } catch (err) {
+        this.emit("error", err);
+      }
+    });
+
+    this.ws.on("error", (err) => this.emit("error", err));
+    this.ws.on("close", () => {
+      this.ws = null;
+      if (this.shouldStayConnected && this.reconnectAttempt < this.maxReconnects) {
+        const backoffMs = Math.min(8000, 500 * Math.pow(2, this.reconnectAttempt));
+        this.reconnectAttempt++;
+        this.emit("reconnecting", { attempt: this.reconnectAttempt, backoffMs });
+        this.reconnectTimer = setTimeout(() => this.connect(), backoffMs);
+      } else {
+        this.emit("disconnected");
+      }
+    });
+  }
+
+  sendAudio(pcmBuffer) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(pcmBuffer);
+    }
+  }
+
+  close() {
+    this.shouldStayConnected = false;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.ws) {
+      try { this.ws.close(); } catch {}
+      this.ws = null;
+    }
+  }
+}
+
 module.exports = {
   AUDIO_CONFIG,
   DEFAULT_VAD_CONFIG,
@@ -384,5 +597,7 @@ module.exports = {
   buildElevenLabsStreamConfig,
   synthesizeSegmentStream,
   createLiveKitAccessToken,
-  verifyVapiSecret
+  verifyVapiSecret,
+  OpenAIRealtimeBridge,
+  DeepgramLiveSttClient
 };

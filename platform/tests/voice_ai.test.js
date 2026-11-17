@@ -274,5 +274,28 @@ describe("Hampers by Her Voice AI Subsystem", () => {
       assert.strictEqual(session.manager.state, "LISTENING");
       assert.strictEqual(session.manager.turns.length, 2); // 1 User turn + 1 Assistant turn
     });
+
+    test("Recovers cleanly via RECONNECTING state with exponential backoff and clears outbound audio queue", () => {
+      const engine = new VoiceEngine();
+      const session = engine.createSession({
+        sessionId: "sess_reconnect_01",
+        tenantId: "tenant_enterprise",
+        userId: "usr_exec_03"
+      });
+
+      session.outputQueue.enqueue(Buffer.from([1, 2, 3, 4]));
+      session.outputQueue.enqueue(Buffer.from([5, 6, 7, 8]));
+
+      const r1 = engine.reconnectSession("sess_reconnect_01", "mobile_4g_handoff");
+      assert.strictEqual(r1.state, "LISTENING");
+      assert.strictEqual(r1.attempt, 1);
+      assert.strictEqual(r1.backoffMs, 500);
+      assert.strictEqual(r1.droppedFrames, 2);
+      assert.strictEqual(session.outputQueue.size, 0);
+
+      const r2 = engine.reconnectSession("sess_reconnect_01", "mobile_4g_handoff");
+      assert.strictEqual(r2.attempt, 2);
+      assert.strictEqual(r2.backoffMs, 1000);
+    });
   });
 });

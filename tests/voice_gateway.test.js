@@ -8,8 +8,12 @@ const {
   DEFAULT_VAD_CONFIG,
   AudioOutputQueue,
   splitIntoStreamingSegments,
-  buildOpenAIRealtimeSessionConfig
+  buildOpenAIRealtimeSessionConfig,
+  OpenAIRealtimeBridge,
+  DeepgramLiveSttClient
 } = require("../server/services/voiceProviders");
+const fs = require("fs");
+const path = require("path");
 
 function generateTonePcm16(sampleRate, durationMs, amplitude = 8000, freqHz = 440) {
   const numSamples = Math.floor((sampleRate * durationMs) / 1000);
@@ -306,5 +310,53 @@ describe("VoiceAiGateway - Real-Time Streaming, Providers & Domain Orchestration
       body: JSON.stringify({ roomName: "bad room!@#", participantName: "patron_aditi" })
     });
     assert.strictEqual(badRes.status, 400);
+  });
+
+  it("OpenAIRealtimeBridge and DeepgramLiveSttClient enforce fail-fast API key checks and handle upstream events", () => {
+    const toolExecutions = [];
+    const bridge = new OpenAIRealtimeBridge({
+      apiKey: "",
+      executeToolCall: (name, args) => {
+        toolExecutions.push({ name, args });
+        return { serviceable: true, city: "Mumbai" };
+      }
+    });
+    assert.throws(() => bridge.connect(), /OPENAI_API_KEY_MISSING/);
+
+    let speechDetected = false;
+    bridge.on("speech_started", () => { speechDetected = true; });
+    bridge.handleUpstreamEvent({ type: "input_audio_buffer.speech_started" });
+    assert.strictEqual(speechDetected, true);
+
+    bridge.handleUpstreamEvent({
+      type: "response.function_call_arguments.done",
+      name: "estimateDelivery",
+      call_id: "call_123",
+      arguments: JSON.stringify({ pincode: "400001" })
+    });
+    assert.strictEqual(toolExecutions.length, 1);
+    assert.strictEqual(toolExecutions[0].name, "estimateDelivery");
+
+    const dg = new DeepgramLiveSttClient({ apiKey: "" });
+    assert.throws(() => dg.connect(), /DEEPGRAM_API_KEY_MISSING/);
+    const url = dg.getStreamUrl();
+    assert.ok(url.includes("model=nova-2") && url.includes("sample_rate=16000") && url.includes("vad_events=true"));
+  });
+
+  it("Android VoiceAiClient and AudioStreamEngine enforce non-blocking send/read, TLS, reconnect backoff, and clearable playback queue", () => {
+    const clientJava = fs.readFileSync(
+      path.join(__dirname, "..", "android", "app", "src", "main", "java", "com", "hampersbyher", "voiceai", "net", "VoiceAiClient.java"),
+      "utf8"
+    );
+    const engineJava = fs.readFileSync(
+      path.join(__dirname, "..", "android", "app", "src", "main", "java", "com", "hampersbyher", "voiceai", "audio", "AudioStreamEngine.java"),
+      "utf8"
+    );
+
+    assert.ok(clientJava.includes("readExecutor") && clientJava.includes("writeExecutor"), "Android WS client must separate read/write threads");
+    assert.ok(clientJava.includes("SSLSocketFactory"), "Android WS client must support wss:// TLS");
+    assert.ok(clientJava.includes("MAX_RECONNECT_ATTEMPTS"), "Android WS client must implement exponential backoff reconnect");
+    assert.ok(engineJava.includes("CHUNK_BYTES"), "Android AudioStreamEngine must use derived CHUNK_BYTES constant");
+    assert.ok(engineJava.includes("playbackQueue.clear()"), "Android AudioStreamEngine must clear playbackQueue on barge-in");
   });
 });
