@@ -3,6 +3,7 @@
  * Manages the 11-stage order lifecycle state machine.
  */
 
+const crypto = require("crypto");
 const { PricingEngine } = require("./pricingEngine");
 const { persistenceEngine } = require("./persistenceEngine");
 
@@ -42,8 +43,12 @@ class OrderService {
   static generateOrderNumber() {
     const now = new Date();
     const ymd = now.toISOString().slice(0, 10).replace(/-/g, "");
-    const rand = Math.floor(1000 + Math.random() * 9000);
-    return "HBH-" + ymd + "-" + rand;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const rand = crypto.randomInt(1000, 10000);
+      const candidate = "HBH-" + ymd + "-" + rand;
+      if (!ordersDb.has(candidate)) return candidate;
+    }
+    return "HBH-" + ymd + "-" + crypto.randomBytes(3).toString("hex").toUpperCase();
   }
 
   /**

@@ -42,6 +42,76 @@ const {
 const smartRouter = new SmartPaymentRouter();
 const cacheGrid = new CacheGrid();
 
+// Express 4 async error bridge so rejected promises reach RFC 7807 error middleware
+const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// RBAC Staff Authorization Middleware (25_AUTH_SECURITY.md)
+// Always validates Bearer JWT if provided (rejecting tampered tokens or non-staff roles).
+// In production or when REQUIRE_ADMIN_AUTH=true, fails closed if no Bearer token is supplied.
+function requireStaffPermission(permission) {
+  return (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    const enforceStrict = process.env.NODE_ENV === "production" || process.env.REQUIRE_ADMIN_AUTH === "true";
+
+    if (!authHeader) {
+      if (enforceStrict) {
+        return res.status(401).json({
+          type: "https://hampersbyher.com/errors/unauthorized",
+          title: "Unauthorized",
+          status: 401,
+          detail: "Staff Bearer token is required for this endpoint.",
+          instance: req.originalUrl
+        });
+      }
+      return next();
+    }
+
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        type: "https://hampersbyher.com/errors/unauthorized",
+        title: "Unauthorized",
+        status: 401,
+        detail: "Authorization header must use Bearer scheme.",
+        instance: req.originalUrl
+      });
+    }
+
+    const token = authHeader.slice(7).trim();
+    const claims = authService.verifyJwtToken(token);
+    if (!claims) {
+      return res.status(401).json({
+        type: "https://hampersbyher.com/errors/unauthorized",
+        title: "Invalid or Expired Token",
+        status: 401,
+        detail: "Bearer JWT signature verification failed or token has expired.",
+        instance: req.originalUrl
+      });
+    }
+
+    if (!authService.hasPermission(claims.role, permission)) {
+      return res.status(403).json({
+        type: "https://hampersbyher.com/errors/forbidden",
+        title: "Insufficient Permissions",
+        status: 403,
+        detail: `Role '${claims.role}' lacks required permission '${permission}'.`,
+        instance: req.originalUrl
+      });
+    }
+
+    req.staffClaims = claims;
+    next();
+  };
+}
+
 // ═══════════════════════════════════════════════════════════
 // SLIDING-WINDOW IP RATE LIMITING MIDDLEWARE (25_AUTH_SECURITY.md)
 // ═══════════════════════════════════════════════════════════
@@ -108,7 +178,7 @@ const checkoutRateLimiter = createRateLimiter({
 // ═══════════════════════════════════════════════════════════
 
 // List products with filtering and singleflight request coalescing
-router.get("/catalog/products", async (req, res) => {
+router.get("/catalog/products", asyncHandler(async (req, res) => {
   const { occasion, search, limit, offset } = req.query;
   const cacheKey = `catalog:products:${occasion || "all"}:${search || "none"}:${limit || 20}:${offset || 0}`;
 
@@ -128,10 +198,10 @@ router.get("/catalog/products", async (req, res) => {
       items: result.items
     }
   });
-});
+}));
 
 // Enriched Item Detail View (PDP) with cache
-router.get("/catalog/products/:id", async (req, res) => {
+router.get("/catalog/products/:id", asyncHandler(async (req, res) => {
   const cacheKey = `catalog:product:${req.params.id}`;
   const cached = await cacheGrid.getOrSet(cacheKey, () => {
     const item = CatalogService.getProductById(req.params.id);
@@ -151,7 +221,7 @@ router.get("/catalog/products/:id", async (req, res) => {
     success: true,
     data: cached
   });
-});
+}));
 
 // ═══════════════════════════════════════════════════════════
 // 2. BESPOKE HAMPER BUILDER
@@ -210,20 +280,50 @@ router.post("/checkout/calculate", (req, res) => {
   }
 });
 
-router.post("/checkout/create-order", checkoutRateLimiter, async (req, res) => {
+router.post("/checkout/create-order", checkoutRateLimiter, asyncHandler(async (req, res) => {
+  const acquiredReservations = [];
+  const rollbackReservations = async () => {
+    for (const resId of acquiredReservations) {
+      await inventoryEngine.release(resId);
+    }
+  };
+
   try {
-    // Acquire atomic stock reservations for items if sku provided
-    const items = req.body.items || [];
-    for (const item of items) {
-      if (item.sku) {
-        if (inventoryEngine.getStock(item.sku).total === 0) {
-          inventoryEngine.setStock(item.sku, 100);
-        }
-        await inventoryEngine.reserve(item.sku, item.quantity || 1, req.body.customer?.email || "guest");
+    // Acquire atomic stock reservations for items if sku provided (sorted by SKU to avoid deadlocks)
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const skuItems = items.filter((item) => item && item.sku).sort((a, b) => String(a.sku).localeCompare(String(b.sku)));
+
+    for (const item of skuItems) {
+      const currentStock = inventoryEngine.getStock(item.sku);
+      if (!inventoryEngine.stockLevels.has(item.sku) && currentStock.total === 0) {
+        inventoryEngine.setStock(item.sku, 100);
       }
+      const qty = item.quantity !== undefined ? item.quantity : 1;
+      if (qty < 1) {
+        await rollbackReservations();
+        return res.status(400).json({
+          success: false,
+          error: { code: "INVALID_ITEM_QUANTITY", message: "Item quantity must be at least 1." }
+        });
+      }
+      const reservation = await inventoryEngine.reserve(item.sku, qty, req.body.customer?.email || "guest");
+      if (!reservation.success) {
+        await rollbackReservations();
+        return res.status(409).json({
+          success: false,
+          error: {
+            code: reservation.reason || "INSUFFICIENT_STOCK",
+            message: `Insufficient stock for SKU ${item.sku} (requested ${qty}, available ${reservation.available ?? 0}).`
+          }
+        });
+      }
+      acquiredReservations.push(reservation.reservationId);
     }
 
     const order = OrderService.createOrder(req.body);
+    order.inventoryReservationIds = acquiredReservations;
+    OrderService.syncPersistence();
+
     res.status(201).json({
       success: true,
       data: {
@@ -235,12 +335,13 @@ router.post("/checkout/create-order", checkoutRateLimiter, async (req, res) => {
       }
     });
   } catch (err) {
+    await rollbackReservations();
     res.status(400).json({
       success: false,
       error: { code: "ORDER_CREATION_FAILED", message: err.message }
     });
   }
-});
+}));
 
 router.post("/payments/verify", async (req, res) => {
   const { orderNumber, paymentId, method } = req.body;
@@ -299,11 +400,11 @@ router.get("/instagram/feed", (req, res) => {
 });
 
 // Manual/Cron Instagram Media Sync
-router.post("/instagram/sync", async (req, res) => {
+router.post("/instagram/sync", requireStaffPermission("orders:write"), asyncHandler(async (req, res) => {
   const { accessToken, accountId } = req.body || {};
   const result = await instagramService.syncMedia({ accessToken, accountId });
   res.json(result);
-});
+}));
 
 // Meta Webhook Challenge Handshake (GET)
 router.get("/instagram/webhook", (req, res) => {
@@ -329,7 +430,7 @@ router.post("/instagram/webhook", (req, res) => {
 });
 
 // Captured CRM Leads from Instagram
-router.get("/instagram/leads", (req, res) => {
+router.get("/instagram/leads", requireStaffPermission("orders:read"), (req, res) => {
   res.json({
     success: true,
     data: instagramService.getLeads()
@@ -405,8 +506,14 @@ router.post("/whatsapp/notify/order", async (req, res) => {
   res.json({ success: true, result });
 });
 
-// Simulated Incoming Message (for testing / development)
-router.post("/whatsapp/simulate-incoming", async (req, res) => {
+// Simulated Incoming Message (strictly disabled in production)
+router.post("/whatsapp/simulate-incoming", asyncHandler(async (req, res) => {
+  if (process.env.NODE_ENV === "production") {
+    return res.status(403).json({
+      success: false,
+      error: "SIMULATION_DISABLED_IN_PRODUCTION"
+    });
+  }
   const { from, name, text } = req.body;
   if (!from || !text) {
     return res.status(400).json({ success: false, error: "from and text are required" });
@@ -442,7 +549,7 @@ router.post("/whatsapp/simulate-incoming", async (req, res) => {
 
   const result = await whatsappService.handleIncomingWebhook(simulatedPayload);
   res.json({ success: true, data: result });
-});
+}));
 
 // ═══════════════════════════════════════════════════════════
 // 7. VOICE AI STATUS & TELEMETRY
@@ -541,7 +648,7 @@ router.post("/payments/smart-webhook", (req, res) => {
   });
 });
 
-router.post("/payments/refund", async (req, res) => {
+router.post("/payments/refund", requireStaffPermission("refunds:initiate"), asyncHandler(async (req, res) => {
   const { orderId, refundAmountPaise, vpa } = req.body;
   if (!orderId || !refundAmountPaise) {
     return res.status(400).json({ success: false, error: "orderId and refundAmountPaise are required" });
@@ -553,13 +660,13 @@ router.post("/payments/refund", async (req, res) => {
     vpa: vpa || "customer@upi"
   });
   res.json({ success: true, data: result });
-});
+}));
 
 // ═══════════════════════════════════════════════════════════
 // 9. PLATFORM OBSERVABILITY, SERVICE MESH & CACHE TELEMETRY
 // ═══════════════════════════════════════════════════════════
 
-router.get("/system/health", async (req, res) => {
+router.get("/system/health", asyncHandler(async (req, res) => {
   const meshHealth = await serviceMesh.getSystemHealth();
   res.json({
     success: true,
@@ -571,15 +678,15 @@ router.get("/system/health", async (req, res) => {
       mesh: meshHealth
     }
   });
-});
+}));
 
-router.get("/system/mesh/health", async (req, res) => {
+router.get("/system/mesh/health", asyncHandler(async (req, res) => {
   const meshHealth = await serviceMesh.getSystemHealth();
   res.json({
     success: true,
     data: meshHealth
   });
-});
+}));
 
 router.get("/system/cache/metrics", (req, res) => {
   res.json({
@@ -806,6 +913,16 @@ router.post("/auth/verify-otp", authRateLimiter, (req, res) => {
   }
 });
 
+router.post("/auth/staff-login", authRateLimiter, (req, res) => {
+  try {
+    const { pin, staffId } = req.body || {};
+    const result = authService.authenticateStaffPin({ pin, staffId });
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(401).json({ success: false, error: err.message });
+  }
+});
+
 router.get("/auth/me", (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -832,7 +949,7 @@ router.get("/auth/me", (req, res) => {
 // 13. ATELIER STUDIO OPERATIONS OS & QC GATE (23_ADMIN_DASHBOARD.md)
 // ═══════════════════════════════════════════════════════════
 
-router.get("/admin/orders", (req, res) => {
+router.get("/admin/orders", requireStaffPermission("orders:read"), (req, res) => {
   const { status, qcPendingOnly } = req.query;
   const orders = adminService.getStudioOrders({
     status,
@@ -847,7 +964,7 @@ router.get("/admin/orders", (req, res) => {
   });
 });
 
-router.get("/admin/orders/:orderNumber", (req, res) => {
+router.get("/admin/orders/:orderNumber", requireStaffPermission("orders:read"), (req, res) => {
   const order = OrderService.getOrderByNumber(req.params.orderNumber);
   if (!order) {
     return res.status(404).json({ success: false, error: "ORDER_NOT_FOUND" });
@@ -855,7 +972,7 @@ router.get("/admin/orders/:orderNumber", (req, res) => {
   res.json({ success: true, data: order });
 });
 
-router.post("/admin/orders/:orderNumber/transition", (req, res) => {
+router.post("/admin/orders/:orderNumber/transition", requireStaffPermission("orders:write"), (req, res) => {
   try {
     const { targetStatus, actorName, notes } = req.body;
     const updated = adminService.transitionOrderStatus({
@@ -870,7 +987,7 @@ router.post("/admin/orders/:orderNumber/transition", (req, res) => {
   }
 });
 
-router.post(["/admin/orders/:orderNumber/qc-verify", "/admin/orders/:orderNumber/qc-inspect"], (req, res) => {
+router.post(["/admin/orders/:orderNumber/qc-verify", "/admin/orders/:orderNumber/qc-inspect"], requireStaffPermission("orders:qc_verify"), (req, res) => {
   try {
     const { inspectorName, photoEvidenceUrl, photoProofUrl, photoProofHash, checklist, notes } = req.body;
     const result = adminService.verifyStudioQcGate({
@@ -887,17 +1004,17 @@ router.post(["/admin/orders/:orderNumber/qc-verify", "/admin/orders/:orderNumber
   }
 });
 
-router.get("/admin/orders/:orderNumber/packing-slip", (req, res) => {
+router.get("/admin/orders/:orderNumber/packing-slip", requireStaffPermission("orders:read"), (req, res) => {
   try {
     const html = adminService.generatePrintablePackingSlip(req.params.orderNumber);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.send(html);
   } catch (err) {
-    res.status(404).send(`<h1>Error: ${err.message}</h1>`);
+    res.status(404).send(`<h1>Error: ${escapeHtml(err.message)}</h1>`);
   }
 });
 
-router.get("/admin/metrics", (req, res) => {
+router.get("/admin/metrics", requireStaffPermission("analytics:read"), (req, res) => {
   const metrics = adminService.getStudioMetrics();
   res.json({ success: true, data: metrics });
 });
@@ -962,7 +1079,7 @@ router.post("/notifications/send", async (req, res) => {
   }
 });
 
-router.get("/notifications/recent", (req, res) => {
+router.get("/notifications/recent", requireStaffPermission("orders:read"), (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
   res.json({
     success: true,

@@ -9,6 +9,15 @@
 const { OrderService } = require("./orderService");
 const { formatRupees } = require("../../platform/services/dsa/pricingLedger");
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const VALID_STATUS_TRANSITIONS = {
   DRAFT: ["PENDING_PAYMENT", "CANCELLED"],
   PENDING_PAYMENT: ["CONFIRMED", "CANCELLED"],
@@ -92,15 +101,24 @@ class AdminStudioService {
       }
     }
 
-    // Update status in master store
+    // Update status in master store & synchronize atomic crash persistence
+    const nowIso = new Date().toISOString();
     order.status = targetStatus;
+    order.updatedAt = nowIso;
     if (!order.timeline) order.timeline = [];
     order.timeline.push({
       status: targetStatus,
-      timestamp: new Date().toISOString(),
+      timestamp: nowIso,
       actor: actorName,
       notes
     });
+    if (!order.trackingTimeline) order.trackingTimeline = [];
+    order.trackingTimeline.push({
+      status: targetStatus,
+      timestamp: nowIso,
+      note: notes || `Studio transition to ${targetStatus} by ${actorName}`
+    });
+    OrderService.syncPersistence();
 
     return order;
   }
@@ -148,11 +166,13 @@ class AdminStudioService {
 
     const allPassed = ribbonTied && waxSealIntact && calligraphyCardIncluded && componentsVerified;
 
+    const verifiedAt = new Date().toISOString();
     const record = {
       orderNumber,
       inspectorName: inspectorName.trim(),
       photoEvidenceUrl: photoEvidenceUrl.trim(),
-      verifiedAt: new Date().toISOString(),
+      verifiedAt,
+      timestamp: verifiedAt,
       passed: allPassed,
       checklist: {
         ribbonTied,
@@ -164,6 +184,8 @@ class AdminStudioService {
     };
 
     this.qcInspectionRecords.set(orderNumber, record);
+    order.qcInspection = record;
+    OrderService.syncPersistence();
 
     if (allPassed && order.status === "IN_PRODUCTION") {
       this.transitionOrderStatus({
@@ -195,20 +217,29 @@ class AdminStudioService {
     }
 
     const qc = this.qcInspectionRecords.get(orderNumber);
-    const boxName = order.box?.name || "Artisanal Keepsake Box";
-    const ribbon = order.ribbon?.name || "Burgundy Merlot Silk";
-    const waxSeal = order.waxSeal?.name || "Vintage Gold Laurel";
-    const monogram = order.customMonogram || "HBH";
-    const cardMsg = order.cardMessage || "With warmest compliments from Hampers by Her.";
-    const recipient = order.shippingAddress?.fullName || order.customer?.name || "Valued Patron";
+    const safeOrderNumber = escapeHtml(orderNumber);
+    const safeStatus = escapeHtml(order.status);
+    const boxName = escapeHtml(order.box?.name || "Artisanal Keepsake Box");
+    const ribbon = escapeHtml(order.ribbon?.name || order.ribbon || "Burgundy Merlot Silk");
+    const waxSeal = escapeHtml(order.waxSeal?.name || order.waxSeal || "Vintage Gold Laurel");
+    const monogram = escapeHtml(order.customMonogram || "HBH");
+    const cardMsg = escapeHtml(order.cardMessage || "With warmest compliments from Hampers by Her.");
+    const recipient = escapeHtml(order.shippingAddress?.fullName || order.customer?.name || "Valued Patron");
     const address = order.shippingAddress || { line1: "Standard Delivery", city: "Delhi", pincode: "110001" };
+    const safeLine1 = escapeHtml(address.line1 || "");
+    const safeLine2 = escapeHtml(address.line2 || "");
+    const safeCity = escapeHtml(address.city || "");
+    const safeState = escapeHtml(address.state || "Delhi");
+    const safePincode = escapeHtml(address.pincode || "");
+    const safePhone = escapeHtml(order.customer?.phone || address.phone || "N/A");
+    const safeInspector = qc && qc.inspectorName ? escapeHtml(qc.inspectorName) : "";
     const items = order.items || [];
 
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Atelier Packing Slip — ${orderNumber}</title>
+  <title>Atelier Packing Slip — ${safeOrderNumber}</title>
   <style>
     @page { size: A4; margin: 15mm; }
     body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; color: #2D1018; margin: 0; padding: 20px; line-height: 1.5; }
@@ -238,9 +269,9 @@ class AdminStudioService {
       <div class="brand-sub">Atelier Studio Packing Slip &amp; QC Verification</div>
     </div>
     <div class="order-meta">
-      <strong>${orderNumber}</strong><br>
-      Date: ${new Date(order.createdAt || Date.now()).toLocaleDateString("en-IN")}<br>
-      Status: <span>${order.status}</span>
+      <strong>${safeOrderNumber}</strong><br>
+      Date: ${escapeHtml(new Date(order.createdAt || Date.now()).toLocaleDateString("en-IN"))}<br>
+      Status: <span>${safeStatus}</span>
     </div>
   </div>
 
@@ -248,9 +279,9 @@ class AdminStudioService {
     <div class="card-box">
       <div style="font-weight:700; color:#4A1E29; margin-bottom:6px;">✦ RECIPIENT &amp; SHIPPING DETAILS</div>
       <div><strong>${recipient}</strong></div>
-      <div>${address.line1 || ""} ${address.line2 || ""}</div>
-      <div>${address.city || ""}, ${address.state || "Delhi"} — <strong>${address.pincode || ""}</strong></div>
-      <div>Phone: ${order.customer?.phone || address.phone || "N/A"}</div>
+      <div>${safeLine1} ${safeLine2}</div>
+      <div>${safeCity}, ${safeState} — <strong>${safePincode}</strong></div>
+      <div>Phone: ${safePhone}</div>
     </div>
 
     <div class="card-box">
@@ -259,7 +290,7 @@ class AdminStudioService {
       <div><strong>Raw Silk Ribbon:</strong> ${ribbon}</div>
       <div><strong>Wax Seal:</strong> ${waxSeal} (Monogram: <strong style="color:#C89D42;">${monogram}</strong>)</div>
       <div style="margin-top:6px;">
-        QC Gate Status: <span class="qc-badge">${qc && qc.passed ? `PASSED (${qc.inspectorName})` : "PENDING QC INSPECTION"}</span>
+        QC Gate Status: <span class="qc-badge">${qc && qc.passed ? `PASSED (${safeInspector})` : "PENDING QC INSPECTION"}</span>
       </div>
     </div>
   </div>
@@ -283,8 +314,8 @@ class AdminStudioService {
       ${items.map(i => `
         <tr>
           <td><span class="checkbox"></span></td>
-          <td><strong>${i.name || i.title || "Gourmet Component"}</strong></td>
-          <td>${i.quantity || 1}</td>
+          <td><strong>${escapeHtml(i.name || i.title || "Gourmet Component")}</strong></td>
+          <td>${escapeHtml(i.quantity || 1)}</td>
           <td>${i.is_fragile ? "Fragile (Cushion)" : "Standard"}</td>
         </tr>
       `).join("")}

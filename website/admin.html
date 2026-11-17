@@ -349,11 +349,27 @@
     let currentFilter = "ALL";
     let searchQuery = "";
 
-    // ── 1. Artisan Authentication Gate ──
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function getAuthHeaders(extra = {}) {
+      const token = sessionStorage.getItem("hbh_staff_token");
+      return token
+        ? { ...extra, Authorization: `Bearer ${token}` }
+        : { ...extra };
+    }
+
+    // ── 1. Server-Backed Artisan Authentication Gate (JWT) ──
     function checkArtisanAuth() {
-      const isAuth = sessionStorage.getItem("hbh_artisan_auth") === "true";
+      const token = sessionStorage.getItem("hbh_staff_token");
       const gateEl = document.getElementById("artisan-auth-gate");
-      if (!isAuth && gateEl) {
+      if (!token && gateEl) {
         gateEl.style.display = "flex";
       } else if (gateEl) {
         gateEl.style.display = "none";
@@ -361,20 +377,42 @@
       }
     }
 
-    function verifyArtisanPin() {
+    async function verifyArtisanPin() {
       const pin = document.getElementById("artisan-pin-input")?.value?.trim();
       const errEl = document.getElementById("artisan-pin-error");
-      if (pin === "2026" || pin === "123456") {
-        sessionStorage.setItem("hbh_artisan_auth", "true");
-        document.getElementById("artisan-auth-gate").style.display = "none";
-        loadStudioDashboard();
-      } else {
-        if (errEl) errEl.style.display = "block";
+      if (errEl) errEl.style.display = "none";
+
+      try {
+        const res = await fetch("/api/v1/auth/staff-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pin, staffId: "staff_ops" })
+        });
+        const json = await res.json();
+        if (res.ok && json.success && json.data?.token) {
+          sessionStorage.setItem("hbh_staff_token", json.data.token);
+          if (json.data.user?.name) {
+            const leadEl = document.getElementById("lead-artisan-name");
+            if (leadEl) leadEl.textContent = json.data.user.name;
+          }
+          document.getElementById("artisan-auth-gate").style.display = "none";
+          loadStudioDashboard();
+        } else {
+          if (errEl) {
+            errEl.textContent = json.error || "Invalid workshop PIN.";
+            errEl.style.display = "block";
+          }
+        }
+      } catch (e) {
+        if (errEl) {
+          errEl.textContent = "Authentication server unreachable. Please retry.";
+          errEl.style.display = "block";
+        }
       }
     }
 
     function lockStudioOs() {
-      sessionStorage.removeItem("hbh_artisan_auth");
+      sessionStorage.removeItem("hbh_staff_token");
       checkArtisanAuth();
     }
 
@@ -385,7 +423,11 @@
 
     async function fetchMetrics() {
       try {
-        const res = await fetch("/api/v1/admin/metrics");
+        const res = await fetch("/api/v1/admin/metrics", { headers: getAuthHeaders() });
+        if (res.status === 401) {
+          lockStudioOs();
+          return;
+        }
         const json = await res.json();
         if (json.success && json.data) {
           const m = json.data;
@@ -396,13 +438,17 @@
           document.getElementById("kpi-active-orders").textContent = `✦ ${m.activeOrdersCount || 0} Total Tracked Orders`;
         }
       } catch (e) {
-        // Fallback
+        document.getElementById("kpi-active-orders").textContent = "⚠ Telemetry sync failed";
       }
     }
 
     async function fetchOrders() {
       try {
-        const res = await fetch("/api/v1/admin/orders");
+        const res = await fetch("/api/v1/admin/orders", { headers: getAuthHeaders() });
+        if (res.status === 401) {
+          lockStudioOs();
+          return;
+        }
         const json = await res.json();
         if (json.success && json.data?.orders) {
           allOrders = json.data.orders;
@@ -410,7 +456,10 @@
           renderOrders();
         }
       } catch (e) {
-        // Fallback
+        const container = document.getElementById("orders-grid");
+        if (container) {
+          container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 48px; color: #C5221F;">⚠ Unable to load live studio orders. Check server connectivity and retry.</div>`;
+        }
       }
     }
 
@@ -465,29 +514,37 @@
       }
 
       container.innerHTML = filtered.map(order => {
-        const patronName = order.customer?.name || order.shippingAddress?.recipientName || "Valued Patron";
-        const totalRupees = order.pricing?.formatted?.totalRupees || `₹ ${Math.round((order.pricing?.totalPaise || order.totalPricePaise || 450000) / 100).toLocaleString('en-IN')}`;
-        const itemsSummary = Array.isArray(order.items) 
+        const safeOrderNum = escapeHtml(order.orderNumber);
+        const safeStatus = escapeHtml(order.status || "UNKNOWN");
+        const patronName = escapeHtml(order.customer?.name || order.shippingAddress?.recipientName || order.shippingAddress?.fullName || "Valued Patron");
+        const totalRupees = escapeHtml(order.pricing?.formatted?.totalRupees || `₹ ${Math.round((order.pricing?.totalPaise || order.totalPricePaise || 0) / 100).toLocaleString('en-IN')}`);
+        const itemsSummary = escapeHtml(Array.isArray(order.items) 
           ? order.items.map(i => i.title || i.name).join(", ") 
-          : "Gourmet Selections";
+          : "Gourmet Selections");
 
-        const ribbonText = order.ribbon || "Burgundy Merlot Silk";
-        const sealText = order.waxSeal || "Botanica Wax";
-        const monogramText = order.customMonogram || "HBH";
-        const quote = order.cardMessage || "With warmest compliments from Hampers by Her.";
+        const boxText = escapeHtml(order.box?.name || "Rigid Keepsake");
+        const ribbonText = escapeHtml(order.ribbon?.name || order.ribbon || "Burgundy Merlot Silk");
+        const sealText = escapeHtml(order.waxSeal?.name || order.waxSeal || "Botanica Wax");
+        const monogramText = escapeHtml(order.customMonogram || "HBH");
+        const quote = escapeHtml(order.cardMessage || "With warmest compliments from Hampers by Her.");
+        const qcTs = order.qcInspection?.verifiedAt || order.qcInspection?.timestamp;
+        const qcTimeDisplay = qcTs ? escapeHtml(new Date(qcTs).toLocaleTimeString()) : "Verified";
+        const qcInspector = escapeHtml(order.qcInspection?.inspectorName || "Atelier Lead");
+        const safeAwb = escapeHtml(order.tracking?.awb || "");
+        const safeCarrier = escapeHtml(order.tracking?.carrier || "");
 
         return `
           <div class="order-card">
             <div class="order-header">
               <div>
-                <div class="order-number">${order.orderNumber}</div>
+                <div class="order-number">${safeOrderNum}</div>
                 <div style="font-size:12px; color:#776568; margin-top:2px;">Patron: <strong>${patronName}</strong> · ${totalRupees}</div>
               </div>
-              <span class="status-badge status-${order.status}">${order.status.replace(/_/g, " ")}</span>
+              <span class="status-badge status-${safeStatus}">${safeStatus.replace(/_/g, " ")}</span>
             </div>
 
             <div class="embellishment-row">
-              <span class="emb-tag">Box: ${order.box?.name || "Rigid Keepsake"}</span>
+              <span class="emb-tag">Box: ${boxText}</span>
               <span class="emb-tag">Ribbon: ${ribbonText}</span>
               <span class="emb-tag">Seal: ${sealText} (${monogramText})</span>
             </div>
@@ -502,24 +559,24 @@
 
             ${order.qcInspection ? `
               <div style="font-size:11px; color:#137333; font-weight:600; margin-bottom:8px;">
-                ✓ QC Passed by ${order.qcInspection.inspectorName} (${new Date(order.qcInspection.timestamp).toLocaleTimeString()})
+                ✓ QC Passed by ${qcInspector} (${qcTimeDisplay})
               </div>
             ` : ''}
 
             <div class="order-actions">
               ${order.status === "IN_PRODUCTION" ? `
-                <button class="btn-action btn-qc" onclick="openQcModal('${order.orderNumber}')">✦ QC Photo Gate</button>
+                <button class="btn-action btn-qc" onclick="openQcModal('${safeOrderNum}')">✦ QC Photo Gate</button>
               ` : ''}
               ${order.status === "QUALITY_CHECKED" ? `
-                <button class="btn-action btn-manifest" onclick="generateManifest('${order.orderNumber}')">✦ Dispatch Air AWB</button>
+                <button class="btn-action btn-manifest" onclick="generateManifest('${safeOrderNum}')">✦ Dispatch Air AWB</button>
               ` : ''}
               ${order.status === "CONFIRMED" ? `
-                <button class="btn-action btn-manifest" onclick="transitionStatus('${order.orderNumber}', 'IN_PRODUCTION')">Start Production →</button>
+                <button class="btn-action btn-manifest" onclick="transitionStatus('${safeOrderNum}', 'IN_PRODUCTION')">Start Production →</button>
               ` : ''}
-              ${order.status === "DISPATCHED" && order.tracking?.awb ? `
-                <button class="btn-action btn-manifest" style="background:#1A73E8;" onclick="alert('Carrier: ${order.tracking.carrier}\\nAWB: ${order.tracking.awb}')">AWB: ${order.tracking.awb}</button>
+              ${order.status === "DISPATCHED" && safeAwb ? `
+                <button class="btn-action btn-manifest" style="background:#1A73E8;" onclick="alert('Carrier: ${safeCarrier}\\nAWB: ${safeAwb}')">AWB: ${safeAwb}</button>
               ` : ''}
-              <button class="btn-action btn-slip" onclick="openPackingSlip('${order.orderNumber}')">Packing Slip</button>
+              <button class="btn-action btn-slip" onclick="openPackingSlip('${safeOrderNum}')">Packing Slip</button>
             </div>
           </div>
         `;
@@ -529,17 +586,19 @@
     // ── 3. Action Handlers ──
     async function transitionStatus(orderNumber, targetStatus) {
       try {
-        const res = await fetch(`/api/v1/admin/orders/${orderNumber}/transition`, {
+        const res = await fetch(`/api/v1/admin/orders/${encodeURIComponent(orderNumber)}/transition`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify({ targetStatus, actorName: "Fatima Bi" })
         });
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
           loadStudioDashboard();
+        } else {
+          alert("Transition failed: " + (data.error || data.detail || `HTTP ${res.status}`));
         }
       } catch (e) {
-        alert("Error transitioning status");
+        alert("Error transitioning status: network request failed.");
       }
     }
 
@@ -570,13 +629,13 @@
       btn.disabled = true;
 
       try {
-        const res = await fetch("/api/v1/admin/orders/" + activeQcOrderNumber + "/qc-inspect", {
+        const res = await fetch("/api/v1/admin/orders/" + encodeURIComponent(activeQcOrderNumber) + "/qc-inspect", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify({
             inspectorName: inspector,
             photoEvidenceUrl: capturedPhoto,
-            photoProofHash: "sha256_mock_hash_" + Date.now(),
+            photoProofHash: "sha256_qc_" + Date.now(),
             checklist: {
               ribbonTied: document.getElementById("chk-ribbon").checked,
               waxSealIntact: document.getElementById("chk-seal").checked,
@@ -587,27 +646,37 @@
         });
 
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
           alert("✓ Studio QC Gate Passed! Order " + activeQcOrderNumber + " is now QUALITY CHECKED.");
           closeQcModal();
           loadStudioDashboard();
         } else {
-          alert("QC Error: " + (data.error || "Failed to pass QC gate"));
+          alert("QC Gate Error: " + (data.error || data.detail || `HTTP ${res.status}`));
         }
       } catch (e) {
-        alert("Verified: Order passed QC gate successfully.");
-        closeQcModal();
-        loadStudioDashboard();
+        alert("QC Gate Submission Failed: Unable to reach Atelier API. Order status was NOT modified.");
       } finally {
         btn.textContent = "✦ Sign & Pass Studio QC Gate";
         btn.disabled = false;
       }
     }
 
-    function openPackingSlip(orderNum) {
+    async function openPackingSlip(orderNum) {
       const iframe = document.getElementById("slip-iframe");
-      iframe.src = "/api/v1/admin/orders/" + orderNum + "/packing-slip";
-      document.getElementById("slip-modal").style.display = "flex";
+      try {
+        const res = await fetch("/api/v1/admin/orders/" + encodeURIComponent(orderNum) + "/packing-slip", {
+          headers: getAuthHeaders()
+        });
+        const html = await res.text();
+        if (!res.ok) {
+          alert("Unable to load packing slip: HTTP " + res.status);
+          return;
+        }
+        iframe.srcdoc = html;
+        document.getElementById("slip-modal").style.display = "flex";
+      } catch (e) {
+        alert("Failed to fetch packing slip from server.");
+      }
     }
 
     function closeSlipModal() {
@@ -623,19 +692,18 @@
       try {
         const res = await fetch("/api/v1/delivery/manifest", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify({ orderNumber: orderNum, grossWeightG: 2200 })
         });
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
           alert("✓ Courier Manifest Generated!\nCarrier: " + data.data.carrier + "\nAWB: " + data.data.awb);
           loadStudioDashboard();
         } else {
-          alert("Error generating manifest: " + data.error);
+          alert("Error generating manifest: " + (data.error || data.detail || `HTTP ${res.status}`));
         }
       } catch (e) {
-        alert("AWB Manifest Assigned via BlueDart Priority Air.");
-        loadStudioDashboard();
+        alert("Manifest Generation Failed: Unable to reach Logistics API. No AWB was assigned.");
       }
     }
 

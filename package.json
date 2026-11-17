@@ -17,6 +17,7 @@
     "test:courier": "node --test tests/logistics_courier.test.js",
     "test:voice": "node --test tests/voice_gateway.test.js",
     "build:apk": "node scripts/build_android_apk.js",
+    "benchmark": "node scripts/benchmark_runtime.js",
     "audit:docs": "node scripts/audit_documentation.js",
     "verify": "npm run audit:docs && npm test && npm run build:apk"
   },

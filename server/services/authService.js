@@ -8,9 +8,26 @@
 
 const crypto = require("crypto");
 
-const JWT_SECRET = process.env.JWT_SECRET || "hbh_atelier_luxury_jwt_secret_key_2026";
+const DEFAULT_DEV_JWT_SECRET = "hbh_atelier_luxury_jwt_secret_key_2026";
 const OTP_TTL_MS = 300 * 1000; // 5 minutes (300 seconds)
 const MAX_OTP_ATTEMPTS = 3;
+
+function resolveJwtSecret() {
+  if (process.env.JWT_SECRET && process.env.JWT_SECRET.trim().length >= 16) {
+    return process.env.JWT_SECRET.trim();
+  }
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SECURITY_MISCONFIGURATION: JWT_SECRET must be set (>= 16 chars) in production.");
+  }
+  return DEFAULT_DEV_JWT_SECRET;
+}
+
+function timingSafeStringEqual(a, b) {
+  const bufA = Buffer.from(String(a || ""), "utf8");
+  const bufB = Buffer.from(String(b || ""), "utf8");
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 
 const ROLE_PERMISSIONS = {
   SUPER_ADMIN: ["*"],
@@ -69,7 +86,7 @@ class AuthService {
    * @returns {string}
    */
   _generateNumericOtp() {
-    const val = crypto.randomInt(100000, 999999);
+    const val = crypto.randomInt(100000, 1000000);
     return String(val);
   }
 
@@ -87,7 +104,7 @@ class AuthService {
     const b64Header = Buffer.from(JSON.stringify(header)).toString("base64url");
     const b64Claims = Buffer.from(JSON.stringify(claims)).toString("base64url");
     const signature = crypto
-      .createHmac("sha256", JWT_SECRET)
+      .createHmac("sha256", resolveJwtSecret())
       .update(`${b64Header}.${b64Claims}`)
       .digest("base64url");
 
@@ -95,7 +112,7 @@ class AuthService {
   }
 
   /**
-   * Verifies and decodes an HMAC-SHA256 JWT token
+   * Verifies and decodes an HMAC-SHA256 JWT token using constant-time signature comparison
    * @param {string} token
    * @returns {Object|null}
    */
@@ -105,16 +122,25 @@ class AuthService {
     if (parts.length !== 3) return null;
 
     const [b64Header, b64Claims, signature] = parts;
+    let secret;
+    try {
+      secret = resolveJwtSecret();
+    } catch {
+      return null;
+    }
+
     const expectedSignature = crypto
-      .createHmac("sha256", JWT_SECRET)
+      .createHmac("sha256", secret)
       .update(`${b64Header}.${b64Claims}`)
       .digest("base64url");
 
-    if (signature !== expectedSignature) {
+    if (!timingSafeStringEqual(signature, expectedSignature)) {
       return null; // Signature tampering
     }
 
     try {
+      const header = JSON.parse(Buffer.from(b64Header, "base64url").toString("utf8"));
+      if (header.alg !== "HS256") return null; // Reject alg:none / algorithm confusion attacks
       const claims = JSON.parse(Buffer.from(b64Claims, "base64url").toString("utf8"));
       if (claims.exp && claims.exp < Math.floor(Date.now() / 1000)) {
         return null; // Expired token
@@ -194,7 +220,7 @@ class AuthService {
       throw new Error("MAX_ATTEMPTS_EXCEEDED: Too many incorrect attempts. Request a new code");
     }
 
-    if (record.code !== cleanOtp) {
+    if (!timingSafeStringEqual(record.code, cleanOtp)) {
       throw new Error(`INVALID_OTP: Code does not match. ${MAX_OTP_ATTEMPTS - record.attempts} attempts remaining`);
     }
 
@@ -239,6 +265,43 @@ class AuthService {
         role: user.role
       },
       permissions: ROLE_PERMISSIONS[user.role] || []
+    };
+  }
+
+  /**
+   * Authenticates an atelier staff member via server-side PIN and issues a signed JWT
+   * @param {Object} params
+   * @param {string} params.pin
+   * @param {string} [params.staffId="staff_ops"]
+   * @returns {Object}
+   */
+  authenticateStaffPin({ pin, staffId = "staff_ops" }) {
+    const configuredPin = process.env.STUDIO_ADMIN_PIN || (process.env.NODE_ENV === "production" ? "" : "2026");
+    if (!configuredPin) {
+      throw new Error("STAFF_AUTH_DISABLED: STUDIO_ADMIN_PIN is not configured for production.");
+    }
+    if (!pin || !timingSafeStringEqual(String(pin).trim(), configuredPin)) {
+      throw new Error("INVALID_STAFF_PIN: Workshop access PIN is incorrect.");
+    }
+
+    const staff = this.users.get(staffId) || this.users.get("staff_ops") || STAFF_REGISTRY[0];
+    const token = this.createJwtToken({
+      userId: staff.id,
+      phone: staff.phone,
+      role: staff.role,
+      name: staff.name
+    }, 8 * 3600); // 8-hour studio shift session
+
+    return {
+      success: true,
+      token,
+      user: {
+        id: staff.id,
+        name: staff.name,
+        email: staff.email,
+        role: staff.role
+      },
+      permissions: ROLE_PERMISSIONS[staff.role] || []
     };
   }
 

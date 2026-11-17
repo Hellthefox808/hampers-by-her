@@ -1509,7 +1509,7 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(json.error || "Invalid OTP code");
       }
     } catch (err) {
-      showToast("Invalid OTP code. Please enter 123456.");
+      showToast(err.message || "Invalid or expired OTP code. Please retry.");
     }
   });
 
