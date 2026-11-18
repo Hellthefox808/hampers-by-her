@@ -349,7 +349,7 @@ router.post("/checkout/create-order", checkoutRateLimiter, asyncHandler(async (r
   }
 }));
 
-router.post("/payments/verify", async (req, res) => {
+router.post(["/payments/verify", "/payments/verify-and-confirm"], async (req, res) => {
   const { orderNumber, paymentId, method } = req.body;
   if (!orderNumber) {
     return res.status(400).json({ success: false, error: { message: "orderNumber is required" } });

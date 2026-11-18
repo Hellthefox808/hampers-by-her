@@ -1628,14 +1628,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const orderNum = data.data.orderNumber;
+      const selectedMethod = document.querySelector('.payment-method-card.selected')?.dataset?.method || "UPI";
 
-      const verifyRes = await fetch('/api/v1/payments/verify-and-confirm', {
+      const verifyRes = await fetch('/api/v1/payments/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderNumber: orderNum,
           paymentId: `pay_hbh_${Date.now()}`,
-          signature: "valid_signature"
+          method: selectedMethod
         })
       });
       if (!verifyRes.ok) {
