@@ -182,6 +182,11 @@ Build the complete digital operating system behind the luxury artisanal gifting 
       - **Android Voice AI Deadlock & Queue Fixes (`VoiceAiClient.java`, `AudioStreamEngine.java`)**: Fixed critical single-executor read/write deadlock by separating `readExecutor` & `writeExecutor`, added `SSLSocketFactory` (`wss://` TLS) + exponential-backoff auto-reconnection, and upgraded `AudioStreamEngine` to a derived `CHUNK_BYTES` constant + non-blocking clearable `LinkedBlockingQueue` playback worker thread.
     - **Interactive Standalone Architecture Diagram (`/archify`)**:
       - Authored `docs/diagrams/hampers_by_her_architecture.json` and delivered self-contained interactive HTML diagram `docs/diagrams/hampers_by_her_architecture.html` (9/9 `showcase` artifact checks passing, 0 errors, 0 warnings, 0 crossings; `visual-check` passed across `1440×900`, `1600×1000`, `1920×1080`, and `2048×1320` in light & dark modes + perceptual visual review completed).
+    - **End-to-End Fine-Tuning & Live Journey Polish**:
+      - Fixed real storefront checkout pricing bug (`PricingEngine` accepting `pricePaise ?? basePricePaise`, frontend sending normalized `pricePaise` + `customer`, aligned `ALMAS10` ₹500 cap, removed fake-completion checkout `catch` fallback).
+      - Added real `OrderService` fallback in `GET /api/v1/delivery/track/:identifier` + `"Track This Order Live →"` button in Checkout Step 3 so freshly placed orders track truthfully (`CONFIRMED` timeline) with zero mock fabrication.
+      - Wired all previously dead storefront links (`Open the builder`, `Explore wedding/corporate gifting`, Footer `Track an order`, Mobile Dock `Build`/`Bag`, Mobile Menu `Voice Concierge`/`Lookbook`/`Architecture`) and removed stray UTF-8 BOM in `website/index.html`.
+      - Mounted live `GET /architecture` & `GET /architecture.html` in `server/index.js` linked from Storefront, Lookbook, and Studio OS.
 
 ---
 

@@ -116,6 +116,12 @@ app.use("/api", (req, res) => {
   });
 });
 
+// Interactive Archify Architecture Diagram Route
+app.get(["/architecture", "/architecture.html"], (req, res) => {
+  res.setHeader("Cache-Control", "no-cache");
+  res.sendFile(path.join(__dirname, "..", "docs", "diagrams", "hampers_by_her_architecture.html"));
+});
+
 // Static Web App Serving with Cache-Control Optimization
 const websitePath = path.join(__dirname, "..", "website");
 app.use(express.static(websitePath, {

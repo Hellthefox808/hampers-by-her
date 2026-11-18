@@ -52,7 +52,8 @@ class PricingEngine {
     // 1. Calculate Items Subtotal
     let itemsSubtotalPaise = 0;
     for (const item of items) {
-      const price = Math.max(0, parseInt(item.pricePaise || (item.price ? Math.round(item.price * 100) : 0), 10));
+      const rawPaise = item.pricePaise ?? item.basePricePaise ?? (item.price ? Math.round(item.price * 100) : 0);
+      const price = Math.max(0, parseInt(rawPaise, 10) || 0);
       const qty = Math.max(1, parseInt(item.quantity || 1, 10));
       itemsSubtotalPaise += price * qty;
     }

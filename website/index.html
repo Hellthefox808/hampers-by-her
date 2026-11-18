@@ -49,8 +49,11 @@
       <button id="mobile-menu-close" class="mobile-menu__close" aria-label="Close menu">&times;</button>
       <a href="#occasions" class="mobile-menu__link">Occasions</a>
       <a href="#collections" class="mobile-menu__link">Collections</a>
-      <a href="#builder" class="mobile-menu__link">Build Your Own</a>
+      <a href="#builder" id="mobile-builder-btn" class="mobile-menu__link">Build Your Own</a>
+      <a href="#voice" id="mobile-voice-btn" class="mobile-menu__link">🎙️ Voice Concierge</a>
       <a href="#track-order" id="mobile-track-order-btn" class="mobile-menu__link">Track Order</a>
+      <a href="lookbook.html" class="mobile-menu__link">Executive Lookbook &rarr;</a>
+      <a href="architecture.html" class="mobile-menu__link">System Architecture &rarr;</a>
       <a href="admin.html" class="mobile-menu__link" style="color: var(--color-gold); font-weight: 600;">Studio OS (Operations) &rarr;</a>
       <a href="#stories" class="mobile-menu__link">Stories</a>
       <a href="#whatsapp" class="mobile-menu__link">WhatsApp Us</a>
@@ -247,9 +250,9 @@
           <p class="builder__desc">
             Start with the occasion. Set a budget. Choose a base box. Then add, swap, and personalise — ribbon, card, engraving, a photo, a line of your own.
           </p>
-          <a href="#whatsapp" class="btn btn--dark">
+          <button type="button" id="section-open-builder-btn" class="btn btn--dark">
             Open the builder <span class="btn__arrow">→</span>
-          </a>
+          </button>
         </div>
         <div class="builder__right">
           <p class="mono-label" style="margin-bottom: 1.5rem">Eleven quiet steps</p>
@@ -279,14 +282,14 @@
         <p class="mono-label">Weddings &amp; Trousseau</p>
         <h3 class="bespoke-card__title">Bridesmaid hampers, guest favors, and trousseau gifts</h3>
         <p class="bespoke-card__desc">From sample boxes to 500-unit runs. Visual lookbook, dedicated concierge, GST billing.</p>
-        <a href="#whatsapp" class="btn btn--bordeaux btn--sm">Explore wedding gifting <span class="btn__arrow">→</span></a>
+        <button type="button" class="btn btn--bordeaux btn--sm" data-curate-occasion="WEDDING">Explore wedding gifting <span class="btn__arrow">→</span></button>
       </div>
       <div class="bespoke-card frost-glass anim-rise" style="--delay: 200ms">
         <div class="bespoke-card__icon">🏢</div>
         <p class="mono-label">Corporate &amp; Bulk</p>
         <h3 class="bespoke-card__title">Employee kits, client gifts, and branded co-branded boxes</h3>
         <p class="bespoke-card__desc">Instant budget calculator, CSV address upload, proforma invoicing. Logo embossing available.</p>
-        <a href="#whatsapp" class="btn btn--dark btn--sm">Explore corporate gifting <span class="btn__arrow">→</span></a>
+        <button type="button" class="btn btn--dark btn--sm" data-curate-occasion="CORPORATE">Explore corporate gifting <span class="btn__arrow">→</span></button>
       </div>
     </div>
   </section>
@@ -372,10 +375,10 @@
       <div class="footer__col">
         <p class="mono-label footer__col-title">Care</p>
         <ul>
-          <li><a href="#whatsapp" class="ribbon-link">Track an order</a></li>
-          <li><a href="#whatsapp" class="ribbon-link">Returns &amp; exchanges</a></li>
+          <li><a href="#track-order" id="footer-track-order-btn" class="ribbon-link">Track an order</a></li>
+          <li><a href="lookbook.html" class="ribbon-link">Executive Lookbook</a></li>
+          <li><a href="architecture.html" class="ribbon-link">Platform Architecture</a></li>
           <li><a href="#whatsapp" class="ribbon-link">WhatsApp us</a></li>
-          <li><a href="#whatsapp" class="ribbon-link">Contact the studio</a></li>
         </ul>
       </div>
     </div>
@@ -393,7 +396,7 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
       <span>Shop</span>
     </a>
-    <a href="#builder" class="mobile-bar__item">
+    <a href="#builder" id="mobile-dock-build-btn" class="mobile-bar__item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       <span>Build</span>
     </a>
@@ -401,13 +404,13 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
       <span>WhatsApp</span>
     </a>
-    <a href="#collections" class="mobile-bar__item">
+    <a href="#bag" id="mobile-dock-bag-btn" class="mobile-bar__item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
       <span>Bag</span>
     </a>
   </div>
 
-  ﻿  <!-- ═══════════════ SHOPPING CART DRAWER ═══════════════ -->
+  <!-- ═══════════════ SHOPPING CART DRAWER ═══════════════ -->
   <div id="cart-overlay" class="drawer-overlay">
     <aside id="cart-drawer" class="cart-drawer" aria-label="Shopping Cart">
       <header class="cart-drawer__header">
@@ -956,9 +959,14 @@
           </div>
         </div>
 
-        <a id="confirmed-whatsapp-btn" href="https://wa.me/?text=Hi%20Hampers%20by%20Her,%20I%20just%20placed%20order" target="_blank" class="btn btn--primary btn--block">
-          Chat with Atelier on WhatsApp &rarr;
-        </a>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button type="button" id="confirmed-track-order-btn" class="btn btn--bordeaux btn--block">
+            Track This Order Live &rarr;
+          </button>
+          <a id="confirmed-whatsapp-btn" href="https://wa.me/?text=Hi%20Hampers%20by%20Her,%20I%20just%20placed%20order" target="_blank" class="btn btn--primary btn--block">
+            Chat with Atelier on WhatsApp &rarr;
+          </a>
+        </div>
       </div>
     </div>
   </div>

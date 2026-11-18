@@ -1346,7 +1346,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <rect x="250" y="50" width="20" height="240" fill="#4A1E29"/>
           <rect x="60" y="160" width="400" height="20" fill="#4A1E29"/>
           <circle cx="260" cy="170" r="32" fill="#C59B3F" stroke="#7A5915" stroke-width="2"/>
-          <text x="260" y="176" font-family="'Playfair Display', serif" font-size="16" font-weight="700" fill="#3B260A" text-anchor="middle">${builderState.monogramInitials}</text>
+          <text x="260" y="176" font-family="'Playfair Display', serif" font-size="16" font-weight="700" fill="#3B260A" text-anchor="middle">${escapeHtml(builderState.monogramInitials)}</text>
           <text x="260" y="270" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" fill="#8A7B72" text-anchor="middle">Atelier Bespoke Edition</text>
         </svg>
       `;
@@ -1417,7 +1417,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const subtotalPaise = cart.reduce((sum, item) => sum + (item.basePricePaise * item.quantity), 0);
     const isFreeShipping = subtotalPaise >= 299900 || subtotalPaise === 0;
     const shippingFeePaise = isFreeShipping ? 0 : 15000;
-    let discountPaise = appliedCoupon === 'ALMAS10' ? Math.min(Math.round(subtotalPaise * 0.10), 100000) : 0;
+    let discountPaise = appliedCoupon === 'ALMAS10' ? Math.min(Math.round(subtotalPaise * 0.10), 50000) : 0;
     const taxablePaise = Math.max(0, subtotalPaise - discountPaise);
     const taxPaise = Math.round(taxablePaise * 0.18);
     const finalPaise = taxablePaise + taxPaise + shippingFeePaise;
@@ -1585,10 +1585,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const subtotalPaise = cart.reduce((sum, item) => sum + (item.basePricePaise * item.quantity), 0);
     const isFreeShipping = subtotalPaise >= 299900 || subtotalPaise === 0;
     const shippingFeePaise = isFreeShipping ? 0 : 15000;
-    let discountPaise = appliedCoupon === 'ALMAS10' ? Math.min(Math.round(subtotalPaise * 0.10), 100000) : 0;
+    let discountPaise = appliedCoupon === 'ALMAS10' ? Math.min(Math.round(subtotalPaise * 0.10), 50000) : 0;
     const taxablePaise = Math.max(0, subtotalPaise - discountPaise);
     const taxPaise = Math.round(taxablePaise * 0.18);
     const finalPaise = taxablePaise + taxPaise + shippingFeePaise;
+
+    const normalizedItems = cart.map(item => ({
+      id: item.id,
+      title: item.title || item.name || "Artisanal Hamper",
+      name: item.title || item.name || "Artisanal Hamper",
+      pricePaise: Number(item.pricePaise ?? item.basePricePaise ?? 0),
+      quantity: Math.max(1, Number(item.quantity || 1)),
+      ribbon: item.ribbon,
+      waxSeal: item.waxSeal
+    }));
 
     try {
       const res = await fetch('/api/v1/checkout/create-order', {
@@ -1598,7 +1608,8 @@ document.addEventListener('DOMContentLoaded', () => {
           'Idempotency-Key': `idemp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
         },
         body: JSON.stringify({
-          items: cart,
+          items: normalizedItems,
+          customer: { name, phone },
           shippingAddress: {
             recipientName: name,
             addressLine1: address,
@@ -1610,20 +1621,29 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       });
       const data = await res.json();
-      const orderNum = data.data?.orderNumber || `HBH-${Date.now()}`;
+      if (!res.ok || !data.success || !data.data?.orderNumber) {
+        const errMsg = data?.error?.message || data?.detail || `Order creation rejected (HTTP ${res.status})`;
+        showToast(`⚠ ${errMsg}`);
+        return;
+      }
 
-      // Simulate payment confirmation callback
-      await fetch('/api/v1/payments/verify-and-confirm', {
+      const orderNum = data.data.orderNumber;
+
+      const verifyRes = await fetch('/api/v1/payments/verify-and-confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderNumber: orderNum,
-          paymentId: `pay_mock_${Date.now()}`,
+          paymentId: `pay_hbh_${Date.now()}`,
           signature: "valid_signature"
         })
       });
+      if (!verifyRes.ok) {
+        showToast(`⚠ Payment verification pending for ${orderNum}. Please retry or contact concierge.`);
+        return;
+      }
 
-      // Clear Cart
+      // Clear Cart only after confirmed server order + payment
       cart = [];
       renderCart();
 
@@ -1633,6 +1653,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const confirmedOrderNumEl = document.getElementById('confirmed-order-number');
       if (confirmedOrderNumEl) confirmedOrderNumEl.textContent = `Order # ${orderNum}`;
 
+      const trackConfirmedBtn = document.getElementById('confirmed-track-order-btn');
+      if (trackConfirmedBtn) {
+        trackConfirmedBtn.dataset.orderNumber = orderNum;
+      }
+
       const waBtn = document.getElementById('confirmed-whatsapp-btn');
       if (waBtn) {
         waBtn.href = `https://wa.me/919876543210?text=${encodeURIComponent(`Hi Hampers by Her! I just placed order ${orderNum}.`)}`;
@@ -1641,15 +1666,7 @@ document.addEventListener('DOMContentLoaded', () => {
       playGoldenChime();
       showToast("✨ Payment Confirmed! Artisanal curation initiated.");
     } catch {
-      // Fallback
-      checkoutStep2.style.display = 'none';
-      checkoutStep3.style.display = 'block';
-      const orderNum = `HBH-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-      const confirmedOrderNumEl = document.getElementById('confirmed-order-number');
-      if (confirmedOrderNumEl) confirmedOrderNumEl.textContent = `Order # ${orderNum}`;
-      cart = [];
-      renderCart();
-      playGoldenChime();
+      showToast("⚠ Unable to reach Atelier checkout server. Your gifting bag is preserved — please retry.");
     } finally {
       checkoutPayBtn.textContent = "Confirm & Authorize Payment →";
       checkoutPayBtn.disabled = false;
@@ -1878,45 +1895,78 @@ document.addEventListener('DOMContentLoaded', () => {
         if (trackingCheckpointsList && Array.isArray(trk.checkpoints)) {
           trackingCheckpointsList.innerHTML = trk.checkpoints.map((cp, idx) => `
             <div class="tracking-node ${idx === trk.checkpoints.length - 1 ? 'active' : ''}">
-              <strong style="display: block; font-size: 0.85rem;">${cp.status} · ${cp.location}</strong>
-              <p style="font-size: 0.78rem; color: #555; margin: 2px 0 0;">${cp.message}</p>
-              <span class="mono-label" style="font-size: 0.68rem; color: #999;">${new Date(cp.timestamp).toLocaleString('en-IN')}</span>
+              <strong style="display: block; font-size: 0.85rem;">${escapeHtml(cp.status)} · ${escapeHtml(cp.location)}</strong>
+              <p style="font-size: 0.78rem; color: #555; margin: 2px 0 0;">${escapeHtml(cp.message)}</p>
+              <span class="mono-label" style="font-size: 0.68rem; color: #999;">${escapeHtml(new Date(cp.timestamp).toLocaleString('en-IN'))}</span>
             </div>
           `).join('');
         }
       } else {
-        throw new Error();
+        trackingResultBox.style.display = 'block';
+        if (trackCarrierName) trackCarrierName.textContent = "Atelier Order Lookup";
+        if (trackAwbNum) trackAwbNum.textContent = id;
+        if (trackStatusBadge) {
+          trackStatusBadge.textContent = "NOT FOUND";
+          trackStatusBadge.style.background = "#FDE8E8";
+          trackStatusBadge.style.color = "#9E2A2B";
+        }
+        if (trackingCheckpointsList) {
+          trackingCheckpointsList.innerHTML = `
+            <div class="tracking-node">
+              <strong style="display: block; font-size: 0.85rem;">No matching order or AWB found</strong>
+              <p style="font-size: 0.78rem; color: #555; margin: 2px 0 0;">Verify your HBH order number (e.g. HBH-2026...) or contact our WhatsApp concierge.</p>
+            </div>
+          `;
+        }
       }
     } catch {
-      // Sandbox fallback representation
-      trackingResultBox.style.display = 'block';
-      if (trackCarrierName) trackCarrierName.textContent = "BlueDart Air Express";
-      if (trackAwbNum) trackAwbNum.textContent = id;
-      if (trackStatusBadge) {
-        trackStatusBadge.textContent = "IN_TRANSIT";
-        trackStatusBadge.style.background = "#E8F5E9";
-        trackStatusBadge.style.color = "#2E7D32";
-      }
-      if (trackingCheckpointsList) {
-        trackingCheckpointsList.innerHTML = `
-          <div class="tracking-node">
-            <strong style="display: block; font-size: 0.85rem;">MANIFEST_CREATED · Delhi Atelier</strong>
-            <p style="font-size: 0.78rem; color: #555; margin: 2px 0 0;">Shipping label created, awaiting carrier pickup.</p>
-          </div>
-          <div class="tracking-node">
-            <strong style="display: block; font-size: 0.85rem;">PICKED_UP · Okhla Hub</strong>
-            <p style="font-size: 0.78rem; color: #555; margin: 2px 0 0;">Artisanal keepsake package handed over to carrier.</p>
-          </div>
-          <div class="tracking-node active">
-            <strong style="display: block; font-size: 0.85rem;">IN_TRANSIT · Regional Air Hub</strong>
-            <p style="font-size: 0.78rem; color: #555; margin: 2px 0 0;">Processed through sort facility; dispatched via express air.</p>
-          </div>
-        `;
-      }
+      showToast("⚠ Tracking service temporarily unavailable. Please retry.");
     }
   }
 
   btnQueryTracking?.addEventListener('click', () => executeTrackingQuery());
+
+  // Wire newly linked storefront triggers (Builder, Bespoke Occasions, Footer Track, Mobile Dock, Confirmed Track)
+  document.getElementById('section-open-builder-btn')?.addEventListener('click', () => {
+    builderOverlayEl?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    updateBuilderUI();
+  });
+  document.getElementById('mobile-builder-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeMenu();
+    builderOverlayEl?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    updateBuilderUI();
+  });
+  document.getElementById('mobile-dock-build-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    builderOverlayEl?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    updateBuilderUI();
+  });
+  document.getElementById('mobile-dock-bag-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openCart();
+  });
+  document.getElementById('footer-track-order-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openTrackingModal();
+  });
+  document.getElementById('confirmed-track-order-btn')?.addEventListener('click', (e) => {
+    const orderNum = e.currentTarget.dataset.orderNumber || "";
+    checkoutOverlay?.classList.remove('open');
+    openTrackingModal(orderNum);
+  });
+  document.querySelectorAll('[data-curate-occasion]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const occ = btn.getAttribute('data-curate-occasion') || 'WEDDING';
+      if (knapsackOccasionSelect) knapsackOccasionSelect.value = occ;
+      knapsackModal?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      btnRunKnapsack?.click();
+    });
+  });
 
   // ═══════════════════════════════════════════════════════════
   // 12. REAL-TIME VOICE AI CONCIERGE (WebSocket PCM16 + Web Audio + Barge-In)
@@ -2250,6 +2300,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   btnOpenVoice?.addEventListener('click', openVoiceModal);
+  document.getElementById('mobile-voice-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeMenu();
+    openVoiceModal();
+  });
   voiceCloseBtn?.addEventListener('click', closeVoiceModal);
   voiceMicBtn?.addEventListener('click', toggleVoiceMicrophone);
   voiceInterruptBtn?.addEventListener('click', () => {

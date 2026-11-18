@@ -1158,11 +1158,72 @@ router.post("/delivery/carrier-webhook", (req, res) => {
 });
 
 router.get("/delivery/track/:identifier", (req, res) => {
-  const details = logisticsCourierService.getTrackingDetails(req.params.identifier);
-  if (!details) {
-    return res.status(404).json({ success: false, error: "TRACKING_NOT_FOUND" });
+  const rawId = String(req.params.identifier || "").trim();
+  const details = logisticsCourierService.getTrackingDetails(rawId);
+  if (details) {
+    return res.json({ success: true, data: details });
   }
-  res.json({ success: true, data: details });
+
+  // Fallback to real persisted OrderService record before courier AWB manifest is created
+  const order = OrderService.getOrderByNumber(rawId.toUpperCase()) || OrderService.getOrderByNumber(rawId);
+  if (order) {
+    const status = order.status || "CONFIRMED";
+    const createdAt = order.createdAt || new Date().toISOString();
+    const updatedAt = order.updatedAt || createdAt;
+    const checkpoints = [
+      {
+        status: "ORDER_PLACED",
+        location: "Hampers by Her Storefront",
+        message: `Artisanal order ${order.orderNumber} recorded and verified.`,
+        timestamp: createdAt
+      }
+    ];
+    if (["CONFIRMED", "IN_PRODUCTION", "QUALITY_CHECKED", "PACKED", "DISPATCHED", "DELIVERED"].includes(status)) {
+      checkpoints.push({
+        status: "PAYMENT_CONFIRMED",
+        location: "New Delhi Atelier",
+        message: "Payment authorized; assigned to master binder queue.",
+        timestamp: updatedAt
+      });
+    }
+    if (["IN_PRODUCTION", "QUALITY_CHECKED", "PACKED", "DISPATCHED", "DELIVERED"].includes(status)) {
+      checkpoints.push({
+        status: "IN_PRODUCTION",
+        location: "Okhla Craft Studio",
+        message: "Hand-tying raw silk ribbon, wax seal, and calligraphy note.",
+        timestamp: updatedAt
+      });
+    }
+    if (["QUALITY_CHECKED", "PACKED", "DISPATCHED", "DELIVERED"].includes(status)) {
+      checkpoints.push({
+        status: "QUALITY_CHECKED",
+        location: "Studio QC Photo Gate",
+        message: "Passed mandatory photographic inspection and protective packing.",
+        timestamp: updatedAt
+      });
+    }
+    if (["DISPATCHED", "DELIVERED"].includes(status)) {
+      checkpoints.push({
+        status,
+        location: order.shippingAddress?.city || "Express Air Hub",
+        message: "Handed over to BlueDart / Delhivery Express Air.",
+        timestamp: updatedAt
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        orderNumber: order.orderNumber,
+        awbNumber: order.tracking?.awb || "Awaiting Courier Handover",
+        carrier: order.tracking?.carrier || "BlueDart / Delhivery Express Air",
+        status,
+        checkpoints
+      }
+    });
+  }
+
+  return res.status(404).json({ success: false, error: "TRACKING_NOT_FOUND" });
 });
 
 // ═══════════════════════════════════════════════════════════
