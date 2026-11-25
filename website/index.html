@@ -3,411 +3,769 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hampers by Her — Artisanal Gifting Atelier</title>
+  <title>Hampers by Her — Small-Batch Artisanal Gifting Atelier</title>
   <meta name="description" content="Small-batch hampers composed by hand — dried florals, slow-brewed cocoa, a handwritten card. Shop the edit, or build your own hamper.">
-  <meta property="og:title" content="Hampers by Her — Artisanal Gifting Atelier">
+  <meta property="og:title" content="Hampers by Her — Small-Batch Artisanal Gifting Atelier">
   <meta property="og:description" content="Small-batch hampers composed by hand. Shop the edit, or build your own for any occasion.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="styles_ext.css">
+  <link rel="stylesheet" href="storybook.css">
   <link rel="stylesheet" href="themes.css">
   <script src="theme-switcher.js" defer></script>
 </head>
-<body>
+<body class="sb-body">
   <!-- Ambient Golden Dust Canvas for 4D Depth & Atmosphere -->
   <canvas id="ambient-particles-canvas" class="ambient-particles-canvas"></canvas>
 
-  <!-- ═══════════════ NAVIGATION ═══════════════ -->
-  <nav id="main-nav" class="nav">
-    <div class="nav__inner container">
-      <a href="#" class="nav__logo">Hampers by Her</a>
-      <div class="nav__links">
-        <a href="#occasions" class="ribbon-link">Occasions</a>
-        <a href="#collections" class="ribbon-link">Collections</a>
-        <a href="#builder" class="ribbon-link">Build Your Own</a>
-        <a href="#track-order" id="nav-track-order-btn" class="ribbon-link">Track Order</a>
-        <a href="#stories" class="ribbon-link">Stories</a>
-        <a href="lookbook.html" class="ribbon-link">Lookbook</a>
+  <!-- ═══════════════ SCALLOPED STICKY NAVBAR ═══════════════ -->
+  <nav id="main-nav" class="nav sb-nav" aria-label="Main Navigation">
+    <div class="sb-nav__inner">
+      <a href="index.html" class="sb-brand">
+        <span class="sb-brand__emblem" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="9" width="16" height="11" rx="2" fill="#FFFDF8"/>
+            <path d="M12 9v11M4 13h16"/>
+            <path d="M12 9C9.5 9 8 7.5 8 5.8C8 4.4 9.2 3.5 10.4 4.2C11.2 4.7 11.7 6 12 9Z" fill="#C89D42"/>
+            <path d="M12 9C14.5 9 16 7.5 16 5.8C16 4.4 14.8 3.5 13.6 4.2C12.8 4.7 12.3 6 12 9Z" fill="#C89D42"/>
+          </svg>
+        </span>
+        <span class="sb-brand__wordmark">Hampers by Her</span>
+      </a>
+
+      <div class="sb-nav__links">
+        <a href="index.html" class="sb-nav__link sb-nav__link--active">Home</a>
+        <a href="catalog.html" class="sb-nav__link">Hampers</a>
+        <a href="moments.html" class="sb-nav__link">Happy moments</a>
+        <a href="how-it-works.html" class="sb-nav__link">How it works</a>
+        <a href="faq.html" class="sb-nav__link">FAQ</a>
+        <a href="contact.html" class="sb-nav__link">Visit &amp; contact</a>
+        <a href="#track-order" id="nav-track-order-btn" class="sb-nav__link">Track</a>
       </div>
-      <div class="nav__actions">
-        <a href="admin.html" class="nav__admin-badge" title="Artisan Studio OS">Studio OS ⚡</a>
-        <a href="#collections" class="nav__cart">Cart · 0</a>
-        <a href="#whatsapp" class="btn btn--primary btn--sm">Enquire</a>
-        <button id="mobile-menu-btn" class="nav__hamburger" aria-label="Toggle menu">
-          <span></span><span></span><span></span>
+
+      <div class="sb-nav__actions">
+        <a href="admin.html" class="nav__admin-badge sb-nav__admin-hide-sm" title="Artisan Studio OS">Studio OS ⚡</a>
+        <a href="#collections" class="nav__cart sb-nav__cart">Cart · 0</a>
+        <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her%2C%20I%27d%20love%20to%20plan%20a%20hamper!" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp sb-btn--sm sb-nav__wa-desktop">
+          WhatsApp us
+        </a>
+        <button id="mobile-menu-btn" type="button" class="sb-menu-btn" aria-label="Open menu">
+          <span aria-hidden="true">🎀</span>
+          <span>Menu</span>
         </button>
       </div>
     </div>
   </nav>
 
-  <!-- Mobile Slide Menu -->
-  <div id="mobile-menu" class="mobile-menu">
+  <!-- Full-Screen Warm-Gold Storybook Mobile Menu -->
+  <div id="mobile-menu" class="mobile-menu sb-mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation Menu">
     <div class="mobile-menu__overlay"></div>
     <div class="mobile-menu__panel">
-      <button id="mobile-menu-close" class="mobile-menu__close" aria-label="Close menu">&times;</button>
-      <a href="#occasions" class="mobile-menu__link">Occasions</a>
-      <a href="#collections" class="mobile-menu__link">Collections</a>
-      <a href="#builder" id="mobile-builder-btn" class="mobile-menu__link">Build Your Own</a>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <p class="sb-mobile-menu__eyebrow">where to, friend?</p>
+        <button id="mobile-menu-close" class="mobile-menu__close" style="position:static;" aria-label="Close menu">&times;</button>
+      </div>
+      <a href="index.html" class="mobile-menu__link">Home</a>
+      <a href="catalog.html" class="mobile-menu__link">Available hampers</a>
+      <a href="#builder" id="mobile-builder-btn" class="mobile-menu__link">Build your own (11 steps)</a>
+      <a href="moments.html" class="mobile-menu__link">Happy moments ♡</a>
+      <a href="delivered.html" class="mobile-menu__link">Delivered archives</a>
+      <a href="how-it-works.html" class="mobile-menu__link">How it works</a>
+      <a href="faq.html" class="mobile-menu__link">FAQ corkboard</a>
+      <a href="contact.html" class="mobile-menu__link">Visit &amp; contact letter</a>
       <a href="#voice" id="mobile-voice-btn" class="mobile-menu__link">🎙️ Voice Concierge</a>
-      <a href="#track-order" id="mobile-track-order-btn" class="mobile-menu__link">Track Order</a>
+      <a href="#track-order" id="mobile-track-order-btn" class="mobile-menu__link">Track order</a>
       <a href="lookbook.html" class="mobile-menu__link">Executive Lookbook &rarr;</a>
       <a href="architecture.html" class="mobile-menu__link">System Architecture &rarr;</a>
-      <a href="admin.html" class="mobile-menu__link" style="color: var(--color-gold); font-weight: 600;">Studio OS (Operations) &rarr;</a>
-      <a href="#stories" class="mobile-menu__link">Stories</a>
-      <a href="#whatsapp" class="mobile-menu__link">WhatsApp Us</a>
-      <div class="mobile-menu__footer">
-        <p class="mono-label">@hampers._by_her</p>
+      <a href="admin.html" class="mobile-menu__link" style="color: var(--sb-accent);">Studio OS (Operations) &rarr;</a>
+      <div style="margin-top:20px;">
+        <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her!" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp" style="width:100%;">
+          Chat on WhatsApp &rarr;
+        </a>
+        <p class="mono-label" style="margin-top:12px; text-align:center;">@hampers._by_her</p>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════ HERO ═══════════════ -->
-  <header id="hero" class="hero container">
-    <div class="hero__grid">
-      <div class="hero__text anim-rise">
-        <p class="mono-label">Edition 07 · Ribbon-tied, hand-wrapped</p>
-        <h1 class="hero__title">
-          A gift that<br>
-          <span class="text-bordeaux">unfolds</span> like<br>
-          a secret.
-        </h1>
-        <p class="hero__subtitle">
-          Hampers composed in small batches — dried florals, slow-brewed cocoa, a handwritten card. Tied in waxed ribbon, delivered the day they matter.
-        </p>
-        <div class="hero__cta-row">
-          <a href="#collections" class="btn btn--bordeaux magnetic-btn">
-            Shop the edit <span class="btn__arrow">→</span>
-          </a>
-          <a href="#builder" class="ribbon-link hero__builder-link">Build your own</a>
-          <button id="btn-hero-unboxing-4d" class="btn btn--outline btn--sm magnetic-btn" style="border-color: var(--color-gold); color: var(--color-bordeaux); gap: 6px;">
-            ✨ Experience 4D Unboxing
-          </button>
-        </div>
-        <div class="hero__trust">
-          <span>· 48hr dispatch</span>
-          <span>· Pan-India</span>
-          <span>· Gift-ready</span>
-        </div>
+  <!-- ═══════════════ SCENE 1: STORYBOOK HERO ═══════════════ -->
+  <header id="hero" class="sb-hero">
+    <div class="sb-hero__inner">
+      <div class="sb-eyebrow-wrap">
+        <span class="sb-eyebrow">every hamper is a keepsake</span>
+        <svg class="sb-wavy" viewBox="0 0 180 12" fill="none" aria-hidden="true">
+          <path d="M2 7 C22 1, 38 11, 58 6 C78 1, 96 11, 116 6 C136 1, 156 11, 178 5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>
       </div>
-      <div class="hero__image-wrap anim-fade">
-        <img
-          src="images/hero-hamper.jpg"
-          alt="Kraft-paper hamper tied with clay ribbon, dried roses and artisanal chocolate"
-          width="1408" height="1104"
-          fetchpriority="high"
-          decoding="async"
-          class="hero__image"
-        >
-        <div class="hero__float frost-glass">
-          <p class="mono-label" style="margin-bottom: 4px">This week</p>
-          <p class="display-text" style="font-size: 1.15rem; line-height: 1.3">The Autumn Slow-Brew Hamper</p>
-          <p class="mono-label" style="margin-top:6px">₹ 2,480 · 42 left</p>
-        </div>
+
+      <h1 class="sb-hero__title">
+        Small-batch artisanal hampers, tied by hand
+      </h1>
+      <p class="sb-hero__subtitle">
+        Dried florals, single-origin cocoa, warm wax seals, and a handwritten letter — curated in our New Delhi atelier and delivered across India with express care.
+      </p>
+
+      <div class="sb-hero__cta-row">
+        <a href="#collections" class="sb-btn sb-btn--primary magnetic-btn">
+          View available hampers &rarr;
+        </a>
+        <a href="#builder" class="sb-btn sb-btn--cream hero__builder-link">
+          Build your own (11 steps)
+        </a>
+        <button id="btn-hero-unboxing-4d" type="button" class="sb-btn sb-btn--cream sb-btn--sm magnetic-btn">
+          ✨ 4D Unboxing
+        </button>
       </div>
+
+      <!-- Natural Language Intent Search & AI Concierge Bar -->
+      <div class="sb-hero__search-wrap">
+        <div class="search-input-box sb-search-pill">
+          <span style="font-size: 1rem; margin-right: 4px;" aria-hidden="true">🔎</span>
+          <input type="text" id="natural-search-input" placeholder="Try 'wedding gift for sister under 4000' or 'festive brass'..." aria-label="Search hampers by intent">
+          <button id="natural-search-btn" type="button" class="sb-btn sb-btn--cream sb-btn--sm">Search</button>
+          <button id="btn-open-knapsack-curator" type="button" class="sb-btn sb-btn--primary sb-btn--sm">✨ AI Curator</button>
+          <button id="btn-open-voice-concierge" type="button" class="sb-btn sb-btn--whatsapp sb-btn--sm">🎙️ Voice</button>
+        </div>
+        <div id="search-intent-pills" class="search-intent-pills" style="display: none; justify-content: center;"></div>
+      </div>
+
+      <div class="sb-hero__trust">
+        <span>✦ 24–48hr studio dispatch</span>
+        <span>✦ Pan-India express air</span>
+        <span>✦ Wax-sealed &amp; gift-ready</span>
+      </div>
+
+      <div class="sb-hero-float-pill">
+        <span class="mono-label">This week in studio</span>
+        <strong style="font-family: var(--sb-font-display); font-size:0.96rem;">Autumn Slow-Brew Edit</strong>
+        <span class="mono-label" style="color: var(--sb-accent); font-weight:700;">₹ 2,480 · Ready in 24h</span>
+      </div>
+    </div>
+
+    <!-- Bottom Peekaboo Arches + Quilted Fence + Mascot Character -->
+    <div class="sb-hero-stage">
+      <div class="sb-arches-row">
+        <a href="hamper.html?id=prod_wedding_vows" class="sb-peek-arch">
+          <img src="images/hamper-wedding.jpg" alt="The Vows and Vines Wedding Hamper">
+          <span class="sb-peek-arch__label">Vows &amp; Vines</span>
+        </a>
+        <a href="hamper.html?id=prod_corporate_wellwisher" class="sb-peek-arch">
+          <img src="images/hamper-corporate.jpg" alt="The Office Well-Wisher Corporate Hamper">
+          <span class="sb-peek-arch__label">Well-Wisher</span>
+        </a>
+        <a href="catalog.html" class="sb-peek-arch">
+          <img src="images/hero-hamper.jpg" alt="The Autumn Slow-Brew Edition" fetchpriority="high">
+          <span class="sb-peek-arch__label">Edition 07</span>
+        </a>
+        <a href="hamper.html?id=prod_festive_diwali" class="sb-peek-arch">
+          <img src="images/hamper-festive.jpg" alt="The Diwali Slow-Burn Hamper">
+          <span class="sb-peek-arch__label">Slow-Burn</span>
+        </a>
+        <a href="hamper.html?id=prod_anniversary_letter" class="sb-peek-arch">
+          <img src="images/hamper-anniversary.jpg" alt="The Ten-Year Letter Anniversary Hamper">
+          <span class="sb-peek-arch__label">10-Year Letter</span>
+        </a>
+      </div>
+
+      <!-- Illustrated Atelier Ribbon-Bear Mascot Peeking Over the Fence -->
+      <div class="sb-hero-mascot" aria-hidden="true">
+        <span class="sb-peekaboo-bubble">peekaboo!</span>
+        <svg width="112" height="84" viewBox="0 0 112 84" fill="none">
+          <ellipse cx="26" cy="24" rx="13" ry="14" fill="#D59A63" stroke="#2B180E" stroke-width="2.5"/>
+          <ellipse cx="26" cy="24" rx="7" ry="8" fill="#F5D69E"/>
+          <ellipse cx="86" cy="24" rx="13" ry="14" fill="#D59A63" stroke="#2B180E" stroke-width="2.5"/>
+          <ellipse cx="86" cy="24" rx="7" ry="8" fill="#F5D69E"/>
+          <path d="M22 68 C22 36, 36 18, 56 18 C76 18, 90 36, 90 68 Z" fill="#E3AD78" stroke="#2B180E" stroke-width="2.5"/>
+          <ellipse cx="56" cy="54" rx="17" ry="13" fill="#FFFDF8" stroke="#2B180E" stroke-width="2"/>
+          <circle cx="42" cy="44" r="4" fill="#2B180E"/>
+          <circle cx="70" cy="44" r="4" fill="#2B180E"/>
+          <circle cx="43" cy="42.5" r="1.2" fill="#FFF"/>
+          <circle cx="71" cy="42.5" r="1.2" fill="#FFF"/>
+          <ellipse cx="56" cy="50" rx="5" ry="3.8" fill="#2B180E"/>
+          <path d="M52 56 Q56 60 60 56" stroke="#2B180E" stroke-width="2" stroke-linecap="round"/>
+          <!-- Silk ribbon bow collar -->
+          <path d="M44 68 L34 62 L34 74 Z" fill="#8F3F14" stroke="#2B180E" stroke-width="2"/>
+          <path d="M68 68 L78 62 L78 74 Z" fill="#8F3F14" stroke="#2B180E" stroke-width="2"/>
+          <circle cx="56" cy="68" r="5" fill="#C89D42" stroke="#2B180E" stroke-width="2"/>
+        </svg>
+      </div>
+
+      <div class="sb-fence-bar"></div>
     </div>
   </header>
 
-  <!-- ═══════════════ OCCASIONS BAR ═══════════════ -->
-  <section id="occasions" class="occasions-bar">
-    <div class="container">
-      <div class="occasions-bar__scroll">
-        <span class="mono-label occasions-bar__label">Shop by occasion →</span>
-        <a href="#collections" class="occasion-chip">Birthday</a>
-        <a href="#collections" class="occasion-chip">Wedding</a>
-        <a href="#collections" class="occasion-chip">Corporate</a>
-        <a href="#collections" class="occasion-chip">Festive</a>
-        <a href="#collections" class="occasion-chip">Anniversary</a>
-        <a href="#collections" class="occasion-chip">New Home</a>
-        <a href="#collections" class="occasion-chip">Thank You</a>
-        <a href="#collections" class="occasion-chip">Baby Shower</a>
-        <a href="#collections" class="occasion-chip">Self Care</a>
+  <!-- ═══════════════ SCENE 2: MEET THE HAMPERS (SCROLL-OPENING ARCHED DOORS) ═══════════════ -->
+  <section id="collections" class="sb-meet">
+    <div class="sb-container">
+      <div class="sb-section-head">
+        <div>
+          <span class="sb-script" style="font-size:1.5rem; color:var(--sb-accent);">open the atelier doors</span>
+          <h2 class="sb-section-title">Meet the hampers</h2>
+          <p class="sb-section-sub">Real small-batch editions photographed in our studio — ready to personalise, seal in wax, and dispatch today.</p>
+        </div>
+        <a href="catalog.html" class="sb-btn sb-btn--cream sb-btn--sm">See all hampers &rarr;</a>
       </div>
 
-      <!-- Natural Language Intent Search & AI Hamper Curator Trigger -->
-      <div class="search-bar-wrap">
-        <div class="search-input-box">
-          <span style="font-size: 1rem; margin-right: 4px;">🔎</span>
-          <input type="text" id="natural-search-input" placeholder="Type intent: e.g. 'wedding gift for sister under 4000' or 'festive luxury box'..." aria-label="Search hampers by intent">
-          <button id="natural-search-btn" class="btn btn--outline btn--xs" style="margin-right: 6px;">Search</button>
-          <button id="btn-open-knapsack-curator" class="btn btn--bordeaux btn--xs" style="margin-right: 6px;">✨ AI Hamper Curator</button>
-          <button id="btn-open-voice-concierge" class="btn btn--outline btn--xs" style="border-color: var(--color-gold); color: var(--color-bordeaux);">🎙️ Voice Concierge</button>
-        </div>
-        <div id="search-intent-pills" class="search-intent-pills" style="display: none;"></div>
+      <!-- Occasion Quick Filter Pills -->
+      <div class="sb-occasion-pills" role="group" aria-label="Filter hampers by occasion">
+        <button type="button" class="sb-filter-pill active" data-occasion-filter="all">All editions</button>
+        <button type="button" class="sb-filter-pill" data-occasion-filter="wedding">Wedding</button>
+        <button type="button" class="sb-filter-pill" data-occasion-filter="corporate">Corporate</button>
+        <button type="button" class="sb-filter-pill" data-occasion-filter="festive">Festive</button>
+        <button type="button" class="sb-filter-pill" data-occasion-filter="anniversary">Anniversary</button>
+      </div>
+
+      <div class="sb-doors-grid">
+        <!-- Product 1 -->
+        <article class="product-card sb-door-card" data-product-id="prod_wedding_vows">
+          <div class="sb-arch-portal product-card__image-wrap">
+            <div class="sb-door-leaf sb-door-leaf--left" aria-hidden="true"></div>
+            <div class="sb-door-leaf sb-door-leaf--right" aria-hidden="true"></div>
+            <img src="images/hamper-wedding.jpg" alt="The Vows and Vines Hamper" loading="lazy" class="product-card__image">
+            <span class="product-card__badge">Best Seller</span>
+          </div>
+          <div class="sb-door-card__meta">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <span class="mono-label">Wedding · Botanical</span>
+              <strong style="font-family:var(--sb-font-display); font-size:1.15rem; color:var(--sb-accent);">₹ 3,950</strong>
+            </div>
+            <h3 class="product-card__name" style="margin:0; font-size:1.25rem;">The Vows &amp; Vines Hamper</h3>
+            <p class="product-card__desc" style="margin:0; font-size:0.84rem;">Elderflower tonic, wax-sealed card, dried hydrangea, castor-oil candle.</p>
+            <div class="sb-door-card__actions">
+              <button type="button" class="sb-btn sb-btn--cream sb-btn--sm btn-quick-add" data-id="prod_wedding_vows">+ Bag</button>
+              <button type="button" class="sb-btn sb-btn--primary sb-btn--sm btn-view-item" data-id="prod_wedding_vows" style="flex:1;">Inspect</button>
+              <a href="hamper.html?id=prod_wedding_vows" class="sb-btn sb-btn--cream sb-btn--sm" title="Full Hamper Page">↗</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product 2 -->
+        <article class="product-card sb-door-card" data-product-id="prod_corporate_wellwisher">
+          <div class="sb-arch-portal product-card__image-wrap">
+            <div class="sb-door-leaf sb-door-leaf--left" aria-hidden="true"></div>
+            <div class="sb-door-leaf sb-door-leaf--right" aria-hidden="true"></div>
+            <img src="images/hamper-corporate.jpg" alt="The Office Well-Wisher Hamper" loading="lazy" class="product-card__image">
+            <span class="product-card__badge badge--gold">Artisan Pick</span>
+          </div>
+          <div class="sb-door-card__meta">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <span class="mono-label">Corporate · Monogram</span>
+              <strong style="font-family:var(--sb-font-display); font-size:1.15rem; color:var(--sb-accent);">₹ 2,150</strong>
+            </div>
+            <h3 class="product-card__name" style="margin:0; font-size:1.25rem;">The Office Well-Wisher</h3>
+            <p class="product-card__desc" style="margin:0; font-size:0.84rem;">Single-origin cocoa, linen napkin, solid forged brass opener.</p>
+            <div class="sb-door-card__actions">
+              <button type="button" class="sb-btn sb-btn--cream sb-btn--sm btn-quick-add" data-id="prod_corporate_wellwisher">+ Bag</button>
+              <button type="button" class="sb-btn sb-btn--primary sb-btn--sm btn-view-item" data-id="prod_corporate_wellwisher" style="flex:1;">Inspect</button>
+              <a href="hamper.html?id=prod_corporate_wellwisher" class="sb-btn sb-btn--cream sb-btn--sm" title="Full Hamper Page">↗</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product 3 -->
+        <article class="product-card sb-door-card" data-product-id="prod_festive_diwali">
+          <div class="sb-arch-portal product-card__image-wrap">
+            <div class="sb-door-leaf sb-door-leaf--left" aria-hidden="true"></div>
+            <div class="sb-door-leaf sb-door-leaf--right" aria-hidden="true"></div>
+            <img src="images/hamper-festive.jpg" alt="The Diwali Slow-Burn Hamper" loading="lazy" class="product-card__image">
+            <span class="product-card__badge badge--festive">Limited Festive</span>
+          </div>
+          <div class="sb-door-card__meta">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <span class="mono-label">Festive · Hand-Stamped</span>
+              <strong style="font-family:var(--sb-font-display); font-size:1.15rem; color:var(--sb-accent);">₹ 2,850</strong>
+            </div>
+            <h3 class="product-card__name" style="margin:0; font-size:1.25rem;">The Diwali Slow-Burn</h3>
+            <p class="product-card__desc" style="margin:0; font-size:0.84rem;">Thanjavur brass diya, dried citrus, Mysore sandalwood incense.</p>
+            <div class="sb-door-card__actions">
+              <button type="button" class="sb-btn sb-btn--cream sb-btn--sm btn-quick-add" data-id="prod_festive_diwali">+ Bag</button>
+              <button type="button" class="sb-btn sb-btn--primary sb-btn--sm btn-view-item" data-id="prod_festive_diwali" style="flex:1;">Inspect</button>
+              <a href="hamper.html?id=prod_festive_diwali" class="sb-btn sb-btn--cream sb-btn--sm" title="Full Hamper Page">↗</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product 4 -->
+        <article class="product-card sb-door-card" data-product-id="prod_anniversary_letter">
+          <div class="sb-arch-portal product-card__image-wrap">
+            <div class="sb-door-leaf sb-door-leaf--left" aria-hidden="true"></div>
+            <div class="sb-door-leaf sb-door-leaf--right" aria-hidden="true"></div>
+            <img src="images/hamper-anniversary.jpg" alt="The Ten-Year Letter Hamper" loading="lazy" class="product-card__image">
+            <span class="product-card__badge">Signature</span>
+          </div>
+          <div class="sb-door-card__meta">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <span class="mono-label">Anniversary · Letter</span>
+              <strong style="font-family:var(--sb-font-display); font-size:1.15rem; color:var(--sb-accent);">₹ 3,200</strong>
+            </div>
+            <h3 class="product-card__name" style="margin:0; font-size:1.25rem;">The Ten-Year Letter</h3>
+            <p class="product-card__desc" style="margin:0; font-size:0.84rem;">Pressed Kashmiri rose, artisanal truffles, heirloom velvet ribbon.</p>
+            <div class="sb-door-card__actions">
+              <button type="button" class="sb-btn sb-btn--cream sb-btn--sm btn-quick-add" data-id="prod_anniversary_letter">+ Bag</button>
+              <button type="button" class="sb-btn sb-btn--primary sb-btn--sm btn-view-item" data-id="prod_anniversary_letter" style="flex:1;">Inspect</button>
+              <a href="hamper.html?id=prod_anniversary_letter" class="sb-btn sb-btn--cream sb-btn--sm" title="Full Hamper Page">↗</a>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Dashed Arch Strip ("Meet them all" + Bespoke Builder) -->
+      <div style="margin-top:24px; display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:18px;">
+        <a href="catalog.html" class="sb-arch-more" style="min-height:140px; border-radius:22px; flex-direction:row; justify-content:space-between; padding:22px 28px;">
+          <div style="text-align:left;">
+            <span class="sb-script" style="font-size:1.3rem; color:var(--sb-accent);">browse the full sketchbook</span>
+            <h3 style="font-family:var(--sb-font-display); font-size:1.35rem; margin:2px 0;">Filter by occasion, speed &amp; budget</h3>
+          </div>
+          <span class="sb-btn sb-btn--primary sb-btn--sm">Meet them all &rarr;</span>
+        </a>
+        <a href="delivered.html" class="sb-arch-more" style="min-height:140px; border-radius:22px; flex-direction:row; justify-content:space-between; padding:22px 28px;">
+          <div style="text-align:left;">
+            <span class="sb-script" style="font-size:1.3rem; color:var(--sb-accent);">past limited editions</span>
+            <h3 style="font-family:var(--sb-font-display); font-size:1.35rem; margin:2px 0;">See delivered &amp; archived hampers</h3>
+          </div>
+          <span class="sb-btn sb-btn--cream sb-btn--sm">Ticket wall &rarr;</span>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- ═══════════════ COLLECTIONS ═══════════════ -->
-  <section id="collections" class="section container">
-    <div class="section__head">
-      <div>
-        <p class="mono-label">(a) — The edit</p>
-        <h2 class="section__title">Hampers with a<br>quiet point of view.</h2>
+  <!-- ═══════════════ SCENE 3: TWO WAYS TO GIFT (WOODEN SIGNPOST) ═══════════════ -->
+  <section id="two-ways" class="sb-paths">
+    <div class="sb-container">
+      <div class="sb-paths__head">
+        <span class="sb-script" style="font-size:1.55rem; color:var(--sb-accent);">pick your gifting path</span>
+        <h2 class="sb-section-title">Two ways to compose your hamper</h2>
+        <p class="sb-section-sub" style="margin:8px auto 0;">Order a ready small-batch box off today's studio table, or compose every vessel, ribbon, and note piece by piece.</p>
       </div>
-      <a href="#" class="ribbon-link section__view-all">View all 24 hampers</a>
-    </div>
 
-    <div class="products-grid">
-      <!-- Product 1 — Large -->
-      <article class="product-card product-card--lg anim-rise" data-product-id="prod_wedding_vows" style="--delay: 60ms">
-        <div class="product-card__image-wrap">
-          <img src="images/hamper-wedding.jpg" alt="Wedding hamper with dried hydrangea, candle and elderflower tonic" loading="lazy" class="product-card__image aspect-16-10">
-          <span class="product-card__badge">Best Seller</span>
-        </div>
-        <div class="product-card__info">
-          <div>
-            <p class="mono-label">Wedding · Understated</p>
-            <h3 class="product-card__name">The Vows &amp; Vines Hamper</h3>
-            <p class="product-card__desc">Elderflower tonic, wax-sealed card, dried hydrangea, castor-oil candle.</p>
-          </div>
-          <div class="product-card__price-col">
-            <p class="product-card__price">₹ 3,950</p>
-            <div style="display: flex; gap: 6px;">
-              <button class="btn btn--outline btn--xs btn-quick-add" data-id="prod_wedding_vows">Quick add</button>
-              <button class="btn btn--bordeaux btn--xs btn-view-item" data-id="prod_wedding_vows">Inspect &rarr;</button>
+      <!-- Illustrated Wooden Signpost -->
+      <div class="sb-signpost-wrap" aria-hidden="true">
+        <svg width="240" height="86" viewBox="0 0 240 86" fill="none">
+          <rect x="115" y="6" width="10" height="76" rx="4" fill="#9E6538" stroke="#2B180E" stroke-width="2.5"/>
+          <path d="M18 18 L112 18 L112 40 L18 40 L6 29 Z" fill="#FFFDF8" stroke="#2B180E" stroke-width="2.5"/>
+          <text x="64" y="33" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="800" fill="#2B180E">READY IN STUDIO</text>
+          <path d="M128 36 L222 36 L234 47 L222 58 L128 58 Z" fill="#F9E3B6" stroke="#2B180E" stroke-width="2.5"/>
+          <text x="178" y="51" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="800" fill="#2B180E">11-STEP BESPOKE</text>
+        </svg>
+      </div>
+
+      <div class="sb-paths__grid">
+        <!-- Left Path: Ready Studio Hampers -->
+        <div class="sb-path-card">
+          <div class="sb-awning-top"></div>
+          <div class="sb-path-card__body">
+            <!-- Line-art New Delhi Studio Facade SVG -->
+            <div style="background:var(--sb-cream); border:2px dashed rgba(43,24,14,0.28); border-radius:14px; padding:10px 14px; margin-bottom:4px; text-align:center;" aria-hidden="true">
+              <svg viewBox="0 0 280 64" width="100%" height="56" fill="none">
+                <path d="M10 56 H270" stroke="#2B180E" stroke-width="2" stroke-linecap="round"/>
+                <rect x="30" y="26" width="38" height="30" rx="2" fill="#F5E2C4" stroke="#2B180E" stroke-width="1.8"/>
+                <path d="M88 56 V22 C88 10, 148 10, 148 22 V56" fill="#FFFDF8" stroke="#2B180E" stroke-width="2"/>
+                <rect x="106" y="28" width="24" height="28" rx="12" fill="#C48A5A" stroke="#2B180E" stroke-width="1.8"/>
+                <rect x="166" y="18" width="44" height="38" rx="2" fill="#F9E3B6" stroke="#2B180E" stroke-width="1.8"/>
+                <path d="M224 56 V32 L242 20 L260 32 V56" fill="#FFFDF8" stroke="#2B180E" stroke-width="1.8"/>
+                <circle cx="242" cy="14" r="5" fill="#C89D42" stroke="#2B180E" stroke-width="1.5"/>
+              </svg>
+              <span class="sb-script" style="font-size:1.15rem; color:var(--sb-accent);">Hand-packed daily in Okhla</span>
+            </div>
+            <span class="mono-label">Ready-to-ship in 24h</span>
+            <h3 style="font-family:var(--sb-font-display); font-size:1.75rem; font-weight:800;">In our New Delhi studio</h3>
+            <p style="color:var(--text-secondary); line-height:1.6;">
+              Small-batch editions pre-balanced for texture, aroma, and unboxing drama. Choose your raw silk ribbon, botanical wax crest, and handwritten greeting before checkout.
+            </p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:auto; padding-top:10px;">
+              <a href="catalog.html" class="sb-btn sb-btn--primary">Shop studio hampers &rarr;</a>
+              <button type="button" class="sb-btn sb-btn--cream sb-btn--sm" data-curate-occasion="WEDDING">Wedding Trousseau</button>
             </div>
           </div>
         </div>
-      </article>
 
-      <!-- Product 2 — Medium -->
-      <article class="product-card product-card--md anim-rise" data-product-id="prod_corporate_wellwisher" style="--delay: 140ms">
-        <div class="product-card__image-wrap">
-          <img src="images/hamper-corporate.jpg" alt="Corporate gift box with monogrammed linen napkin and brass letter opener" loading="lazy" class="product-card__image aspect-3-4">
-          <span class="product-card__badge badge--gold">Artisan Pick</span>
-        </div>
-        <div class="product-card__info">
-          <div>
-            <p class="mono-label">Corporate · Monogrammed</p>
-            <h3 class="product-card__name">The Office Well-Wisher</h3>
-            <p class="product-card__desc">Single-origin cocoa, linen napkin, brass opener.</p>
-          </div>
-          <div class="product-card__price-col">
-            <p class="product-card__price">₹ 2,150</p>
-            <div style="display: flex; gap: 6px;">
-              <button class="btn btn--outline btn--xs btn-quick-add" data-id="prod_corporate_wellwisher">Quick add</button>
-              <button class="btn btn--bordeaux btn--xs btn-view-item" data-id="prod_corporate_wellwisher">Inspect &rarr;</button>
+        <!-- Right Path: 11-Step Bespoke Atelier -->
+        <div class="sb-path-card">
+          <div class="sb-path-card__body">
+            <div class="sb-flight-arc">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-family:'JetBrains Mono', monospace; font-size:0.74rem; font-weight:700;">
+                <span>OKHLA STUDIO</span>
+                <span aria-hidden="true">✈ ┄┄┄┄┄ 🎀 ┄┄┄┄┄</span>
+                <span>PAN-INDIA DOORSTEP</span>
+              </div>
+              <p class="sb-script" style="font-size:1.2rem; color:var(--sb-accent); margin-top:6px;">
+                Live 3D box volume meter + Procedural SVG preview + Polaroid tuck-in
+              </p>
+            </div>
+            <span class="mono-label">11-step interactive composer</span>
+            <h3 style="font-family:var(--sb-font-display); font-size:1.75rem; font-weight:800;">Bespoke for you</h3>
+            <p style="color:var(--text-secondary); line-height:1.6;">
+              Pick your rigid kraft, pine keepsake, or velvet casket. Watch the live 3D cm³ fullness gauge as you add gourmet cocoa, candles, brass keepsakes, and an instant Polaroid.
+            </p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:auto; padding-top:10px;">
+              <button type="button" id="section-open-builder-btn" class="sb-btn sb-btn--primary">Open 11-step builder &rarr;</button>
+              <button type="button" class="sb-btn sb-btn--cream sb-btn--sm" data-curate-occasion="CORPORATE">Corporate Bulk</button>
             </div>
           </div>
         </div>
-      </article>
-
-      <!-- Product 3 — Medium -->
-      <article class="product-card product-card--md anim-rise" data-product-id="prod_festive_diwali" style="--delay: 220ms">
-        <div class="product-card__image-wrap">
-          <img src="images/hamper-festive.jpg" alt="Festive hamper with terracotta ribbon, brass diya and dried citrus" loading="lazy" class="product-card__image aspect-1-1">
-          <span class="product-card__badge badge--festive">Limited Festive</span>
-        </div>
-        <div class="product-card__info">
-          <div>
-            <p class="mono-label">Festive · Hand-stamped</p>
-            <h3 class="product-card__name">The Diwali Slow-Burn</h3>
-            <p class="product-card__desc">Brass diya, dried citrus, slow-burn incense.</p>
-          </div>
-          <div class="product-card__price-col">
-            <p class="product-card__price">₹ 2,850</p>
-            <div style="display: flex; gap: 6px;">
-              <button class="btn btn--outline btn--xs btn-quick-add" data-id="prod_festive_diwali">Quick add</button>
-              <button class="btn btn--bordeaux btn--xs btn-view-item" data-id="prod_festive_diwali">Inspect &rarr;</button>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- Product 4 — Large -->
-      <article class="product-card product-card--lg anim-rise" data-product-id="prod_anniversary_letter" style="--delay: 300ms">
-        <div class="product-card__image-wrap">
-          <img src="images/hamper-anniversary.jpg" alt="Anniversary hamper with pressed rose, mead and a handwritten note" loading="lazy" class="product-card__image aspect-16-10">
-          <span class="product-card__badge">Signature</span>
-        </div>
-        <div class="product-card__info">
-          <div>
-            <p class="mono-label">Anniversary · Handwritten</p>
-            <h3 class="product-card__name">The Ten-Year Letter</h3>
-            <p class="product-card__desc">Pressed rose, small-batch mead, a letter you can keep.</p>
-          </div>
-          <div class="product-card__price-col">
-            <p class="product-card__price">₹ 3,200</p>
-            <div style="display: flex; gap: 6px;">
-              <button class="btn btn--outline btn--xs btn-quick-add" data-id="prod_anniversary_letter">Quick add</button>
-              <button class="btn btn--bordeaux btn--xs btn-view-item" data-id="prod_anniversary_letter">Inspect &rarr;</button>
-            </div>
-          </div>
-        </div>
-      </article>
+      </div>
     </div>
   </section>
 
-  <!-- ═══════════════ BUILDER ═══════════════ -->
-  <section id="builder" class="section container">
-    <div class="builder frost-glass">
-      <div class="builder__grid">
-        <div class="builder__left">
-          <p class="mono-label">(b) — The atelier</p>
-          <h2 class="section__title">Compose a hamper<br><span class="text-bordeaux">piece by piece.</span></h2>
-          <p class="builder__desc">
-            Start with the occasion. Set a budget. Choose a base box. Then add, swap, and personalise — ribbon, card, engraving, a photo, a line of your own.
+  <!-- ═══════════════ SCENE 4: YOUR HAMPER JOURNEY + ANIMATED WHATSAPP PHONE ═══════════════ -->
+  <section id="builder" class="sb-chat">
+    <div class="sb-container">
+      <div class="sb-chat__grid">
+        <div>
+          <span class="sb-script" style="font-size:1.55rem; color:var(--sb-accent);">from first message to unboxing</span>
+          <h2 class="sb-section-title">Your hamper journey, step by step</h2>
+          <p class="sb-section-sub">Whether you check out online in 60 seconds or plan over WhatsApp with an artisan stylist, you see every ribbon and wax seal before dispatch.</p>
+
+          <div class="sb-journey-list">
+            <div class="sb-journey-step">
+              <span class="sb-step-num">1</span>
+              <div>
+                <strong>Choose an edition or compose all 11 steps</strong>
+                <p style="font-size:0.88rem; color:var(--text-secondary); margin-top:2px;">Filter by occasion, run our AI budget knapsack optimizer, or build from scratch with live 3D volume checks.</p>
+              </div>
+            </div>
+            <div class="sb-journey-step">
+              <span class="sb-step-num">2</span>
+              <div>
+                <strong>Personalise ribbon, wax crest &amp; calligraphy note</strong>
+                <p style="font-size:0.88rem; color:var(--text-secondary); margin-top:2px;">Preview the procedural SVG hamper layout and inspect real studio QC photos before dispatch.</p>
+              </div>
+            </div>
+            <div class="sb-journey-step">
+              <span class="sb-step-num">3</span>
+              <div>
+                <strong>UPI / card checkout &amp; tracked Pan-India air delivery</strong>
+                <p style="font-size:0.88rem; color:var(--text-secondary); margin-top:2px;">Instant Razorpay / Cashfree UPI payment, live AWB tracking, and automated WhatsApp updates.</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <a href="how-it-works.html" class="sb-btn sb-btn--cream">How it works &rarr;</a>
+            <a href="#builder" class="sb-btn sb-btn--primary hero__builder-link">Launch 11-step atelier</a>
+          </div>
+        </div>
+
+        <!-- Slightly Tilted Animated WhatsApp Concierge Phone Mockup -->
+        <div>
+          <div id="sb-phone-mockup" class="sb-phone-mockup" aria-label="WhatsApp Concierge Preview">
+            <div class="sb-phone-mockup__head">
+              <span style="width:36px; height:36px; border-radius:50%; background:#F5D69E; color:#2B180E; display:grid; place-items:center; font-weight:800; border:2px solid #2B180E;">H</span>
+              <div>
+                <strong style="display:block; font-size:0.95rem;">Hampers by Her</strong>
+                <span style="font-size:0.74rem; opacity:0.88;">online · Atelier Concierge</span>
+              </div>
+            </div>
+            <div class="sb-phone-mockup__body">
+              <div class="sb-wa-bubble sb-wa-bubble--out" data-wa-seq="1" style="transition-delay:60ms;">
+                Hi! Looking for an understated wedding hamper under ₹4,000 for my sister 🌸
+              </div>
+              <div class="sb-wa-bubble sb-wa-bubble--in" data-wa-seq="2" style="transition-delay:200ms;">
+                Here's our <strong>Vows &amp; Vines</strong> curation with elderflower tonic, soy candle &amp; your handwritten letter. Tap play for the 4D unboxing:
+                <div id="sb-wa-play-unboxing" class="sb-wa-video-preview" role="button" tabindex="0" aria-label="Play 4D Unboxing Preview">
+                  <img src="images/hamper-wedding.jpg" alt="4D Unboxing Preview">
+                  <span class="sb-wa-play-btn">▶</span>
+                </div>
+              </div>
+              <div class="sb-wa-bubble sb-wa-bubble--in" data-wa-seq="3" style="transition-delay:340ms;">
+                Sealed with your <em>Olive Branch</em> wax crest &amp; ready for BlueDart Air dispatch to Pune in 24h! 🎀
+              </div>
+              <div id="sb-wa-typing-indicator" class="sb-wa-bubble sb-wa-bubble--in" style="padding:7px 12px; width:fit-content;" aria-hidden="true">
+                <span class="sb-wa-typing-dots"><span></span><span></span><span></span></span>
+              </div>
+              <div style="text-align:center; padding-top:4px;">
+                <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her%2C%20let%27s%20sketch%20a%20hamper!" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp sb-btn--sm" style="width:100%;">
+                  Start a chat on WhatsApp &rarr;
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SCENE 5: OPEN ATELIER PASSPORT (TRUST STAMPS) ═══════════════ -->
+  <section id="passport" class="sb-passport">
+    <div class="sb-container">
+      <div class="sb-passport-book">
+        <div class="sb-passport-spread">
+          <div class="sb-passport-page sb-passport-page--left">
+            <span class="sb-script" style="font-size:1.55rem; color:var(--sb-accent);">atelier passport</span>
+            <h2 class="sb-section-title" style="margin:6px 0 14px;">Why families &amp; teams trust Hampers by Her</h2>
+            <p style="color:var(--text-secondary); line-height:1.65; margin-bottom:18px;">
+              Every keepsake box clears a photographic studio QC gate before leaving Okhla — cushioned in natural cotton crinkles, wrapped in raw silk, and backed by human concierge support.
+            </p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <a href="how-it-works.html#promise" class="sb-btn sb-btn--cream sb-btn--sm">Read our craft promise</a>
+              <a href="lookbook.html" class="sb-btn sb-btn--primary sb-btn--sm">Executive Lookbook &rarr;</a>
+            </div>
+          </div>
+
+          <div class="sb-passport-page">
+            <div class="sb-stamps-grid">
+              <div class="sb-stamp sb-stamp--circle">
+                <span class="mono-label" style="font-size:0.65rem;">STAMP 01</span>
+                <strong style="font-family:var(--sb-font-display); font-size:1rem;">Small-batch &amp; fresh</strong>
+                <span style="font-size:0.75rem;">Independent Indian makers</span>
+              </div>
+              <div class="sb-stamp sb-stamp--rect">
+                <span class="mono-label" style="font-size:0.65rem;">AIR DISPATCH</span>
+                <strong style="font-family:var(--sb-font-display); font-size:1rem;">Pan-India 24–48h</strong>
+                <span style="font-size:0.75rem;">Free above ₹2,999</span>
+              </div>
+              <div class="sb-stamp sb-stamp--oval">
+                <span class="mono-label" style="font-size:0.65rem;">CONCIERGE</span>
+                <strong style="font-family:var(--sb-font-display); font-size:1rem;">WhatsApp &amp; Voice AI</strong>
+                <span style="font-size:0.75rem;">Human stylists + Eleanor</span>
+              </div>
+              <div class="sb-stamp sb-stamp--dotted">
+                <span class="mono-label" style="font-size:0.65rem;">QC VERIFIED</span>
+                <strong style="font-family:var(--sb-font-display); font-size:1rem;">Wax-sealed &amp; photo-checked</strong>
+                <span style="font-size:0.75rem;">Calligraphy card included</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SCENE 6: HAPPY MOMENTS POLAROID WALL & LIVE IG SYNC ═══════════════ -->
+  <section id="stories" class="sb-dusk">
+    <div class="sb-container">
+      <div class="sb-section-head">
+        <div>
+          <span class="sb-eyebrow">our wall of happy endings</span>
+          <h2 class="sb-section-title">Happy moments &amp; unboxing letters</h2>
+          <p class="sb-section-sub">Click any taped Polaroid to inspect it full-screen, or explore live creations synced from @hampers._by_her.</p>
+        </div>
+        <a href="moments.html" class="sb-btn sb-btn--cream sb-btn--sm">See every happy moment &rarr;</a>
+      </div>
+
+      <!-- Preserved Quote Carousel & Live Meta IG Grid -->
+      <div class="stories-grid" style="margin-bottom:26px;">
+        <div class="sb-speech-card">
+          <p class="mono-label" style="margin-bottom:10px; color:var(--sb-accent);">(c) — In her words</p>
+          <blockquote class="stories__quote" style="font-size:clamp(1.35rem, 2.5vw, 1.85rem); color:var(--sb-ink);">
+            &ldquo;It didn&apos;t feel like a hamper. It felt like a letter I could keep on the shelf for a year.&rdquo;
+          </blockquote>
+          <p class="stories__author" style="color:var(--text-secondary);">— Anaya M., Pune · for her sister&apos;s wedding</p>
+          <div class="stories__more-quotes">
+            <div class="quote-dot active"></div>
+            <div class="quote-dot"></div>
+            <div class="quote-dot"></div>
+          </div>
+        </div>
+
+        <div class="stories__instagram">
+          <div class="stories__ig-header">
+            <div>
+              <p class="mono-label" style="margin-bottom: 2px; color:#F5D69E;">@hampers._by_her &middot; Live Meta Sync</p>
+              <span style="font-size: 0.76rem; color: #FFF8EC;">● Live Feed Connected</span>
+            </div>
+            <a href="https://www.instagram.com/hampers._by_her/" target="_blank" rel="noreferrer" class="sb-btn sb-btn--ghost-light sb-btn--sm">Follow on Instagram &rarr;</a>
+          </div>
+          <div class="ig-feed-grid" id="ig-feed-container">
+            <!-- Dynamically populated via /api/v1/instagram/feed -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Taped Polaroid Photo Wall (Opens Full-Screen Lightbox) -->
+      <div class="sb-polaroid-wall">
+        <button type="button" class="sb-polaroid" data-polaroid-index="0">
+          <span class="sb-tape" aria-hidden="true"></span>
+          <img src="images/hamper-wedding.jpg" alt="Anaya's bridesmaid suite in Pune" loading="lazy">
+          <p class="sb-polaroid__caption">Anaya's bridesmaid suite in Pune 🌸✨</p>
+        </button>
+        <button type="button" class="sb-polaroid" data-polaroid-index="1">
+          <span class="sb-tape" aria-hidden="true"></span>
+          <img src="images/hero-hamper.jpg" alt="Autumn Slow-Brew tied in ecru silk" loading="lazy">
+          <p class="sb-polaroid__caption">Autumn Slow-Brew tied in ecru silk 🎀</p>
+        </button>
+        <button type="button" class="sb-polaroid" data-polaroid-index="2">
+          <span class="sb-tape" aria-hidden="true"></span>
+          <img src="images/hamper-anniversary.jpg" alt="Ten-Year Letter wax seal closeup" loading="lazy">
+          <p class="sb-polaroid__caption">Ten-Year Letter wax seal closeup ❤️</p>
+        </button>
+        <button type="button" class="sb-polaroid" data-polaroid-index="3">
+          <span class="sb-tape" aria-hidden="true"></span>
+          <img src="images/hamper-festive.jpg" alt="Diwali glow and brass diya reveal" loading="lazy">
+          <p class="sb-polaroid__caption">Diwali glow &amp; brass diya reveal 🪔</p>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SCENE 7: NIGHT FAQ PREVIEW ═══════════════ -->
+  <section id="faq-preview" class="sb-night">
+    <div class="sb-container">
+      <div class="sb-night-faq-grid">
+        <div>
+          <span class="sb-script" style="font-size:1.55rem; color:#F5D69E;">good to know</span>
+          <h2 class="sb-section-title" style="color:#FFF8EC;">Questions, answered</h2>
+          <p style="color:rgba(255,248,236,0.82); margin:12px 0 22px; line-height:1.6;">
+            Everything patrons ask about PAN-India dispatch times, custom wax crests, handwritten letters, and bulk corporate/wedding curation.
           </p>
-          <button type="button" id="section-open-builder-btn" class="btn btn--dark">
-            Open the builder <span class="btn__arrow">→</span>
-          </button>
+          <a href="faq.html" class="sb-btn sb-btn--ghost-light">Read all questions &rarr;</a>
         </div>
-        <div class="builder__right">
-          <p class="mono-label" style="margin-bottom: 1.5rem">Eleven quiet steps</p>
-          <ol class="builder__steps">
-            <li><span class="builder__step-num">01</span><div><strong>Recipient &amp; Occasion</strong><p>A wedding, a birthday, a thank-you between friends.</p></div></li>
-            <li><span class="builder__step-num">02</span><div><strong>Budget &amp; Theme</strong><p>₹1,500 · ₹3,000 · ₹5,000 · open.</p></div></li>
-            <li><span class="builder__step-num">03</span><div><strong>Box Base</strong><p>Kraft, linen-lined, or the deep clay box.</p></div></li>
-            <li><span class="builder__step-num">04</span><div><strong>Curate Items</strong><p>Add, swap, or hold your favourites. Watch the fullness gauge.</p></div></li>
-            <li><span class="builder__step-num">05</span><div><strong>Ribbon &amp; Monogram</strong><p>Satin, raw silk, or velvet. Initials embossed.</p></div></li>
-            <li><span class="builder__step-num">06</span><div><strong>Handwritten Card</strong><p>Your message, in your hand. Sealed in warm wax.</p></div></li>
-            <li><span class="builder__step-num">07</span><div><strong>Photo &amp; Polaroid</strong><p>Upload a memory. Printed and slipped inside.</p></div></li>
-            <li><span class="builder__step-num">08</span><div><strong>Wax Seal</strong><p>Choose your crest. Botanical, heart, or script.</p></div></li>
-            <li><span class="builder__step-num">09</span><div><strong>Review &amp; Preview</strong><p>A visual unboxing of everything composed.</p></div></li>
-            <li><span class="builder__step-num">10</span><div><strong>Delivery</strong><p>Pincode check, date select, express options.</p></div></li>
-            <li><span class="builder__step-num">11</span><div><strong>Checkout</strong><p>UPI, card, or WhatsApp quote. One tap.</p></div></li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ═══════════════ BESPOKE PORTALS ═══════════════ -->
-  <section class="section container">
-    <div class="bespoke-grid">
-      <div class="bespoke-card frost-glass anim-rise" style="--delay: 100ms">
-        <div class="bespoke-card__icon">💒</div>
-        <p class="mono-label">Weddings &amp; Trousseau</p>
-        <h3 class="bespoke-card__title">Bridesmaid hampers, guest favors, and trousseau gifts</h3>
-        <p class="bespoke-card__desc">From sample boxes to 500-unit runs. Visual lookbook, dedicated concierge, GST billing.</p>
-        <button type="button" class="btn btn--bordeaux btn--sm" data-curate-occasion="WEDDING">Explore wedding gifting <span class="btn__arrow">→</span></button>
-      </div>
-      <div class="bespoke-card frost-glass anim-rise" style="--delay: 200ms">
-        <div class="bespoke-card__icon">🏢</div>
-        <p class="mono-label">Corporate &amp; Bulk</p>
-        <h3 class="bespoke-card__title">Employee kits, client gifts, and branded co-branded boxes</h3>
-        <p class="bespoke-card__desc">Instant budget calculator, CSV address upload, proforma invoicing. Logo embossing available.</p>
-        <button type="button" class="btn btn--dark btn--sm" data-curate-occasion="CORPORATE">Explore corporate gifting <span class="btn__arrow">→</span></button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════ STORIES / TESTIMONIALS ═══════════════ -->
-  <section id="stories" class="section container">
-    <div class="stories-grid">
-      <div class="stories__text">
-        <p class="mono-label">(c) — In her words</p>
-        <blockquote class="stories__quote">
-          &ldquo;It didn&apos;t feel like a hamper. It felt like a letter I could keep on the shelf for a year.&rdquo;
-        </blockquote>
-        <p class="stories__author">— Anaya M., Pune · for her sister&apos;s wedding</p>
-        <div class="stories__more-quotes">
-          <div class="quote-dot active"></div>
-          <div class="quote-dot"></div>
-          <div class="quote-dot"></div>
-        </div>
-      </div>
-      <div class="stories__instagram">
-        <div class="stories__ig-header">
-          <div>
-            <p class="mono-label" style="margin-bottom: 2px;">@hampers._by_her &middot; Live Meta Sync</p>
-            <span style="font-size: 0.72rem; color: var(--color-gold);">● Live Feed Connected</span>
+        <div class="sb-star-faq-list">
+          <div class="sb-star-faq-item">
+            <span style="color:#F5D69E; font-size:1.3rem;" aria-hidden="true">✦</span>
+            <div>
+              <h3 style="font-family:var(--sb-font-display); font-size:1.2rem; color:#FFF8EC; margin-bottom:4px;">How quickly do hampers dispatch across India?</h3>
+              <p style="font-size:0.92rem; color:rgba(255,248,236,0.8); line-height:1.55;">Ready studio edits dispatch within 24 hours (Mon–Sat), reaching Delhi-NCR/Mumbai/Bengaluru in 1–2 days and rest of India in 3–4 days via BlueDart &amp; Delhivery Express.</p>
+            </div>
           </div>
-          <a href="https://www.instagram.com/hampers._by_her/" target="_blank" rel="noreferrer" class="ribbon-link">Follow on Instagram &rarr;</a>
-        </div>
-        <div class="ig-feed-grid" id="ig-feed-container">
-          <!-- Dynamically populated via /api/v1/instagram/feed -->
+          <div class="sb-star-faq-item">
+            <span style="color:#F5D69E; font-size:1.3rem;" aria-hidden="true">✦</span>
+            <div>
+              <h3 style="font-family:var(--sb-font-display); font-size:1.2rem; color:#FFF8EC; margin-bottom:4px;">Can I pick my ribbon, wax seal, and write a handwritten note?</h3>
+              <p style="font-size:0.92rem; color:rgba(255,248,236,0.8); line-height:1.55;">Yes — every ready box lets you select raw silk ribbon &amp; wax seal crest, and our 11-step Bespoke Atelier adds custom monograms, Polaroid prints, and live SVG previews.</p>
+            </div>
+          </div>
+          <div class="sb-star-faq-item" style="border-bottom:none;">
+            <span style="color:#F5D69E; font-size:1.3rem;" aria-hidden="true">✦</span>
+            <div>
+              <h3 style="font-family:var(--sb-font-display); font-size:1.2rem; color:#FFF8EC; margin-bottom:4px;">Do you handle wedding favors and corporate bulk orders?</h3>
+              <p style="font-size:0.92rem; color:rgba(255,248,236,0.8); line-height:1.55;">Yes! From 10 executive kits to 500 wedding trousseau hampers, we offer quiet monogramming, GST invoicing, and multi-address dispatch.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ═══════════════ WHATSAPP CTA ═══════════════ -->
-  <section id="whatsapp" class="section container">
-    <div class="whatsapp-card frost-glass">
-      <div class="whatsapp-card__grid">
-        <div class="whatsapp-card__text">
-          <p class="mono-label">Not sure where to begin?</p>
-          <h2 class="section__title">Tell us on WhatsApp.<br><span class="text-bordeaux">We&apos;ll sketch a hamper with you.</span></h2>
-          <p class="whatsapp-card__desc">
-            Share the occasion, the recipient, and a rough budget. A real person replies within the hour, with a shortlist and a quote.
+  <!-- ═══════════════ SCENE 8: WELCOME HOME DOOR CTA + WHATSAPP ═══════════════ -->
+  <section id="whatsapp" class="sb-home-cta">
+    <div class="sb-container" style="max-width:760px;">
+      <span class="sb-script" style="font-size:1.55rem; color:#F5D69E;">not sure where to begin?</span>
+      <h2 class="sb-section-title" style="color:#FFF8EC; margin-top:4px;">Ready to tie a ribbon around your moment?</h2>
+      <p style="color:rgba(255,248,236,0.82); margin:12px auto 0; max-width:50ch;">
+        Share the occasion, recipient, and budget on WhatsApp — or post a stationery letter to our New Delhi studio.
+      </p>
+
+      <!-- Illustrated Arched Wooden Atelier Doorway -->
+      <div class="sb-welcome-door" aria-hidden="true">
+        <svg viewBox="0 0 220 190" width="220" height="190" fill="none">
+          <ellipse cx="110" cy="36" rx="58" ry="26" fill="rgba(245, 214, 158, 0.22)"/>
+          <path d="M58 168 V74 C58 40, 162 40, 162 74 V168 Z" fill="#C48A5A" stroke="#FFF8EC" stroke-width="3"/>
+          <path d="M72 166 V80 C72 54, 148 54, 148 80 V166 Z" fill="#9E6538" stroke="#2B180E" stroke-width="2"/>
+          <circle cx="110" cy="34" r="7" fill="#F5D69E" stroke="#2B180E" stroke-width="2"/>
+          <circle cx="136" cy="118" r="5" fill="#F5D69E" stroke="#2B180E" stroke-width="2"/>
+          <rect x="64" y="168" width="92" height="14" rx="4" fill="#F5D69E" stroke="#2B180E" stroke-width="2"/>
+          <text x="110" y="178" text-anchor="middle" font-family="'Caveat', cursive" font-size="11" font-weight="700" fill="#2B180E">sealed with care</text>
+        </svg>
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
+        <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her%2C%20I%27d%20like%20help%20planning%20a%20hamper." target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp">
+          Enquire on WhatsApp &rarr;
+        </a>
+        <a href="contact.html" class="sb-btn sb-btn--ghost-light">
+          Visit &amp; contact letter
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ NIGHT ILLUSTRATED FOOTER ═══════════════ -->
+  <footer class="sb-footer">
+    <div class="sb-container">
+      <!-- Night Crescent, Stars & Keepsake Basket Illustration -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; opacity:0.9;" aria-hidden="true">
+        <svg width="110" height="36" viewBox="0 0 110 36" fill="none">
+          <path d="M22 8 C14 10, 12 22, 22 26 C18 26, 10 21, 12 13 C14 7, 20 7, 22 8 Z" fill="#F5D69E"/>
+          <path d="M52 10 L54 15 L59 17 L54 19 L52 24 L50 19 L45 17 L50 15 Z" fill="#F5D69E"/>
+          <circle cx="88" cy="14" r="2.2" fill="#F5D69E"/>
+        </svg>
+        <svg width="96" height="44" viewBox="0 0 96 44" fill="none">
+          <path d="M18 20 H78 L70 40 H26 Z" fill="#C48A5A" stroke="#FFF8EC" stroke-width="2"/>
+          <path d="M14 20 H82" stroke="#FFF8EC" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M36 20 C36 9, 60 9, 60 20" stroke="#F5D69E" stroke-width="2.5"/>
+          <circle cx="48" cy="12" r="4" fill="#8F3F14" stroke="#FFF8EC" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="sb-footer__grid">
+        <div>
+          <p class="sb-script" style="font-size:1.65rem; color:#F5D69E; margin-bottom:4px;">Wrapped, at last.</p>
+          <p style="font-family:var(--sb-font-display); font-weight:800; font-size:1.35rem; margin-bottom:10px;">Hampers by Her</p>
+          <p style="color:rgba(255,248,236,0.78); font-size:0.92rem; max-width:34ch; line-height:1.6;">
+            Small-batch artisanal gift hampers composed by hand in New Delhi — dried botanicals, gourmet cocoa, and wax-sealed notes delivered across India.
           </p>
         </div>
-        <div class="whatsapp-card__action">
-          <a href="https://wa.me/?text=Hi%20Hampers%20by%20Her%2C%20I%27d%20like%20help%20planning%20a%20hamper." target="_blank" rel="noreferrer" class="whatsapp-btn">
-            <span class="whatsapp-btn__icon">W</span>
-            <span class="whatsapp-btn__label">Chat with us on WhatsApp</span>
-            <span class="whatsapp-btn__arrow">→</span>
-          </a>
-          <p class="mono-label" style="margin-top:12px">Mon–Sat · 10:00–19:00 IST</p>
+
+        <div>
+          <p class="mono-label" style="color:#F5D69E; margin-bottom:12px;">Explore</p>
+          <div class="sb-footer__links">
+            <a href="catalog.html">Available hampers</a>
+            <a href="delivered.html">Delivered archives</a>
+            <a href="moments.html">Happy moments</a>
+            <a href="how-it-works.html">How it works</a>
+            <a href="faq.html">FAQ corkboard</a>
+            <a href="contact.html">Visit &amp; contact</a>
+            <a href="lookbook.html">Executive Lookbook</a>
+            <a href="architecture.html">Platform Architecture</a>
+          </div>
+        </div>
+
+        <div>
+          <p class="mono-label" style="color:#F5D69E; margin-bottom:12px;">Say hello</p>
+          <div class="sb-footer__links" style="margin-bottom:14px;">
+            <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer">WhatsApp +91 98765 43210</a>
+            <a href="mailto:studio@hampersbyher.com">studio@hampersbyher.com</a>
+            <span style="color:rgba(255,248,236,0.78); font-size:0.9rem;">Okhla Craft Atelier, New Delhi</span>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a href="https://www.instagram.com/hampers._by_her/" target="_blank" rel="noreferrer" class="sb-btn sb-btn--ghost-light sb-btn--sm">Instagram</a>
+            <a href="#track-order" id="footer-track-order-btn" class="sb-btn sb-btn--ghost-light sb-btn--sm">Track order</a>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ═══════════════ FOOTER ═══════════════ -->
-  <footer class="footer">
-    <div class="container footer__grid">
-      <div class="footer__brand">
-        <p class="footer__logo">Hampers by Her</p>
-        <p class="footer__tagline">Small-batch hampers, composed and hand-tied in our studio. Designed for the days that deserve a ribbon.</p>
-      </div>
-      <div class="footer__col">
-        <p class="mono-label footer__col-title">Delivery</p>
-        <ul>
-          <li>48hr dispatch, Mon–Sat</li>
-          <li>Pan-India · ₹199 under ₹2,500</li>
-          <li>Free above ₹2,500</li>
-          <li>Refrigerated items: metro only</li>
-        </ul>
-      </div>
-      <div class="footer__col">
-        <p class="mono-label footer__col-title">Browse</p>
-        <ul>
-          <li><a href="#occasions" class="ribbon-link">Occasions</a></li>
-          <li><a href="#collections" class="ribbon-link">Collections</a></li>
-          <li><a href="#builder" class="ribbon-link">Builder</a></li>
-          <li><a href="#stories" class="ribbon-link">Stories</a></li>
-        </ul>
-      </div>
-      <div class="footer__col">
-        <p class="mono-label footer__col-title">Care</p>
-        <ul>
-          <li><a href="#track-order" id="footer-track-order-btn" class="ribbon-link">Track an order</a></li>
-          <li><a href="lookbook.html" class="ribbon-link">Executive Lookbook</a></li>
-          <li><a href="architecture.html" class="ribbon-link">Platform Architecture</a></li>
-          <li><a href="#whatsapp" class="ribbon-link">WhatsApp us</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer__bottom">
-      <div class="container footer__bottom-inner">
-        <span>© MMXXVI Hampers by Her Studio</span>
-        <span>Composed, not templated</span>
+      <div class="sb-footer__bottom">
+        <span>© 2026 Hampers by Her Studio · All rights reserved</span>
+        <span class="sb-script" style="font-size:1.3rem; color:#F5D69E;">every hamper is a keepsake</span>
       </div>
     </div>
   </footer>
 
   <!-- ═══════════════ MOBILE STICKY BAR ═══════════════ -->
   <div class="mobile-bar">
-    <a href="#occasions" class="mobile-bar__item">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-      <span>Shop</span>
+    <a href="catalog.html" class="mobile-bar__item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      <span>Hampers</span>
     </a>
     <a href="#builder" id="mobile-dock-build-btn" class="mobile-bar__item">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       <span>Build</span>
     </a>
-    <a href="https://wa.me/?text=Hi%20Hampers%20by%20Her" target="_blank" class="mobile-bar__item mobile-bar__item--accent">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+    <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her" target="_blank" rel="noreferrer" class="mobile-bar__item mobile-bar__item--accent">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
       <span>WhatsApp</span>
     </a>
     <a href="#bag" id="mobile-dock-bag-btn" class="mobile-bar__item">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
       <span>Bag</span>
     </a>
+  </div>
+
+  <!-- ═══════════════ POLAROID FULLSCREEN LIGHTBOX ═══════════════ -->
+  <div id="polaroid-lightbox" class="sb-lightbox" role="dialog" aria-modal="true" aria-label="Happy Moments Photo Viewer">
+    <div class="sb-lightbox__inner">
+      <div class="sb-lightbox__topbar">
+        <span id="sb-lightbox-caption" class="sb-script" style="font-size:1.4rem; color:#F5D69E;">1 / 4 — Happy Moment</span>
+        <button type="button" id="sb-lightbox-close" class="sb-btn sb-btn--cream sb-btn--sm">Close &times;</button>
+      </div>
+      <img id="sb-lightbox-img" src="images/hamper-wedding.jpg" alt="Happy unboxing moment" class="sb-lightbox__img">
+      <div class="sb-lightbox__controls">
+        <button type="button" id="sb-lightbox-prev" class="sb-btn sb-btn--cream sb-btn--sm">&larr; Previous</button>
+        <button type="button" id="sb-lightbox-next" class="sb-btn sb-btn--cream sb-btn--sm">Next &rarr;</button>
+      </div>
+    </div>
   </div>
 
   <!-- ═══════════════ SHOPPING CART DRAWER ═══════════════ -->
@@ -1301,5 +1659,6 @@
   <div id="hbh-toast" class="hbh-toast" role="status" aria-live="polite">Item added to your gifting bag</div>
 
   <script src="script.js"></script>
+  <script src="storybook-ui.js"></script>
 </body>
 </html>

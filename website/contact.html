@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visit &amp; Contact — Hampers by Her</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles_ext.css">
+  <link rel="stylesheet" href="storybook.css">
+  <link rel="stylesheet" href="themes.css">
+  <script src="theme-switcher.js" defer></script>
+</head>
+<body class="sb-body">
+  <nav id="main-nav" class="nav sb-nav" aria-label="Main Navigation">
+    <div class="sb-nav__inner">
+      <a href="index.html" class="sb-brand"><span class="sb-brand__emblem">🎀</span><span class="sb-brand__wordmark">Hampers by Her</span></a>
+      <div class="sb-nav__links">
+        <a href="index.html" class="sb-nav__link">Home</a>
+        <a href="catalog.html" class="sb-nav__link">Hampers</a>
+        <a href="moments.html" class="sb-nav__link">Happy moments</a>
+        <a href="how-it-works.html" class="sb-nav__link">How it works</a>
+        <a href="faq.html" class="sb-nav__link">FAQ</a>
+        <a href="contact.html" class="sb-nav__link sb-nav__link--active">Visit &amp; contact</a>
+        <a href="index.html?openTracking=1" class="sb-nav__link">Track</a>
+      </div>
+      <div class="sb-nav__actions">
+        <a href="admin.html" class="nav__admin-badge sb-nav__admin-hide-sm">Studio OS ⚡</a>
+        <a href="index.html?openCart=1" class="nav__cart sb-nav__cart">Cart · 0</a>
+        <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her!" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp sb-btn--sm sb-nav__wa-desktop">WhatsApp us</a>
+        <button id="mobile-menu-btn" type="button" class="sb-menu-btn" aria-label="Open menu"><span>🎀</span><span>Menu</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="mobile-menu" class="mobile-menu sb-mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <div class="mobile-menu__overlay"></div>
+    <div class="mobile-menu__panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <p class="sb-mobile-menu__eyebrow">where to, friend?</p>
+        <button id="mobile-menu-close" class="mobile-menu__close" style="position:static;" aria-label="Close menu">&times;</button>
+      </div>
+      <a href="index.html" class="mobile-menu__link">Home</a>
+      <a href="catalog.html" class="mobile-menu__link">Available hampers</a>
+      <a href="index.html?openBuilder=1" class="mobile-menu__link">Build your own (11 steps)</a>
+      <a href="moments.html" class="mobile-menu__link">Happy moments ♡</a>
+      <a href="delivered.html" class="mobile-menu__link">Delivered archives</a>
+      <a href="how-it-works.html" class="mobile-menu__link">How it works</a>
+      <a href="faq.html" class="mobile-menu__link">FAQ corkboard</a>
+      <a href="contact.html" class="mobile-menu__link">Visit &amp; contact letter</a>
+      <a href="index.html?openVoice=1" class="mobile-menu__link">Voice Concierge (Eleanor)</a>
+      <a href="index.html?openTracking=1" class="mobile-menu__link">Track order</a>
+      <a href="lookbook.html" class="mobile-menu__link">Lookbook</a>
+      <a href="admin.html" class="mobile-menu__link">Studio OS &rarr;</a>
+      <div style="margin-top:20px;">
+        <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp" style="width:100%;">Chat on WhatsApp &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <main style="padding:48px 0 84px;">
+    <div class="sb-container">
+      <div class="sb-contact-hero-grid">
+        <h1 class="sb-section-title" style="font-size:clamp(2.4rem,5.4vw,4.1rem);">Get in touch with us</h1>
+        <p style="color:var(--text-secondary); line-height:1.6;">
+          Planning a single heartfelt gift, a 200-guest wedding trousseau, or custom corporate hampers? Write us a stationery letter below and our atelier stylists will reply promptly.
+        </p>
+      </div>
+
+      <div class="sb-detail-grid" style="grid-template-columns: 0.85fr 1.15fr;">
+        <!-- Left Rail: Direct WhatsApp + Awning Studio Card -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <div>
+            <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her!" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp" style="margin-bottom:18px;">
+              WhatsApp +91 98765 43210
+            </a>
+            <div style="display:flex; flex-direction:column; gap:10px; font-size:0.95rem;">
+              <div>
+                <span class="sb-script" style="font-size:1.3rem; color:var(--sb-accent); display:block;">call us</span>
+                <a href="tel:+919876543210" style="text-decoration:underline; font-weight:700;">+91 98765 43210</a>
+              </div>
+              <div>
+                <span class="sb-script" style="font-size:1.3rem; color:var(--sb-accent); display:block;">email</span>
+                <a href="mailto:studio@hampersbyher.com" style="text-decoration:underline; font-weight:700;">studio@hampersbyher.com</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="sb-path-card">
+            <div class="sb-awning-top"></div>
+            <div class="sb-path-card__body">
+              <h2 style="font-family:var(--sb-font-display); font-size:1.6rem; font-weight:800;">Visit our Okhla Craft Atelier</h2>
+              <p style="color:var(--text-secondary); font-size:0.92rem; line-height:1.55;">
+                Step into our New Delhi ribbon studio by appointment to inspect keepsake pine boxes, sample artisan cocoa, and pair dried botanicals in person.
+              </p>
+              <p class="mono-label">Mon–Sat · 10:00–19:00 IST</p>
+              <a href="https://maps.google.com/?q=Okhla+New+Delhi" target="_blank" rel="noreferrer" class="sb-btn sb-btn--cream sb-btn--sm" style="align-self:flex-start;">Open in Google Maps &rarr;</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Fill-in-the-Blank Stationery Letter -->
+        <section class="sb-letter-card" aria-label="Stationery Contact Form">
+          <div class="sb-postage-stamp" aria-hidden="true">
+            <span style="font-size:1.6rem;">🐾</span>
+          </div>
+
+          <form id="sb-contact-letter-form">
+            <p class="sb-script" style="font-size:1.75rem; color:var(--sb-accent); margin-bottom:14px;">Dear Hampers by Her,</p>
+
+            <p style="font-size:1.05rem; line-height:2.25; color:var(--sb-ink);">
+              my name is
+              <input type="text" id="contact-name" class="sb-inline-input" required placeholder="your name">,
+              and you can reach me on
+              <input type="tel" id="contact-phone" class="sb-inline-input" required placeholder="+91 98765 43210">
+              or by email at
+              <input type="email" id="contact-email" class="sb-inline-input" placeholder="optional">.
+            </p>
+
+            <p style="font-size:1.05rem; line-height:2.25; color:var(--sb-ink); margin-top:4px;">
+              I live in
+              <input type="text" id="contact-city" class="sb-inline-input" placeholder="e.g. South Delhi / Mumbai">,
+              and I'm curious about
+              <select id="contact-hamper-select" class="sb-inline-input" style="min-width:220px;">
+                <option value="any">any hamper (not sure yet)</option>
+                <option value="Wedding Trousseau Bulk">Wedding Trousseau &amp; Favors</option>
+                <option value="Corporate Bulk Gifting">Corporate Bulk Gifting</option>
+                <option value="11-Step Bespoke Box">11-Step Bespoke Hamper</option>
+              </select>.
+            </p>
+
+            <textarea id="contact-message" class="sb-lined-textarea" placeholder="Anything else you'd like to tell us... occasion date, quantity, favorite colors, or budget."></textarea>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-top:18px;">
+              <span class="sb-script" style="font-size:1.35rem; color:var(--text-secondary);">with love, a thoughtful gifter</span>
+              <button type="submit" id="contact-submit-btn" class="sb-btn sb-btn--primary">Post my letter &rarr;</button>
+            </div>
+
+            <div id="contact-letter-result" style="display:none; margin-top:16px; padding:14px 16px; border-radius:12px; background:var(--sb-cream); border:2px solid var(--sb-whatsapp); color:var(--sb-ink);"></div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="sb-footer">
+    <div class="sb-container">
+      <div class="sb-footer__bottom" style="border-top:none; padding-top:0;">
+        <span>© 2026 Hampers by Her Studio</span>
+        <span class="sb-script" style="font-size:1.3rem; color:#F5D69E;">every hamper is a keepsake</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="mobile-bar">
+    <a href="catalog.html" class="mobile-bar__item"><span>Hampers</span></a>
+    <a href="index.html?openBuilder=1" class="mobile-bar__item"><span>Build</span></a>
+    <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="mobile-bar__item"><span>WhatsApp</span></a>
+    <a href="index.html?openCart=1" class="mobile-bar__item"><span>Bag</span></a>
+  </div>
+  <script src="storybook-ui.js"></script>
+</body>
+</html>

@@ -152,3 +152,20 @@
   - Synchronize database Prisma schema (`schema.prisma`) and PostgreSQL DDL (`ddl.sql`) with new models (`OtpSession`, `QualityCheckRecord`, `LogisticsShipment`, `CarrierCheckpoint`, `NotificationDispatchLog`, `DsaAlgorithmMetric`).
   - Synchronize OpenAPI 3.1 specification (`docs/api/openapi.yaml`) covering all 16 endpoints.
   - Verify 100% pass across all 183 automated tests and documentation audit (57/57 compliant).
+
+## FUP-014: Storybook Storefront Brand Asset & Studio Contact Verification
+- **Type**: BRAND / CONTENT VERIFICATION
+- **Priority**: MEDIUM
+- **Status**: TO_VERIFY
+- **Dependency**: Brand Owner (`@hampers._by_her`)
+- **Unknowns Registered**:
+```yaml
+unknown:
+  field: studio_physical_address_and_concierge_contact
+  status: TO_VERIFY
+  source_required: brand_owner
+  impact: medium
+  temporary_assumption: Okhla Craft Atelier, New Delhi / +91 98765 43210 / studio@hampersbyher.com / sample archived edition records in inquiryService.js
+```
+- **Acceptance Criteria**:
+  - Replace sample studio address, phone, email, and archived seasonal edition items (`ARCHIVED_EDITIONS`) with verified brand owner copy before production DNS launch.

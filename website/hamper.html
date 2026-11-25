@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hamper Detail — Hampers by Her</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles_ext.css">
+  <link rel="stylesheet" href="storybook.css">
+  <link rel="stylesheet" href="themes.css">
+  <script src="theme-switcher.js" defer></script>
+</head>
+<body class="sb-body">
+  <nav id="main-nav" class="nav sb-nav" aria-label="Main Navigation">
+    <div class="sb-nav__inner">
+      <a href="index.html" class="sb-brand">
+        <span class="sb-brand__emblem" aria-hidden="true">🎀</span>
+        <span class="sb-brand__wordmark">Hampers by Her</span>
+      </a>
+      <div class="sb-nav__links">
+        <a href="index.html" class="sb-nav__link">Home</a>
+        <a href="catalog.html" class="sb-nav__link sb-nav__link--active">Hampers</a>
+        <a href="moments.html" class="sb-nav__link">Happy moments</a>
+        <a href="how-it-works.html" class="sb-nav__link">How it works</a>
+        <a href="faq.html" class="sb-nav__link">FAQ</a>
+        <a href="contact.html" class="sb-nav__link">Visit &amp; contact</a>
+        <a href="index.html?openTracking=1" class="sb-nav__link">Track</a>
+      </div>
+      <div class="sb-nav__actions">
+        <a href="admin.html" class="nav__admin-badge sb-nav__admin-hide-sm">Studio OS ⚡</a>
+        <a href="index.html?openCart=1" class="nav__cart sb-nav__cart">Cart · 0</a>
+        <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her!" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp sb-btn--sm sb-nav__wa-desktop">WhatsApp us</a>
+        <button id="mobile-menu-btn" type="button" class="sb-menu-btn" aria-label="Open menu"><span>🎀</span><span>Menu</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="mobile-menu" class="mobile-menu sb-mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <div class="mobile-menu__overlay"></div>
+    <div class="mobile-menu__panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <p class="sb-mobile-menu__eyebrow">where to, friend?</p>
+        <button id="mobile-menu-close" class="mobile-menu__close" style="position:static;" aria-label="Close menu">&times;</button>
+      </div>
+      <a href="index.html" class="mobile-menu__link">Home</a>
+      <a href="catalog.html" class="mobile-menu__link">Available hampers</a>
+      <a href="index.html?openBuilder=1" class="mobile-menu__link">Build your own (11 steps)</a>
+      <a href="moments.html" class="mobile-menu__link">Happy moments ♡</a>
+      <a href="delivered.html" class="mobile-menu__link">Delivered archives</a>
+      <a href="how-it-works.html" class="mobile-menu__link">How it works</a>
+      <a href="faq.html" class="mobile-menu__link">FAQ corkboard</a>
+      <a href="contact.html" class="mobile-menu__link">Visit &amp; contact letter</a>
+      <a href="index.html?openVoice=1" class="mobile-menu__link">Voice Concierge (Eleanor)</a>
+      <a href="index.html?openTracking=1" class="mobile-menu__link">Track order</a>
+      <a href="lookbook.html" class="mobile-menu__link">Lookbook</a>
+      <a href="admin.html" class="mobile-menu__link">Studio OS &rarr;</a>
+      <div style="margin-top:20px;">
+        <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp" style="width:100%;">Chat on WhatsApp &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <main id="sb-hamper-detail-root" style="padding: 36px 0 84px;">
+    <div class="sb-container">
+      <p style="font-size:0.88rem; margin-bottom:20px;">
+        <a href="catalog.html" style="text-decoration:underline; font-weight:600;">Available hampers</a>
+        <span aria-hidden="true"> / </span>
+        <strong id="detail-breadcrumb-name">Hamper Composition</strong>
+      </p>
+
+      <div class="sb-detail-grid">
+        <!-- Left: Notebook Gallery + Pincode Check -->
+        <div style="display:flex; flex-direction:column; gap:18px;">
+          <div class="sb-notebook-frame">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span class="sb-script" style="font-size:1.3rem; color:var(--sb-accent);">① hello, inside the box</span>
+              <span id="detail-gallery-counter" class="mono-label">1 / 3</span>
+            </div>
+            <div style="border-radius:14px; overflow:hidden; border:2px solid var(--sb-ink); aspect-ratio:4/3; background:var(--sb-honey);">
+              <img id="detail-main-img" src="images/hamper-wedding.jpg" alt="Hamper showcase" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:12px; flex-wrap:wrap;">
+              <div id="detail-thumbs" style="display:flex; gap:8px;"></div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" id="detail-prev-photo" class="sb-btn sb-btn--cream sb-btn--sm">Previous photo</button>
+                <button type="button" id="detail-next-photo" class="sb-btn sb-btn--cream sb-btn--sm">Next photo</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sb-notebook-frame">
+            <span class="mono-label">Check Pan-India Dispatch &amp; PIN Serviceability</span>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <input type="text" id="detail-pin-input" class="form-input" maxlength="6" placeholder="Enter 6-digit PIN (e.g. 110001)" style="border:2px solid var(--sb-ink);">
+              <button type="button" id="detail-pin-btn" class="sb-btn sb-btn--primary sb-btn--sm">Check</button>
+            </div>
+            <p id="detail-pin-result" style="font-size:0.86rem; margin-top:8px; color:var(--sb-whatsapp); font-weight:600;"></p>
+          </div>
+        </div>
+
+        <!-- Right: Pinned Passport Tag + Actions + Inclusions -->
+        <div style="display:flex; flex-direction:column; gap:22px;">
+          <div class="sb-passport-tag">
+            <!-- Peeking Mascot Seal Crest -->
+            <div style="position:absolute; top:-26px; right:22px; background:#F5D69E; border:2px solid var(--sb-ink); border-radius:999px; padding:4px 12px; font-family:var(--sb-font-script); font-size:1.15rem; font-weight:700; box-shadow:0 2px 0 var(--sb-ink);" aria-hidden="true">
+              🐻 sealed with care
+            </div>
+            <span id="detail-badge" class="sb-btn sb-btn--cream sb-btn--sm" style="cursor:default; margin-bottom:12px;">Available</span>
+            <h1 id="detail-title" class="sb-section-title" style="font-size:clamp(1.85rem,3.5vw,2.6rem);">The Vows &amp; Vines Hamper</h1>
+            <p id="detail-price" style="font-family:var(--sb-font-display); font-size:1.75rem; font-weight:800; color:var(--sb-accent); margin:8px 0 12px;">₹ 3,950</p>
+            <p id="detail-story" style="color:var(--text-secondary); line-height:1.6; margin-bottom:16px;"></p>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 14px; background:var(--sb-cream); border:1.5px dashed var(--sb-ink); border-radius:14px; margin-bottom:16px; font-size:0.86rem;">
+              <div><span class="mono-label">Occasion</span><br><strong id="detail-occasion">Wedding</strong></div>
+              <div><span class="mono-label">Mood</span><br><strong id="detail-theme">Botanical</strong></div>
+              <div style="grid-column:1 / -1;"><span class="mono-label">Box Vessel</span><br><strong id="detail-vessel">Pine Keepsake</strong></div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+              <div>
+                <label class="mono-label" for="detail-ribbon-select">Raw Silk Ribbon</label>
+                <select id="detail-ribbon-select" class="form-input" style="margin-top:4px; border:2px solid var(--sb-ink);"></select>
+              </div>
+              <div>
+                <label class="mono-label" for="detail-seal-select">Wax Seal Crest</label>
+                <select id="detail-seal-select" class="form-input" style="margin-top:4px; border:2px solid var(--sb-ink);"></select>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <button type="button" id="detail-add-bag" class="sb-btn sb-btn--primary" style="width:100%;">Add to Gifting Bag &rarr;</button>
+              <button type="button" id="detail-wa-btn" class="sb-btn sb-btn--whatsapp" style="width:100%;">Ask on WhatsApp</button>
+              <a href="#detail-enquiry-section" class="sb-btn sb-btn--cream" style="width:100%;">Send a stationery enquiry ↓</a>
+            </div>
+          </div>
+
+          <!-- ② Inclusions -->
+          <div class="sb-notebook-frame">
+            <span class="sb-script" style="font-size:1.35rem; color:var(--sb-accent);">② what comes inside this hamper</span>
+            <div id="detail-inclusions" style="display:flex; flex-direction:column; gap:10px; margin-top:12px;"></div>
+          </div>
+
+          <!-- ③ 4-Step Journey -->
+          <div class="sb-notebook-frame">
+            <span class="sb-script" style="font-size:1.35rem; color:var(--sb-accent);">③ every Hampers by Her box includes</span>
+            <ul style="display:flex; flex-direction:column; gap:8px; margin-top:10px; font-size:0.9rem;">
+              <li>✓ <strong>Reserve &amp; personalise</strong> — ribbon, crest &amp; handwritten card included</li>
+              <li>✓ <strong>Atelier curation</strong> — small-batch hand-packing in Okhla</li>
+              <li>✓ <strong>Photographic QC check</strong> — sealed and verified before dispatch</li>
+              <li>✓ <strong>Express air delivery</strong> — tracked BlueDart / Delhivery doorstep drop</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inline Stationery Enquiry Form -->
+      <section id="detail-enquiry-section" class="sb-letter-card" style="margin-top:42px; max-width:860px; margin-left:auto; margin-right:auto;">
+        <div class="sb-postage-stamp" aria-hidden="true">🎀</div>
+        <span class="sb-script" style="font-size:1.5rem; color:var(--sb-accent);">dear Hampers by Her…</span>
+        <h2 id="detail-enquiry-title" style="font-family:var(--sb-font-display); font-size:1.75rem; margin:4px 0 16px;">Ask about this hamper</h2>
+
+        <form id="detail-enquiry-form" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="form-row">
+            <div>
+              <label class="form-label" for="detail-inq-name">Your name *</label>
+              <input type="text" id="detail-inq-name" class="form-input" required placeholder="e.g. Anaya Mehta">
+            </div>
+            <div>
+              <label class="form-label" for="detail-inq-phone">Phone or WhatsApp *</label>
+              <input type="tel" id="detail-inq-phone" class="form-input" required placeholder="+91 98765 43210">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label" for="detail-inq-email">Email</label>
+              <input type="email" id="detail-inq-email" class="form-input" placeholder="optional">
+            </div>
+            <div>
+              <label class="form-label" for="detail-inq-city">Your city / PIN</label>
+              <input type="text" id="detail-inq-city" class="form-input" placeholder="e.g. Mumbai / 400001">
+            </div>
+          </div>
+          <div>
+            <label class="form-label" for="detail-inq-message">Message</label>
+            <textarea id="detail-inq-message" class="form-input" rows="3"></textarea>
+          </div>
+          <button type="submit" class="sb-btn sb-btn--primary" style="align-self:flex-start;">Send enquiry &rarr;</button>
+          <p id="detail-inq-status" style="font-size:0.9rem; color:var(--sb-whatsapp);"></p>
+        </form>
+      </section>
+
+      <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:30px;">
+        <a id="detail-prev-hamper" href="catalog.html" class="sb-btn sb-btn--cream sb-btn--sm">&larr; Previous hamper</a>
+        <a id="detail-next-hamper" href="catalog.html" class="sb-btn sb-btn--cream sb-btn--sm">Next hamper &rarr;</a>
+      </div>
+
+      <!-- Recommended Pairings Strip -->
+      <section id="detail-recommendations-section" style="margin-top:44px;">
+        <span class="sb-script" style="font-size:1.45rem; color:var(--sb-accent);">pairings you might also love</span>
+        <h2 class="sb-section-title" style="font-size:1.85rem; margin-bottom:18px;">More from the atelier</h2>
+        <div id="detail-recommendations-grid" class="sb-doors-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="sb-footer">
+    <div class="sb-container">
+      <div class="sb-footer__bottom" style="border-top:none; padding-top:0;">
+        <span>© 2026 Hampers by Her Studio</span>
+        <span class="sb-script" style="font-size:1.3rem; color:#F5D69E;">every hamper is a keepsake</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="mobile-bar">
+    <a href="catalog.html" class="mobile-bar__item"><span>Hampers</span></a>
+    <a href="index.html?openBuilder=1" class="mobile-bar__item"><span>Build</span></a>
+    <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="mobile-bar__item"><span>WhatsApp</span></a>
+    <a href="index.html?openCart=1" class="mobile-bar__item"><span>Bag</span></a>
+  </div>
+
+  <div id="hbh-toast" class="hbh-toast" role="status" aria-live="polite">Added to bag</div>
+  <script src="storybook-ui.js"></script>
+</body>
+</html>

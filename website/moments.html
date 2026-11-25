@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Moments — Hampers by Her Polaroid Wall</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles_ext.css">
+  <link rel="stylesheet" href="storybook.css">
+  <link rel="stylesheet" href="themes.css">
+  <script src="theme-switcher.js" defer></script>
+</head>
+<body class="sb-body" style="background-image: repeating-linear-gradient(90deg, rgba(143, 63, 20, 0.04) 0 18px, transparent 18px 36px);">
+  <nav id="main-nav" class="nav sb-nav" aria-label="Main Navigation">
+    <div class="sb-nav__inner">
+      <a href="index.html" class="sb-brand"><span class="sb-brand__emblem">🎀</span><span class="sb-brand__wordmark">Hampers by Her</span></a>
+      <div class="sb-nav__links">
+        <a href="index.html" class="sb-nav__link">Home</a>
+        <a href="catalog.html" class="sb-nav__link">Hampers</a>
+        <a href="moments.html" class="sb-nav__link sb-nav__link--active">Happy moments</a>
+        <a href="how-it-works.html" class="sb-nav__link">How it works</a>
+        <a href="faq.html" class="sb-nav__link">FAQ</a>
+        <a href="contact.html" class="sb-nav__link">Visit &amp; contact</a>
+        <a href="index.html?openTracking=1" class="sb-nav__link">Track</a>
+      </div>
+      <div class="sb-nav__actions">
+        <a href="admin.html" class="nav__admin-badge sb-nav__admin-hide-sm">Studio OS ⚡</a>
+        <a href="index.html?openCart=1" class="nav__cart sb-nav__cart">Cart · 0</a>
+        <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her!" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp sb-btn--sm sb-nav__wa-desktop">WhatsApp us</a>
+        <button id="mobile-menu-btn" type="button" class="sb-menu-btn" aria-label="Open menu"><span>🎀</span><span>Menu</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="mobile-menu" class="mobile-menu sb-mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <div class="mobile-menu__overlay"></div>
+    <div class="mobile-menu__panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <p class="sb-mobile-menu__eyebrow">where to, friend?</p>
+        <button id="mobile-menu-close" class="mobile-menu__close" style="position:static;" aria-label="Close menu">&times;</button>
+      </div>
+      <a href="index.html" class="mobile-menu__link">Home</a>
+      <a href="catalog.html" class="mobile-menu__link">Available hampers</a>
+      <a href="index.html?openBuilder=1" class="mobile-menu__link">Build your own (11 steps)</a>
+      <a href="moments.html" class="mobile-menu__link">Happy moments ♡</a>
+      <a href="delivered.html" class="mobile-menu__link">Delivered archives</a>
+      <a href="how-it-works.html" class="mobile-menu__link">How it works</a>
+      <a href="faq.html" class="mobile-menu__link">FAQ corkboard</a>
+      <a href="contact.html" class="mobile-menu__link">Visit &amp; contact letter</a>
+      <a href="index.html?openVoice=1" class="mobile-menu__link">Voice Concierge (Eleanor)</a>
+      <a href="index.html?openTracking=1" class="mobile-menu__link">Track order</a>
+      <a href="lookbook.html" class="mobile-menu__link">Lookbook</a>
+      <a href="admin.html" class="mobile-menu__link">Studio OS &rarr;</a>
+      <div style="margin-top:20px;">
+        <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp" style="width:100%;">Chat on WhatsApp &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <main style="padding:46px 0 84px;">
+    <div class="sb-container">
+      <div style="text-align:center; max-width:720px; margin:0 auto 30px;">
+        <span class="sb-eyebrow">our wall of happy endings</span>
+        <h1 class="sb-section-title" style="font-size:clamp(2.3rem,5vw,3.8rem);">Happy moments ♡</h1>
+        <p id="sb-moments-count" class="sb-script" style="font-size:1.5rem; color:var(--sb-accent); margin-top:6px;">8 moments and counting</p>
+      </div>
+
+      <div class="sb-speech-card" style="max-width:740px; margin:0 auto 34px; transform:rotate(-0.8deg);">
+        <p class="mono-label" style="color:var(--sb-accent); margin-bottom:6px;">Featured patron letter</p>
+        <blockquote style="font-family:var(--sb-font-display); font-size:1.35rem; line-height:1.35;">
+          &ldquo;I ordered 60 bespoke boxes for our leadership retreat. Every single hamper arrived tied cleanly as if it were the only one made.&rdquo;
+        </blockquote>
+        <p style="font-size:0.88rem; color:var(--text-secondary); margin-top:8px;">— Rohan S., Bengaluru · Corporate &amp; Trousseau Atelier</p>
+      </div>
+
+      <div id="sb-moments-grid" class="sb-polaroid-wall"></div>
+    </div>
+  </main>
+
+  <div id="polaroid-lightbox" class="sb-lightbox" role="dialog" aria-modal="true" aria-label="Happy Moments Photo Viewer">
+    <div class="sb-lightbox__inner">
+      <div class="sb-lightbox__topbar">
+        <span id="sb-lightbox-caption" class="sb-script" style="font-size:1.4rem; color:#F5D69E;">1 / 8</span>
+        <button type="button" id="sb-lightbox-close" class="sb-btn sb-btn--cream sb-btn--sm">Close &times;</button>
+      </div>
+      <img id="sb-lightbox-img" src="images/hamper-wedding.jpg" alt="Happy unboxing moment" class="sb-lightbox__img">
+      <div class="sb-lightbox__controls">
+        <button type="button" id="sb-lightbox-prev" class="sb-btn sb-btn--cream sb-btn--sm">&larr; Previous</button>
+        <button type="button" id="sb-lightbox-next" class="sb-btn sb-btn--cream sb-btn--sm">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="sb-footer">
+    <div class="sb-container">
+      <div class="sb-footer__bottom" style="border-top:none; padding-top:0;">
+        <span>© 2026 Hampers by Her Studio</span>
+        <span class="sb-script" style="font-size:1.3rem; color:#F5D69E;">every hamper is a keepsake</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="mobile-bar">
+    <a href="catalog.html" class="mobile-bar__item"><span>Hampers</span></a>
+    <a href="index.html?openBuilder=1" class="mobile-bar__item"><span>Build</span></a>
+    <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="mobile-bar__item"><span>WhatsApp</span></a>
+    <a href="index.html?openCart=1" class="mobile-bar__item"><span>Bag</span></a>
+  </div>
+  <script src="storybook-ui.js"></script>
+</body>
+</html>

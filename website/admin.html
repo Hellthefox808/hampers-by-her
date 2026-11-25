@@ -266,6 +266,7 @@
         <button class="tab-btn" data-tab="CONFIRMED" onclick="filterStudioOrders('CONFIRMED')">New Confirmed (<span id="cnt-conf">0</span>)</button>
         <button class="tab-btn" data-tab="QUALITY_CHECKED" onclick="filterStudioOrders('QUALITY_CHECKED')">Quality Checked (<span id="cnt-passed">0</span>)</button>
         <button class="tab-btn" data-tab="DISPATCHED" onclick="filterStudioOrders('DISPATCHED')">Dispatched via Air (<span id="cnt-disp">0</span>)</button>
+        <button class="tab-btn" data-tab="INQUIRIES" onclick="showStationeryInquiries()">Stationery Letters (<span id="cnt-inq">0</span>)</button>
       </div>
       <div style="display:flex; gap:10px; align-items:center;">
         <input type="text" id="order-search-box" placeholder="Search order #, patron, phone..." oninput="handleOrderSearch(this.value)" style="padding:8px 14px; border:1px solid #E5D5BA; border-radius:20px; font-size:13px; font-family:'Plus Jakarta Sans',sans-serif; width:250px; outline:none; background:#FFFFFF;">
@@ -273,8 +274,151 @@
       </div>
     </div>
 
+    <!-- Stationery Letters & Enquiries Queue -->
+    <div class="orders-grid" id="inquiries-grid" style="display:none; padding-bottom:68px;"></div>
+    <script>
+      (function () {
+        let studioInquiries = [];
+        let showingInquiries = false;
+        let inquirySearch = "";
+
+        function safeEsc(val) {
+          if (typeof window.escapeHtml === "function") return window.escapeHtml(String(val ?? ""));
+          return String(val ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+        }
+
+        function setInquiriesTabActive(active) {
+          showingInquiries = active;
+          const inqGrid = document.getElementById("inquiries-grid");
+          const ordersGrid = document.getElementById("orders-grid");
+          if (inqGrid) inqGrid.style.display = active ? "grid" : "none";
+          if (ordersGrid) ordersGrid.style.display = active ? "none" : "grid";
+          if (active) {
+            document.querySelectorAll(".pipeline-tabs .tab-btn").forEach((btn) => {
+              btn.classList.toggle("active", btn.getAttribute("data-tab") === "INQUIRIES");
+            });
+          }
+        }
+
+        function priorityColor(tier) {
+          if (tier === "P1") return "#B91C1C";
+          if (tier === "P2") return "#B45309";
+          return "#1C7C54";
+        }
+
+        function buildWaReplyUrl(inq) {
+          const rawDigits = String(inq.phone || "").replace(/\D+/g, "");
+          const targetPhone = rawDigits.length === 10 ? `91${rawDigits}` : (rawDigits || "919876543210");
+          const replyText = `Hi ${inq.name || "Patron"}! Thank you for writing to Hampers by Her Studio regarding *${inq.hamperTitle || "Bespoke Gifting"}* (Ref: ${inq.id}). How would you like to customize your ribbons & card?`;
+          return `https://wa.me/${targetPhone}?text=${encodeURIComponent(replyText)}`;
+        }
+
+        function renderStationeryInquiries() {
+          const grid = document.getElementById("inquiries-grid");
+          const cntEl = document.getElementById("cnt-inq");
+          if (cntEl) cntEl.textContent = String(studioInquiries.length);
+          if (!grid) return;
+
+          const filtered = !inquirySearch
+            ? studioInquiries
+            : studioInquiries.filter((inq) =>
+                `${inq.id} ${inq.name} ${inq.phone} ${inq.city || ""} ${inq.hamperTitle || ""} ${inq.message || ""}`
+                  .toLowerCase()
+                  .includes(inquirySearch)
+              );
+
+          if (!filtered.length) {
+            grid.innerHTML = `<div class="order-card" style="grid-column:1/-1; text-align:center; padding:32px; color:#64748B;">No matching stationery letters in the atelier queue yet.</div>`;
+            return;
+          }
+
+          grid.innerHTML = filtered
+            .map((inq) => {
+              const tier = inq.priorityTier || "P2";
+              const badgeColor = priorityColor(tier);
+              const dateLabel = inq.createdAt ? new Date(inq.createdAt).toLocaleString("en-IN") : "";
+              return `
+                <article class="order-card" data-inquiry-id="${safeEsc(inq.id)}">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;">
+                    <div>
+                      <span class="mono-label" style="color:#64748B;">${safeEsc(inq.id)} · ${safeEsc(inq.source || "contact_stationery")}</span>
+                      <h3 style="margin:4px 0 2px; font-size:1.05rem;">${safeEsc(inq.name)}</h3>
+                      <div style="font-size:0.84rem; color:#475569;">${safeEsc(inq.phone)}${inq.city ? ` · ${safeEsc(inq.city)}` : ""}</div>
+                    </div>
+                    <span style="background:${badgeColor}; color:#FFFFFF; font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:999px; white-space:nowrap;">${safeEsc(tier)} · Score ${safeEsc(inq.leadScore ?? 65)}</span>
+                  </div>
+                  <div style="font-size:0.84rem; font-weight:600; color:#4A1E29; margin-bottom:6px;">Hamper: ${safeEsc(inq.hamperTitle || "General / Bespoke Hamper")}</div>
+                  <p style="font-size:0.88rem; color:#334155; background:#FAF6EC; border:1px solid #E5D5BA; border-radius:8px; padding:10px 12px; margin:0 0 12px;">${safeEsc(inq.message || "")}</p>
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <span style="font-size:0.75rem; color:#64748B;">${safeEsc(dateLabel)}</span>
+                    <a href="${safeEsc(buildWaReplyUrl(inq))}" target="_blank" rel="noreferrer" class="btn btn--primary btn--sm" style="background:#1C7C54; color:#FFFFFF; text-decoration:none; padding:6px 12px; border-radius:6px; font-size:0.82rem; font-weight:600;">Reply on WhatsApp &rarr;</a>
+                  </div>
+                </article>
+              `;
+            })
+            .join("");
+        }
+
+        async function loadStationeryInquiries() {
+          try {
+            const headers = typeof window.getAuthHeaders === "function" ? window.getAuthHeaders() : {};
+            const res = await fetch("/api/v1/inquiries?limit=100", { headers });
+            if (!res.ok) return;
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data?.items)) {
+              studioInquiries = json.data.items;
+              renderStationeryInquiries();
+            }
+          } catch {}
+        }
+
+        window.loadStationeryInquiries = loadStationeryInquiries;
+        window.showStationeryInquiries = function () {
+          setInquiriesTabActive(true);
+          loadStationeryInquiries();
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+          const origLoad = window.loadStudioDashboard;
+          if (typeof origLoad === "function") {
+            window.loadStudioDashboard = async function (...args) {
+              const out = await origLoad.apply(this, args);
+              await loadStationeryInquiries();
+              return out;
+            };
+          }
+
+          const origFilter = window.filterStudioOrders;
+          if (typeof origFilter === "function") {
+            window.filterStudioOrders = function (tab, ...args) {
+              setInquiriesTabActive(false);
+              return origFilter.call(this, tab, ...args);
+            };
+          }
+
+          const origSearch = window.handleOrderSearch;
+          if (typeof origSearch === "function") {
+            window.handleOrderSearch = function (query, ...args) {
+              inquirySearch = String(query || "").trim().toLowerCase();
+              if (showingInquiries) renderStationeryInquiries();
+              return origSearch.call(this, query, ...args);
+            };
+          }
+
+          queueMicrotask(() => {
+            loadStationeryInquiries();
+          });
+        });
+      })();
+    </script>
+
     <!-- Active Orders Grid -->
-    <div class="orders-grid" id="orders-grid">
+    <div class="orders-grid" id="orders-grid" style="padding-bottom:68px;">
       <!-- Live Orders injected via JS -->
       <div style="grid-column: 1 / -1; text-align: center; padding: 48px; color: #776568;">
         Loading live atelier fulfillment orders...

@@ -1,9 +1,10 @@
 # FRONTEND STATE — Hampers by Her Digital Commerce Ecosystem
 
 ## 1. Storefront & Atelier UI
-- **Active Implementation**: Luxury artisanal storefront in `website/` (`index.html`, `styles.css`, `styles_ext.css`, `script.js`).
-- **Design System Tokens**: Warm luxury palette (`#4A1E29` Bordeaux, `#C89D42` Clay Gold, `#FDFBF7` Warm Alabaster, `#2E5A44` Forest Green).
-- **Typography**: Playfair Display (editorial serif), Plus Jakarta Sans (clean UI sans), JetBrains Mono (labels & dimensions).
+- **Active Implementation**: Tactile Storybook & Scrapbook multi-page storefront in `website/` (`index.html`, `catalog.html`, `hamper.html`, `moments.html`, `how-it-works.html`, `faq.html`, `contact.html`, `delivered.html`, `storybook.css`, `storybook-ui.js`, `styles.css`, `styles_ext.css`, `script.js`).
+- **Storybook Reference Architecture**: Inspired by `https://puppy.instabizweb.com/` featuring theme-synced scalloped sticky navbar, reading progress bar (`#sb-scroll-progress`), back-to-top button (`#sb-back-top`), full-screen warm-gold mobile drawer + unified `.mobile-bar` docks, peekaboo arches over quilted diamond fence, New Delhi studio illustration, scroll-opening arched wooden doors, Two-Ways wooden signpost, tilted WhatsApp phone mockup with staggered bubble reveal & playable 4D video preview, open Atelier Passport stamps, taped Polaroid wall + dark lightbox, corkboard sticky-note FAQ with live search, stationery fill-in-the-blank contact letter (synced to Studio OS `Stationery Letters` queue), PDP pairings (`#detail-recommendations-grid`), and perforated boarding-pass archive tickets.
+- **Design System Tokens**: 12 switchable Theme Studio presets (`themes.css`, `theme-switcher.js`), led by **Atelier Signature** (`#4A1E29` Bordeaux, `#C89D42` Clay Gold, `#FAF6EC` Warm Cream, `#1C7C54` WhatsApp Forest Green) and **Craft Storybook** (`#FAF6EC` Warm Cream, `#F5D69E` Honey, `#8F3F14` Terracotta, `#2B180E` Espresso).
+- **Typography**: Fraunces & Playfair Display (editorial serif), Caveat (handwritten script accents), Plus Jakarta Sans (clean UI sans), JetBrains Mono (labels & dimensions).
 
 ## 2. Interactive 4D Motion & Sensory UX Suite
 - **4D Gyroscopic Tilt & Parallax**:

@@ -88,3 +88,8 @@
 ### P. Multi-Channel Notification Dispatcher (30_NOTIFICATION_SYSTEM.md)
 - `POST /notifications/send`: Orchestrates transactional notifications across WhatsApp Business Cloud API HSM templates, responsive HTML email receipts, and carrier SMS alerts.
 - `GET /notifications/recent`: Fetches recent notification audit dispatch ledger with delivery statuses and provider message IDs.
+
+### Q. Storybook Stationery Inquiries & Archived Editions
+- `GET /catalog/archives`: Returns past limited-edition delivered hampers for the boarding-pass ticket wall (`website/delivered.html`).
+- `POST /inquiries`: Validates and stores patron stationery contact letters and hamper enquiries (`contact.html`, `hamper.html`), runs `scoreInboundLead` DSA scoring, and returns a WhatsApp handoff link.
+- `GET /inquiries`: Staff-RBAC-protected endpoint (`orders:read`) listing captured stationery enquiries.

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How It Works — Hampers by Her</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles_ext.css">
+  <link rel="stylesheet" href="storybook.css">
+  <link rel="stylesheet" href="themes.css">
+  <script src="theme-switcher.js" defer></script>
+</head>
+<body class="sb-body">
+  <nav id="main-nav" class="nav sb-nav" aria-label="Main Navigation">
+    <div class="sb-nav__inner">
+      <a href="index.html" class="sb-brand"><span class="sb-brand__emblem">🎀</span><span class="sb-brand__wordmark">Hampers by Her</span></a>
+      <div class="sb-nav__links">
+        <a href="index.html" class="sb-nav__link">Home</a>
+        <a href="catalog.html" class="sb-nav__link">Hampers</a>
+        <a href="moments.html" class="sb-nav__link">Happy moments</a>
+        <a href="how-it-works.html" class="sb-nav__link sb-nav__link--active">How it works</a>
+        <a href="faq.html" class="sb-nav__link">FAQ</a>
+        <a href="contact.html" class="sb-nav__link">Visit &amp; contact</a>
+        <a href="index.html?openTracking=1" class="sb-nav__link">Track</a>
+      </div>
+      <div class="sb-nav__actions">
+        <a href="admin.html" class="nav__admin-badge sb-nav__admin-hide-sm">Studio OS ⚡</a>
+        <a href="index.html?openCart=1" class="nav__cart sb-nav__cart">Cart · 0</a>
+        <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her!" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp sb-btn--sm sb-nav__wa-desktop">WhatsApp us</a>
+        <button id="mobile-menu-btn" type="button" class="sb-menu-btn" aria-label="Open menu"><span>🎀</span><span>Menu</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="mobile-menu" class="mobile-menu sb-mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <div class="mobile-menu__overlay"></div>
+    <div class="mobile-menu__panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <p class="sb-mobile-menu__eyebrow">where to, friend?</p>
+        <button id="mobile-menu-close" class="mobile-menu__close" style="position:static;" aria-label="Close menu">&times;</button>
+      </div>
+      <a href="index.html" class="mobile-menu__link">Home</a>
+      <a href="catalog.html" class="mobile-menu__link">Available hampers</a>
+      <a href="index.html?openBuilder=1" class="mobile-menu__link">Build your own (11 steps)</a>
+      <a href="moments.html" class="mobile-menu__link">Happy moments ♡</a>
+      <a href="delivered.html" class="mobile-menu__link">Delivered archives</a>
+      <a href="how-it-works.html" class="mobile-menu__link">How it works</a>
+      <a href="faq.html" class="mobile-menu__link">FAQ corkboard</a>
+      <a href="contact.html" class="mobile-menu__link">Visit &amp; contact letter</a>
+      <a href="index.html?openVoice=1" class="mobile-menu__link">Voice Concierge (Eleanor)</a>
+      <a href="index.html?openTracking=1" class="mobile-menu__link">Track order</a>
+      <a href="lookbook.html" class="mobile-menu__link">Lookbook</a>
+      <a href="admin.html" class="mobile-menu__link">Studio OS &rarr;</a>
+      <div style="margin-top:20px;">
+        <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp" style="width:100%;">Chat on WhatsApp &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <main style="padding:46px 0 84px;">
+    <div class="sb-container" style="max-width:960px;">
+      <div style="text-align:center; margin-bottom:28px;">
+        <span class="sb-eyebrow">step by step inside the atelier</span>
+        <h1 class="sb-section-title" style="font-size:clamp(2.2rem,5vw,3.6rem);">How gifting with us works</h1>
+      </div>
+
+      <!-- Jump Pill Bar -->
+      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:32px;">
+        <a href="#ways" class="sb-filter-pill">1 Two ways to gift</a>
+        <a href="#promise" class="sb-filter-pill">2 Atelier quality promise</a>
+        <a href="#delivery" class="sb-filter-pill">3 Delivery &amp; collection</a>
+        <a href="#why" class="sb-filter-pill">4 Why choose us</a>
+      </div>
+
+      <!-- 1. Interactive Tab Toggle -->
+      <section id="ways" class="sb-notebook-frame" style="padding:28px; margin-bottom:28px;">
+        <h2 style="font-family:var(--sb-font-display); font-size:1.75rem; margin-bottom:14px;">1. Choose your gifting flow</h2>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+          <button type="button" class="sb-filter-pill active" data-flow-tab="ready">Ready-to-Ship Studio Edit (24h)</button>
+          <button type="button" class="sb-filter-pill" data-flow-tab="bespoke">11-Step Bespoke Atelier (48h)</button>
+        </div>
+
+        <div data-flow-panel="ready">
+          <div class="sb-journey-list" style="margin:0;">
+            <div class="sb-journey-step"><span class="sb-step-num">1</span><div><strong>Browse the sketchbook catalog</strong><p style="font-size:0.88rem; color:var(--text-secondary);">Filter by occasion, speed, or budget and open any hamper's full inclusions list.</p></div></div>
+            <div class="sb-journey-step"><span class="sb-step-num">2</span><div><strong>Select silk ribbon, wax seal &amp; handwritten note</strong><p style="font-size:0.88rem; color:var(--text-secondary);">Every box is hand-tied in Okhla with your complimentary personal note.</p></div></div>
+            <div class="sb-journey-step"><span class="sb-step-num">3</span><div><strong>24h studio QC gate &amp; express dispatch</strong><p style="font-size:0.88rem; color:var(--text-secondary);">Photographed at our studio QC table and shipped via BlueDart or Delhivery Express Air.</p></div></div>
+          </div>
+        </div>
+
+        <div data-flow-panel="bespoke" style="display:none;">
+          <div class="sb-journey-list" style="margin:0;">
+            <div class="sb-journey-step"><span class="sb-step-num">1</span><div><strong>Pick a vessel &amp; watch the 3D cm³ fullness gauge</strong><p style="font-size:0.88rem; color:var(--text-secondary);">Choose rigid kraft, linen-lined pine, or velvet casket and add gourmet cocoa, candles, and keepsakes.</p></div></div>
+            <div class="sb-journey-step"><span class="sb-step-num">2</span><div><strong>Upload a Polaroid memory &amp; preview procedural SVG</strong><p style="font-size:0.88rem; color:var(--text-secondary);">Inspect your exact monogram, wax crest, and ribbon palette rendered live in Step 11.</p></div></div>
+            <div class="sb-journey-step"><span class="sb-step-num">3</span><div><strong>Confirm online or share directly with WhatsApp concierge</strong><p style="font-size:0.88rem; color:var(--text-secondary);">Ideal for milestone gifts, weddings, and custom corporate batches of 10–500 boxes.</p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="promise" class="sb-notebook-frame" style="padding:28px; margin-bottom:28px;">
+        <h2 style="font-family:var(--sb-font-display); font-size:1.75rem; margin-bottom:10px;">2. Our artisanal promise</h2>
+        <p style="color:var(--text-secondary); line-height:1.65;">Every confection, candle, and botanical stem comes from verified Indian independent makers. Fragile glass items receive a 1.25× honeycomb buffer during 3D packing validation, and zero orders leave our desk without passing our photographic QC gate.</p>
+      </section>
+
+      <section id="delivery" class="sb-notebook-frame" style="padding:28px; margin-bottom:28px;">
+        <h2 style="font-family:var(--sb-font-display); font-size:1.75rem; margin-bottom:10px;">3. Delivery &amp; collection</h2>
+        <p style="color:var(--text-secondary); line-height:1.65;">Orders placed before 14:00 IST dispatch the same studio cycle. Express Air reaches Delhi-NCR, Mumbai, Bengaluru, Hyderabad, and Pune in 1–2 business days, and Tier-1/2 pin codes across India in 3–4 days. Shipping is complimentary on orders ₹2,999+.</p>
+      </section>
+
+      <section id="why" class="sb-notebook-frame" style="padding:28px;">
+        <h2 style="font-family:var(--sb-font-display); font-size:1.75rem; margin-bottom:14px;">4. Why patrons choose Hampers by Her</h2>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <a href="catalog.html" class="sb-btn sb-btn--primary">Browse ready hampers &rarr;</a>
+          <a href="index.html?openBuilder=1" class="sb-btn sb-btn--cream">Try 11-step builder</a>
+          <a href="contact.html" class="sb-btn sb-btn--whatsapp">Write us a letter</a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="sb-footer">
+    <div class="sb-container">
+      <div class="sb-footer__bottom" style="border-top:none; padding-top:0;">
+        <span>© 2026 Hampers by Her Studio</span>
+        <span class="sb-script" style="font-size:1.3rem; color:#F5D69E;">every hamper is a keepsake</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="mobile-bar">
+    <a href="catalog.html" class="mobile-bar__item"><span>Hampers</span></a>
+    <a href="index.html?openBuilder=1" class="mobile-bar__item"><span>Build</span></a>
+    <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="mobile-bar__item"><span>WhatsApp</span></a>
+    <a href="index.html?openCart=1" class="mobile-bar__item"><span>Bag</span></a>
+  </div>
+  <script src="storybook-ui.js"></script>
+</body>
+</html>

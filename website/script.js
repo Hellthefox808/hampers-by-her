@@ -5,6 +5,7 @@
    ═══════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
+  window.__hbhMainScriptActive = true;
 
   function escapeHtml(value) {
     return String(value ?? '')
@@ -126,9 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function getPersistedCart() {
     try {
       const saved = localStorage.getItem(CART_STORAGE_KEY);
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
@@ -154,8 +155,25 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch {}
   }
 
+  function addItemToCart(newItem) {
+    if (!newItem || !newItem.id) return;
+    const matchIndex = cart.findIndex((item) => (
+      item.id === newItem.id
+      && (item.ribbon || '') === (newItem.ribbon || '')
+      && (item.waxSeal || '') === (newItem.waxSeal || '')
+      && (item.cardNote || '') === (newItem.cardNote || '')
+      && (item.monogram || '') === (newItem.monogram || '')
+    ));
+    if (matchIndex >= 0) {
+      cart[matchIndex].quantity = (cart[matchIndex].quantity || 1) + (newItem.quantity || 1);
+    } else {
+      cart.push({ ...newItem, quantity: newItem.quantity || 1 });
+    }
+  }
+
   let cart = getPersistedCart();
   let appliedCoupon = null;
+  renderCart();
 
   function openCart() {
     renderCart();
@@ -512,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('click', (e) => {
-      if (e.target.closest('button')) return; // ignore clicks on buttons inside card
+      if (e.target.closest('button, a')) return; // ignore clicks on buttons or links inside card
       const id = card.dataset.productId;
       if (id) openItemDetail(id);
     });
@@ -537,9 +555,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await fetch(`/api/v1/delivery/serviceability/${val}`);
       const json = await res.json();
-      if (json.success && json.data.serviceable) {
+      const isServiceable = Boolean(json.data?.isServiceable ?? json.data?.serviceable);
+      if (json.success && isServiceable) {
         const d = json.data;
-        pinResult.innerHTML = `✓ <strong>Serviceable to ${d.city || d.tier}</strong> (${d.slaHours}h SLA &middot; Express Air Eligible)`;
+        const etaText = d.standardDays ? `${d.standardDays}-day delivery` : `${d.slaHours || 48}h SLA`;
+        pinResult.innerHTML = `✓ <strong>Serviceable to ${escapeHtml(d.city || d.tier || 'India')}</strong> (${escapeHtml(etaText)} &middot; ${escapeHtml(d.carrier || 'Express Air Eligible')})`;
         pinResult.className = 'pincode-result serviceable';
         pinResult.style.display = 'block';
       } else {
@@ -560,7 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!activeProduct) return;
     const cardNote = document.getElementById('item-card-note')?.value?.trim();
 
-    cart.push({
+    addItemToCart({
       id: activeProduct.id,
       title: activeProduct.title,
       subtitle: `${activeProduct.occasion} Edition`,
@@ -677,12 +697,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const waPopover = document.getElementById('wa-popover');
   const waPopoverClose = document.getElementById('wa-popover-close');
 
-  waFloatingBtn?.addEventListener('click', () => {
-    waPopover?.classList.toggle('open');
+  function setWaPopoverOpen(isOpen) {
+    if (!waPopover) return;
+    waPopover.classList.toggle('open', isOpen);
+    waFloatingBtn?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+
+  waFloatingBtn?.setAttribute('aria-expanded', 'false');
+  waFloatingBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setWaPopoverOpen(!waPopover?.classList.contains('open'));
   });
 
   waPopoverClose?.addEventListener('click', () => {
-    waPopover?.classList.remove('open');
+    setWaPopoverOpen(false);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (
+      waPopover?.classList.contains('open')
+      && !waPopover.contains(e.target)
+      && !waFloatingBtn?.contains(e.target)
+    ) {
+      setWaPopoverOpen(false);
+    }
   });
 
   document.querySelectorAll('.wa-quick-btn').forEach(btn => {
@@ -690,7 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const prompt = btn.dataset.waPrompt;
       const url = `https://wa.me/919876543210?text=${encodeURIComponent(prompt)}`;
       window.open(url, '_blank');
-      waPopover?.classList.remove('open');
+      setWaPopoverOpen(false);
     });
   });
 
@@ -707,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }[id];
 
       if (hamper) {
-        cart.push({
+        addItemToCart({
           id,
           title: hamper.title,
           subtitle: "Curated Edition",
@@ -1020,9 +1058,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cartDrawer.classList.remove('open');
         document.body.style.overflow = '';
       }
-      const waPopover = document.getElementById('wa-popover');
-      if (waPopover?.classList.contains('active')) {
-        waPopover.classList.remove('active');
+      if (waPopover?.classList.contains('open')) {
+        setWaPopoverOpen(false);
       }
       document.getElementById('builder-overlay')?.classList.remove('open');
       document.getElementById('checkout-overlay')?.classList.remove('open');
@@ -1043,20 +1080,27 @@ document.addEventListener('DOMContentLoaded', () => {
     boxName: "Classic Rigid Kraft Box",
     boxPricePaise: 45000,
     boxCapacityCm3: 5200,
-    recipient: "Sister",
-    occasion: "Wedding",
-    colorway: "Warm Earth & Terracotta",
-    ribbonColor: "burgundy_merlot",
-    ribbonName: "Burgundy Merlot Raw Silk",
+    shredId: "SHRED_ECRU",
+    shredName: "Natural Cotton Shred (Ecru)",
+    shredPricePaise: 0,
+    ribbonColor: "champagne_gold",
+    ribbonName: "Cream Ivory Silk Ribbon",
+    ribbonPricePaise: 0,
     monogramInitials: "HBH",
     waxSealColor: "vintage_gold",
-    waxSealName: "Vintage Gold Botanical",
+    waxSealName: "Botanical Gold Seal",
+    waxSealPricePaise: 12000,
     sealMotif: "botanical_wreath",
+    botanicalId: "BOT_BABYS_BREATH",
+    botanicalName: "Dried Baby's Breath Sprig",
+    botanicalPricePaise: 0,
     inclusions: [],
     cardTo: "",
     cardFrom: "",
     cardMessage: "To someone truly cherished, with warmest congratulations on your joyous milestone.",
-    hasPolaroid: false
+    hasPolaroid: false,
+    polaroidCaption: "",
+    polaroidDataUrl: ""
   };
 
   const builderOverlayEl = document.getElementById('builder-overlay');
@@ -1070,6 +1114,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const fullnessBar = document.getElementById('fullness-bar');
   const fullnessText = document.getElementById('fullness-text');
   const fullnessBadge = document.getElementById('fullness-badge');
+  const builderCollisionAlert = document.getElementById('builder-collision-alert');
+
+  function computeBuilderTotalPaise() {
+    let totalPaise = builderState.boxPricePaise
+      + (builderState.shredPricePaise || 0)
+      + (builderState.ribbonPricePaise || 0)
+      + (builderState.waxSealPricePaise || 0)
+      + (builderState.botanicalPricePaise || 0);
+    builderState.inclusions.forEach((inc) => { totalPaise += (inc.pricePaise || 0); });
+    if (builderState.hasPolaroid) totalPaise += 12000;
+    return totalPaise;
+  }
 
   function updateBuilderUI() {
     // 1. Show only active step pane
@@ -1087,9 +1143,10 @@ document.addEventListener('DOMContentLoaded', () => {
       builderProgress.style.width = `${Math.round((builderState.currentStep / 11) * 100)}%`;
     }
     const stepTitles = [
-      "Box Selection", "Recipient Persona", "Occasion Mood", "Colorway Palette",
-      "Raw Silk Ribbon & Monogram", "Fragrance & Candle Inclusions", "Gourmet Treats",
-      "Wax Seal Crest", "Handwritten Calligraphy Card", "Polaroid Print", "Review Your Composition"
+      "Box Selection", "Cushioning & Shred", "Signature Anchor",
+      "Gourmet & Confectionery", "Sensory Wellness", "Raw Silk Ribbon & Monogram",
+      "Botanical Wax Seal Crest", "Pressed Florals & Botanicals",
+      "Handwritten Calligraphy Card", "Polaroid Print", "Review Your Composition"
     ];
     if (builderStepIndicator) {
       builderStepIndicator.textContent = `Step ${builderState.currentStep} of 11 · ${stepTitles[builderState.currentStep - 1]}`;
@@ -1110,9 +1167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4. Calculate total price
-    let totalPaise = builderState.boxPricePaise;
-    builderState.inclusions.forEach(inc => { totalPaise += (inc.pricePaise || 0); });
-    if (builderState.hasPolaroid) totalPaise += 12000;
+    const totalPaise = computeBuilderTotalPaise();
     if (builderPriceTicker) {
       builderPriceTicker.textContent = `₹ ${Math.round(totalPaise / 100).toLocaleString('en-IN')}`;
     }
@@ -1135,6 +1190,9 @@ document.addEventListener('DOMContentLoaded', () => {
         fullnessBadge.textContent = "Near Capacity";
         fullnessBadge.className = "fullness-badge OVERFILLED";
       }
+    }
+    if (builderCollisionAlert) {
+      builderCollisionAlert.style.display = usedVolumeCm3 > builderState.boxCapacityCm3 || fullnessPct > 85 ? 'flex' : 'none';
     }
   }
 
@@ -1173,47 +1231,37 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.builder-step-pane[data-step="1"] .select-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       builderState.boxId = card.dataset.boxId || "BOX_KRAFT_RIGID";
-      builderState.boxName = card.querySelector('.select-card__title')?.textContent || "Keepsake Box";
+      builderState.boxName = card.querySelector('.select-card__title')?.textContent?.trim() || "Keepsake Box";
       builderState.boxPricePaise = parseInt(card.dataset.price, 10) || 45000;
       builderState.boxCapacityCm3 = parseInt(card.dataset.capacity, 10) || 5200;
       updateBuilderUI();
     });
   });
 
-  // Step 5: Ribbon selection
-  const ribbonMap = {
-    "RIB_BORDEAUX": { key: "burgundy_merlot", name: "Burgundy Merlot Raw Silk" },
-    "RIB_GOLD": { key: "champagne_gold", name: "Champagne Gold Satin" },
-    "RIB_EMERALD": { key: "forest_emerald", name: "Forest Emerald Grosgrain" },
-    "RIB_BLUSH": { key: "blush_rose", name: "Blush Rose Velvet" }
-  };
-  document.querySelectorAll('.builder-step-pane[data-step="5"] .select-card').forEach(card => {
+  // Step 2: Shred & Cushioning selection
+  document.querySelectorAll('.builder-step-pane[data-step="2"] .select-card').forEach(card => {
     card.addEventListener('click', () => {
-      document.querySelectorAll('.builder-step-pane[data-step="5"] .select-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.builder-step-pane[data-step="2"] .select-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
-      const ribId = card.dataset.ribbonId;
-      if (ribbonMap[ribId]) {
-        builderState.ribbonColor = ribbonMap[ribId].key;
-        builderState.ribbonName = ribbonMap[ribId].name;
-      }
+      builderState.shredId = card.dataset.shred || "SHRED_ECRU";
+      builderState.shredName = card.querySelector('.select-card__title')?.textContent?.trim() || "Cotton Shred";
+      builderState.shredPricePaise = parseInt(card.dataset.price, 10) || 0;
       updateBuilderUI();
     });
   });
 
-  // Monogram initials input
-  const monogramInput = document.getElementById('monogram-input');
-  monogramInput?.addEventListener('input', (e) => {
-    builderState.monogramInitials = e.target.value.trim().toUpperCase() || "HBH";
-  });
-
-  // Step 6 & 7: Inclusions toggle (checkboxes or cards)
-  document.querySelectorAll('.builder-step-pane[data-step="6"] .select-card, .builder-step-pane[data-step="7"] .select-card').forEach(card => {
+  // Steps 3, 4 & 5: Multi-select Gift Inclusions
+  document.querySelectorAll(
+    '.builder-step-pane[data-step="3"] .select-card, ' +
+    '.builder-step-pane[data-step="4"] .select-card, ' +
+    '.builder-step-pane[data-step="5"] .select-card'
+  ).forEach(card => {
     card.addEventListener('click', () => {
       card.classList.toggle('selected');
-      const incId = card.dataset.inclusionId || card.querySelector('.select-card__title')?.textContent;
-      const title = card.querySelector('.select-card__title')?.textContent;
+      const title = card.querySelector('.select-card__title')?.textContent?.trim() || "Artisan Addition";
+      const incId = card.dataset.itemId || card.dataset.inclusionId || title;
       const pricePaise = parseInt(card.dataset.price, 10) || 65000;
-      const volumeCm3 = parseInt(card.dataset.volume, 10) || 800;
+      const volumeCm3 = parseInt(card.dataset.volume, 10) || 650;
 
       const existingIdx = builderState.inclusions.findIndex(i => i.id === incId);
       if (existingIdx >= 0) {
@@ -1225,23 +1273,76 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Step 8: Wax seal selection
+  // Step 6: Ribbon Swatch & Monogram selection
+  const ribbonMap = {
+    "RIB_SATIN_CREAM": { key: "champagne_gold", name: "Cream Satin Raw Silk" },
+    "RIB_VELVET_BORDEAUX": { key: "burgundy_merlot", name: "Bordeaux Merlot Velvet Ribbon" },
+    "RIB_RAW_GOLD": { key: "champagne_gold", name: "Champagne Gold Raw Silk" },
+    "RIB_GROSGRAIN_FOREST": { key: "forest_emerald", name: "Forest Emerald Grosgrain" },
+    "RIB_BORDEAUX": { key: "burgundy_merlot", name: "Burgundy Merlot Raw Silk" },
+    "RIB_GOLD": { key: "champagne_gold", name: "Champagne Gold Satin" },
+    "RIB_EMERALD": { key: "forest_emerald", name: "Forest Emerald Grosgrain" },
+    "RIB_BLUSH": { key: "blush_rose", name: "Blush Rose Velvet" }
+  };
+  document.querySelectorAll('.builder-step-pane[data-step="6"] .swatch-item, .builder-step-pane[data-step="6"] .select-card').forEach(swatch => {
+    swatch.addEventListener('click', () => {
+      document.querySelectorAll('.builder-step-pane[data-step="6"] .swatch-item, .builder-step-pane[data-step="6"] .select-card').forEach(s => s.classList.remove('selected'));
+      swatch.classList.add('selected');
+      const ribId = swatch.dataset.ribbonId;
+      const labelText = swatch.querySelector('.swatch-name, .select-card__title, span')?.textContent?.trim();
+      if (ribbonMap[ribId]) {
+        builderState.ribbonColor = ribbonMap[ribId].key;
+        builderState.ribbonName = ribbonMap[ribId].name;
+      } else if (labelText) {
+        builderState.ribbonName = labelText;
+      }
+      builderState.ribbonPricePaise = parseInt(swatch.dataset.price, 10) || 0;
+      updateBuilderUI();
+    });
+  });
+
+  // Monogram initials input
+  const monogramInput = document.getElementById('monogram-input');
+  monogramInput?.addEventListener('input', (e) => {
+    builderState.monogramInitials = e.target.value.trim().toUpperCase().slice(0, 3) || "HBH";
+  });
+
+  // Step 7: Botanical Wax Seal selection
   const sealMap = {
+    "WAX_BOTANICAL_GOLD": { colorKey: "vintage_gold", motif: "botanical_wreath", name: "Botanical Gold Wax Seal" },
+    "WAX_CREST_BORDEAUX": { colorKey: "bordeaux_red", motif: "monogram_hbh", name: "Bordeaux Merlot Monogram Seal" },
+    "WAX_HEART_ROSE": { colorKey: "antique_bronze", motif: "celestial_star", name: "Antique Rose Celestial Seal" },
+    "WAX_FLORAL_SAGE": { colorKey: "forest_sage", motif: "botanical_wreath", name: "Forest Sage Leaf Seal" },
     "SEAL_BOTANICAL": { colorKey: "vintage_gold", motif: "botanical_wreath", name: "Vintage Gold Botanical Wreath" },
     "SEAL_BORDEAUX": { colorKey: "bordeaux_red", motif: "monogram_hbh", name: "Bordeaux Merlot Crest" },
     "SEAL_SAGE": { colorKey: "forest_sage", motif: "botanical_wreath", name: "Forest Sage Leaf" },
     "SEAL_BRONZE": { colorKey: "antique_bronze", motif: "celestial_star", name: "Antique Bronze Star" }
   };
-  document.querySelectorAll('.builder-step-pane[data-step="8"] .select-card').forEach(card => {
+  document.querySelectorAll('.builder-step-pane[data-step="7"] .select-card').forEach(card => {
     card.addEventListener('click', () => {
-      document.querySelectorAll('.builder-step-pane[data-step="8"] .select-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.builder-step-pane[data-step="7"] .select-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
-      const sealId = card.dataset.sealId;
+      const sealId = card.dataset.waxId || card.dataset.sealId;
       if (sealMap[sealId]) {
         builderState.waxSealColor = sealMap[sealId].colorKey;
         builderState.sealMotif = sealMap[sealId].motif;
         builderState.waxSealName = sealMap[sealId].name;
+      } else {
+        builderState.waxSealName = card.querySelector('.select-card__title')?.textContent?.trim() || builderState.waxSealName;
       }
+      builderState.waxSealPricePaise = parseInt(card.dataset.price, 10) || 0;
+      updateBuilderUI();
+    });
+  });
+
+  // Step 8: Pressed Botanicals selection
+  document.querySelectorAll('.builder-step-pane[data-step="8"] .select-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.builder-step-pane[data-step="8"] .select-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      builderState.botanicalId = card.dataset.botanical || "BOT_BABYS_BREATH";
+      builderState.botanicalName = card.querySelector('.select-card__title')?.textContent?.trim() || "Pressed Botanical";
+      builderState.botanicalPricePaise = parseInt(card.dataset.price, 10) || 0;
       updateBuilderUI();
     });
   });
@@ -1258,39 +1359,78 @@ document.addEventListener('DOMContentLoaded', () => {
     if (counter) counter.textContent = `${e.target.value.length} / 280`;
   });
 
+  // Step 10: Polaroid Keepsake Upload & Caption
+  const polaroidUploadInput = document.getElementById('polaroid-upload-input');
+  const polaroidPreviewImg = document.getElementById('polaroid-preview-img');
+  const polaroidCaptionInput = document.getElementById('polaroid-caption-input');
+  polaroidUploadInput?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        builderState.polaroidDataUrl = reader.result;
+        builderState.hasPolaroid = true;
+        if (polaroidPreviewImg) {
+          polaroidPreviewImg.src = reader.result;
+        }
+        updateBuilderUI();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  polaroidCaptionInput?.addEventListener('input', (e) => {
+    builderState.polaroidCaption = e.target.value.trim();
+    builderState.hasPolaroid = Boolean(builderState.polaroidDataUrl || builderState.polaroidCaption.length > 0);
+    updateBuilderUI();
+  });
+
   // Render Step 11 Summary
   function renderBuilderSummary() {
     const summaryList = document.getElementById('builder-summary-breakdown');
     if (!summaryList) return;
 
+    const formatINR = (paise) => paise > 0
+      ? `₹ ${Math.round(paise / 100).toLocaleString('en-IN')}`
+      : 'Included';
+
     let itemsHtml = `
       <div style="display: flex; justify-content: space-between;">
-        <span><strong>Box Base:</strong> ${builderState.boxName}</span>
+        <span><strong>Box Base:</strong> ${escapeHtml(builderState.boxName)}</span>
         <span style="font-family: 'JetBrains Mono', monospace;">₹ ${(builderState.boxPricePaise / 100).toLocaleString('en-IN')}</span>
       </div>
       <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
-        <span><strong>Silk Ribbon:</strong> ${builderState.ribbonName} (Monogram: ${builderState.monogramInitials})</span>
-        <span>Included</span>
+        <span><strong>Cushioning:</strong> ${escapeHtml(builderState.shredName)}</span>
+        <span style="font-family: 'JetBrains Mono', monospace;">${formatINR(builderState.shredPricePaise)}</span>
       </div>
       <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
-        <span><strong>Wax Seal:</strong> ${builderState.waxSealName}</span>
-        <span>Included</span>
+        <span><strong>Silk Ribbon:</strong> ${escapeHtml(builderState.ribbonName)} (Monogram: ${escapeHtml(builderState.monogramInitials)})</span>
+        <span style="font-family: 'JetBrains Mono', monospace;">${formatINR(builderState.ribbonPricePaise)}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+        <span><strong>Wax Seal:</strong> ${escapeHtml(builderState.waxSealName)}</span>
+        <span style="font-family: 'JetBrains Mono', monospace;">${formatINR(builderState.waxSealPricePaise)}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+        <span><strong>Botanicals:</strong> ${escapeHtml(builderState.botanicalName)}</span>
+        <span style="font-family: 'JetBrains Mono', monospace;">${formatINR(builderState.botanicalPricePaise)}</span>
       </div>
     `;
 
     builderState.inclusions.forEach(inc => {
       itemsHtml += `
         <div style="display: flex; justify-content: space-between;">
-          <span>• ${inc.title}</span>
+          <span>• ${escapeHtml(inc.title)}</span>
           <span style="font-family: 'JetBrains Mono', monospace;">₹ ${Math.round((inc.pricePaise || 0) / 100).toLocaleString('en-IN')}</span>
         </div>
       `;
     });
 
     if (builderState.hasPolaroid) {
+      const cap = builderState.polaroidCaption ? ` ("${escapeHtml(builderState.polaroidCaption)}")` : '';
       itemsHtml += `
         <div style="display: flex; justify-content: space-between;">
-          <span>• Polaroid Keepsake Print</span>
+          <span>• Polaroid Keepsake Print${cap}</span>
           <span style="font-family: 'JetBrains Mono', monospace;">₹ 120</span>
         </div>
       `;
@@ -1298,10 +1438,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     summaryList.innerHTML = itemsHtml;
 
-    let totalPaise = builderState.boxPricePaise;
-    builderState.inclusions.forEach(inc => { totalPaise += (inc.pricePaise || 0); });
-    if (builderState.hasPolaroid) totalPaise += 12000;
-
+    const totalPaise = computeBuilderTotalPaise();
     const finalTotalEl = document.getElementById('builder-final-total');
     if (finalTotalEl) {
       finalTotalEl.textContent = `₹ ${Math.round(totalPaise / 100).toLocaleString('en-IN')}`;
@@ -1357,9 +1494,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Add Bespoke Hamper to Bag
   builderFinishBtn?.addEventListener('click', () => {
-    let totalPaise = builderState.boxPricePaise;
-    builderState.inclusions.forEach(inc => { totalPaise += (inc.pricePaise || 0); });
-    if (builderState.hasPolaroid) totalPaise += 12000;
+    const totalPaise = computeBuilderTotalPaise();
 
     const bespokeItem = {
       id: `bespoke_${Date.now()}`,
@@ -1372,11 +1507,12 @@ document.addEventListener('DOMContentLoaded', () => {
       ribbon: builderState.ribbonName,
       waxSeal: builderState.waxSealName,
       monogram: builderState.monogramInitials,
+      cardNote: builderState.cardTo ? `To ${builderState.cardTo}: ${builderState.cardMessage}` : builderState.cardMessage,
       cardMessage: builderState.cardMessage,
       inclusions: builderState.inclusions
     };
 
-    cart.push(bespokeItem);
+    addItemToCart(bespokeItem);
     builderOverlayEl?.classList.remove('open');
     document.body.style.overflow = '';
     renderCart();
@@ -1814,7 +1950,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cards.forEach(card => {
           const text = card.textContent.toLowerCase();
           const matchOccasion = !intent.occasion || text.includes(intent.occasion.toLowerCase());
-          card.style.display = matchOccasion ? 'block' : 'none';
+          card.style.display = matchOccasion ? '' : 'none';
         });
 
         // Smooth scroll to collections
@@ -1824,7 +1960,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Fallback simple search
       const cards = document.querySelectorAll('.product-card');
       cards.forEach(card => {
-        card.style.display = card.textContent.toLowerCase().includes(query.toLowerCase()) ? 'block' : 'none';
+        card.style.display = card.textContent.toLowerCase().includes(query.toLowerCase()) ? '' : 'none';
       });
     }
   }
@@ -2332,5 +2468,48 @@ document.addEventListener('DOMContentLoaded', () => {
       if (prompt) sendVoicePrompt(prompt);
     });
   });
+
+  // ═══════════════════════════════════════════════════════════
+  // 13. STORYBOOK OCCASION FILTER PILLS & SUBPAGE DEEP LINKS
+  // ═══════════════════════════════════════════════════════════
+  const sbOccasionPills = document.querySelectorAll('.sb-filter-pill[data-occasion-filter]');
+  sbOccasionPills.forEach((pill) => {
+    pill.addEventListener('click', () => {
+      const filterVal = (pill.getAttribute('data-occasion-filter') || 'all').toLowerCase();
+      sbOccasionPills.forEach((p) => p.classList.remove('active'));
+      pill.classList.add('active');
+      document.querySelectorAll('.product-card').forEach((card) => {
+        if (filterVal === 'all') {
+          card.style.display = '';
+        } else {
+          const matches = card.textContent.toLowerCase().includes(filterVal);
+          card.style.display = matches ? '' : 'none';
+        }
+      });
+    });
+  });
+
+  // Handle cross-page deep links (?openCart=1, ?openBuilder=1, ?openTracking=1, ?openVoice=1, ?openCurator=1, ?inspect=id)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('openCart') === '1') {
+    setTimeout(() => openCart(), 80);
+  } else if (urlParams.get('openBuilder') === '1') {
+    setTimeout(() => {
+      builderOverlayEl?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      updateBuilderUI();
+    }, 80);
+  } else if (urlParams.get('openTracking') === '1') {
+    setTimeout(() => openTrackingModal(urlParams.get('order') || ''), 80);
+  } else if (urlParams.get('openVoice') === '1') {
+    setTimeout(() => openVoiceModal(), 80);
+  } else if (urlParams.get('openCurator') === '1') {
+    setTimeout(() => {
+      knapsackModal?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }, 80);
+  } else if (urlParams.get('inspect')) {
+    setTimeout(() => openItemDetail(urlParams.get('inspect')), 80);
+  }
 
 });

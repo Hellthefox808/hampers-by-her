@@ -12,6 +12,7 @@ const { authService } = require("../services/authService");
 const { adminService } = require("../services/adminService");
 const { logisticsCourierService } = require("../services/logisticsCourierService");
 const { notificationService } = require("../services/notificationService");
+const { inquiryService } = require("../services/inquiryService");
 const {
   AUDIO_CONFIG,
   DEFAULT_VAD_CONFIG,
@@ -1253,6 +1254,50 @@ router.get("/notifications/recent", requireStaffPermission("orders:read"), (req,
   res.json({
     success: true,
     data: notificationService.getRecentNotifications(limit)
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 16. STORYBOOK STATIONERY INQUIRIES & ARCHIVED EDITIONS
+// ═══════════════════════════════════════════════════════════
+
+router.get("/catalog/archives", (req, res) => {
+  const items = inquiryService.getArchivedEditions();
+  res.json({
+    success: true,
+    data: {
+      count: items.length,
+      items
+    }
+  });
+});
+
+router.post("/inquiries", checkoutRateLimiter, (req, res) => {
+  try {
+    const result = inquiryService.createInquiry(req.body);
+    res.status(201).json({
+      success: true,
+      data: result
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: {
+        code: "INQUIRY_VALIDATION_ERROR",
+        message: err.message
+      }
+    });
+  }
+});
+
+router.get("/inquiries", requireStaffPermission("orders:read"), (req, res) => {
+  const items = inquiryService.listInquiries({ limit: req.query.limit });
+  res.json({
+    success: true,
+    data: {
+      count: items.length,
+      items
+    }
   });
 });
 

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Available Hampers — Hampers by Her Sketchbook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles_ext.css">
+  <link rel="stylesheet" href="storybook.css">
+  <link rel="stylesheet" href="themes.css">
+  <script src="theme-switcher.js" defer></script>
+</head>
+<body class="sb-body">
+  <nav id="main-nav" class="nav sb-nav" aria-label="Main Navigation">
+    <div class="sb-nav__inner">
+      <a href="index.html" class="sb-brand">
+        <span class="sb-brand__emblem" aria-hidden="true">🎀</span>
+        <span class="sb-brand__wordmark">Hampers by Her</span>
+      </a>
+      <div class="sb-nav__links">
+        <a href="index.html" class="sb-nav__link">Home</a>
+        <a href="catalog.html" class="sb-nav__link sb-nav__link--active">Hampers</a>
+        <a href="moments.html" class="sb-nav__link">Happy moments</a>
+        <a href="how-it-works.html" class="sb-nav__link">How it works</a>
+        <a href="faq.html" class="sb-nav__link">FAQ</a>
+        <a href="contact.html" class="sb-nav__link">Visit &amp; contact</a>
+        <a href="index.html?openTracking=1" class="sb-nav__link">Track</a>
+      </div>
+      <div class="sb-nav__actions">
+        <a href="admin.html" class="nav__admin-badge sb-nav__admin-hide-sm">Studio OS ⚡</a>
+        <a href="index.html?openCart=1" class="nav__cart sb-nav__cart">Cart · 0</a>
+        <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her!" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp sb-btn--sm sb-nav__wa-desktop">WhatsApp us</a>
+        <button id="mobile-menu-btn" type="button" class="sb-menu-btn" aria-label="Open menu"><span>🎀</span><span>Menu</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="mobile-menu" class="mobile-menu sb-mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <div class="mobile-menu__overlay"></div>
+    <div class="mobile-menu__panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <p class="sb-mobile-menu__eyebrow">where to, friend?</p>
+        <button id="mobile-menu-close" class="mobile-menu__close" style="position:static;" aria-label="Close menu">&times;</button>
+      </div>
+      <a href="index.html" class="mobile-menu__link">Home</a>
+      <a href="catalog.html" class="mobile-menu__link">Available hampers</a>
+      <a href="index.html?openBuilder=1" class="mobile-menu__link">Build your own (11 steps)</a>
+      <a href="moments.html" class="mobile-menu__link">Happy moments ♡</a>
+      <a href="delivered.html" class="mobile-menu__link">Delivered archives</a>
+      <a href="how-it-works.html" class="mobile-menu__link">How it works</a>
+      <a href="faq.html" class="mobile-menu__link">FAQ corkboard</a>
+      <a href="contact.html" class="mobile-menu__link">Visit &amp; contact letter</a>
+      <a href="index.html?openVoice=1" class="mobile-menu__link">Voice Concierge (Eleanor)</a>
+      <a href="index.html?openTracking=1" class="mobile-menu__link">Track order</a>
+      <a href="lookbook.html" class="mobile-menu__link">Lookbook</a>
+      <a href="admin.html" class="mobile-menu__link">Studio OS &rarr;</a>
+      <div style="margin-top:20px;">
+        <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp" style="width:100%;">Chat on WhatsApp &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <main style="padding: 46px 0 84px;">
+    <div class="sb-container">
+      <div style="text-align:center; max-width:740px; margin:0 auto 30px;">
+        <div class="sb-eyebrow-wrap">
+          <span class="sb-eyebrow">from the atelier sketchbook</span>
+          <svg class="sb-wavy" viewBox="0 0 180 12" fill="none" aria-hidden="true">
+            <path d="M2 7 C22 1, 38 11, 58 6 C78 1, 96 11, 116 6 C136 1, 156 11, 178 5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h1 class="sb-section-title" style="font-size:clamp(2.3rem,5vw,3.8rem);">Available hampers</h1>
+        <p class="sb-section-sub" style="margin:10px auto 0;">Filter by occasion, dispatch speed, or gifting budget — then inspect every inclusion, choose your raw silk ribbon, or compose custom in 11 steps.</p>
+      </div>
+
+      <!-- Taped Multi-Row Filter Board -->
+      <section class="sb-filter-board" aria-label="Catalog Filters">
+        <span class="sb-tape" style="left:36px; transform:rotate(-8deg);" aria-hidden="true"></span>
+        <span class="sb-tape" style="left:auto; right:36px; transform:rotate(6deg);" aria-hidden="true"></span>
+
+        <div class="sb-filter-row">
+          <span class="sb-filter-row__label">occasion</span>
+          <button type="button" class="sb-filter-pill active" data-filter-group="occasion" data-filter-value="all">Everywhere</button>
+          <button type="button" class="sb-filter-pill" data-filter-group="occasion" data-filter-value="Wedding">Wedding</button>
+          <button type="button" class="sb-filter-pill" data-filter-group="occasion" data-filter-value="Corporate">Corporate</button>
+          <button type="button" class="sb-filter-pill" data-filter-group="occasion" data-filter-value="Festive">Festive</button>
+          <button type="button" class="sb-filter-pill" data-filter-group="occasion" data-filter-value="Anniversary">Anniversary</button>
+        </div>
+
+        <div class="sb-filter-row">
+          <span class="sb-filter-row__label">speed</span>
+          <button type="button" class="sb-filter-pill active" data-filter-group="speed" data-filter-value="all">All dispatches</button>
+          <button type="button" class="sb-filter-pill" data-filter-group="speed" data-filter-value="express24">24h Studio Dispatch</button>
+          <button type="button" class="sb-filter-pill" data-filter-group="speed" data-filter-value="metro1">1-Day Metro Express</button>
+        </div>
+
+        <div class="sb-filter-row">
+          <span class="sb-filter-row__label">budget</span>
+          <button type="button" class="sb-filter-pill active" data-filter-group="budget" data-filter-value="all">Any budget</button>
+          <button type="button" class="sb-filter-pill" data-filter-group="budget" data-filter-value="under2500">Under ₹2,500</button>
+          <button type="button" class="sb-filter-pill" data-filter-group="budget" data-filter-value="mid">₹2,500 – ₹3,500</button>
+          <button type="button" class="sb-filter-pill" data-filter-group="budget" data-filter-value="luxury">Luxury ₹3,500+</button>
+        </div>
+
+        <div class="sb-filter-row" style="justify-content:space-between; gap:12px;">
+          <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:220px;">
+            <span class="sb-filter-row__label">search</span>
+            <input type="text" id="sb-catalog-search" class="form-input" placeholder="brass, candle, rose, cocoa..." style="max-width:340px; border:2px solid var(--sb-ink); border-radius:999px; padding:7px 14px;">
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <strong id="sb-catalog-count" class="sb-script" style="font-size:1.35rem; color:var(--sb-accent);">4 hampers ready for gifting</strong>
+            <button type="button" id="sb-clear-filters" class="sb-btn sb-btn--cream sb-btn--sm" style="display:none;">Clear filters &times;</button>
+          </div>
+        </div>
+      </section>
+
+      <div id="sb-catalog-grid" class="sb-doors-grid"></div>
+
+      <!-- Bottom Already Delivered Strip -->
+      <div style="margin-top:44px; background:var(--sb-honey); border:2.5px solid var(--sb-ink); border-radius:22px; padding:26px 28px; box-shadow:0 5px 0 var(--sb-ink); display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
+        <div>
+          <span class="sb-script" style="font-size:1.45rem; color:var(--sb-accent);">already delivered</span>
+          <h2 style="font-family:var(--sb-font-display); font-size:1.6rem;">Browse archived &amp; past seasonal hampers</h2>
+          <p style="color:var(--text-secondary); font-size:0.94rem;">See limited editions that have found their homes — or request a custom remake via our 11-step Bespoke Builder.</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a href="delivered.html" class="sb-btn sb-btn--cream">See delivered wall &rarr;</a>
+          <a href="index.html?openBuilder=1" class="sb-btn sb-btn--primary">Build your own</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="sb-footer">
+    <div class="sb-container">
+      <div class="sb-footer__bottom" style="border-top:none; padding-top:0;">
+        <span>© 2026 Hampers by Her Studio · Okhla Craft Atelier, New Delhi</span>
+        <span class="sb-script" style="font-size:1.3rem; color:#F5D69E;">every hamper is a keepsake</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="mobile-bar">
+    <a href="catalog.html" class="mobile-bar__item mobile-bar__item--accent"><span>Hampers</span></a>
+    <a href="index.html?openBuilder=1" class="mobile-bar__item"><span>Build</span></a>
+    <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="mobile-bar__item"><span>WhatsApp</span></a>
+    <a href="index.html?openCart=1" class="mobile-bar__item"><span>Bag</span></a>
+  </div>
+
+  <div id="hbh-toast" class="hbh-toast" role="status" aria-live="polite">Updated</div>
+  <script src="storybook-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ Corkboard — Hampers by Her</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles_ext.css">
+  <link rel="stylesheet" href="storybook.css">
+  <link rel="stylesheet" href="themes.css">
+  <script src="theme-switcher.js" defer></script>
+</head>
+<body class="sb-body" style="background-color: var(--sb-dusk); background-image:none;">
+  <nav id="main-nav" class="nav sb-nav" aria-label="Main Navigation">
+    <div class="sb-nav__inner">
+      <a href="index.html" class="sb-brand"><span class="sb-brand__emblem">🎀</span><span class="sb-brand__wordmark">Hampers by Her</span></a>
+      <div class="sb-nav__links">
+        <a href="index.html" class="sb-nav__link">Home</a>
+        <a href="catalog.html" class="sb-nav__link">Hampers</a>
+        <a href="moments.html" class="sb-nav__link">Happy moments</a>
+        <a href="how-it-works.html" class="sb-nav__link">How it works</a>
+        <a href="faq.html" class="sb-nav__link sb-nav__link--active">FAQ</a>
+        <a href="contact.html" class="sb-nav__link">Visit &amp; contact</a>
+        <a href="index.html?openTracking=1" class="sb-nav__link">Track</a>
+      </div>
+      <div class="sb-nav__actions">
+        <a href="admin.html" class="nav__admin-badge sb-nav__admin-hide-sm">Studio OS ⚡</a>
+        <a href="index.html?openCart=1" class="nav__cart sb-nav__cart">Cart · 0</a>
+        <a href="https://wa.me/919876543210?text=Hi%20Hampers%20by%20Her!" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp sb-btn--sm sb-nav__wa-desktop">WhatsApp us</a>
+        <button id="mobile-menu-btn" type="button" class="sb-menu-btn" aria-label="Open menu"><span>🎀</span><span>Menu</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="mobile-menu" class="mobile-menu sb-mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <div class="mobile-menu__overlay"></div>
+    <div class="mobile-menu__panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <p class="sb-mobile-menu__eyebrow">where to, friend?</p>
+        <button id="mobile-menu-close" class="mobile-menu__close" style="position:static;" aria-label="Close menu">&times;</button>
+      </div>
+      <a href="index.html" class="mobile-menu__link">Home</a>
+      <a href="catalog.html" class="mobile-menu__link">Available hampers</a>
+      <a href="index.html?openBuilder=1" class="mobile-menu__link">Build your own (11 steps)</a>
+      <a href="moments.html" class="mobile-menu__link">Happy moments ♡</a>
+      <a href="delivered.html" class="mobile-menu__link">Delivered archives</a>
+      <a href="how-it-works.html" class="mobile-menu__link">How it works</a>
+      <a href="faq.html" class="mobile-menu__link">FAQ corkboard</a>
+      <a href="contact.html" class="mobile-menu__link">Visit &amp; contact letter</a>
+      <a href="index.html?openVoice=1" class="mobile-menu__link">Voice Concierge (Eleanor)</a>
+      <a href="index.html?openTracking=1" class="mobile-menu__link">Track order</a>
+      <a href="lookbook.html" class="mobile-menu__link">Lookbook</a>
+      <a href="admin.html" class="mobile-menu__link">Studio OS &rarr;</a>
+      <div style="margin-top:20px;">
+        <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="sb-btn sb-btn--whatsapp" style="width:100%;">Chat on WhatsApp &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <main style="padding:48px 0 84px;">
+    <div class="sb-container">
+      <div style="text-align:center; max-width:680px; margin:0 auto 28px; color:#FFF8EC;">
+        <span class="sb-script" style="font-size:1.55rem; color:#F5D69E;">pinned right on the studio corkboard</span>
+        <h1 class="sb-section-title" style="color:#FFF8EC; font-size:clamp(2.3rem,5vw,3.7rem);">Questions &amp; answers</h1>
+
+        <div style="display:inline-flex; align-items:center; gap:10px; margin-top:12px; background:rgba(255,253,248,0.14); border:2px solid rgba(245,214,158,0.65); border-radius:999px; padding:5px 14px;">
+          <span aria-hidden="true">🐻💭</span>
+          <span class="sb-script" style="font-size:1.25rem; color:#F5D69E;">wondering about delivery or custom seals?</span>
+        </div>
+
+        <div style="margin:20px auto 10px; max-width:540px;">
+          <label for="sb-faq-search" class="sb-script" style="font-size:1.3rem; color:#F5D69E; display:block; margin-bottom:6px;">sniff out a question</label>
+          <input type="text" id="sb-faq-search" class="form-input" placeholder="delivery, wax seal, corporate, Mumbai, Polaroid..." style="border:2.5px solid var(--sb-ink); border-radius:999px; box-shadow:0 3px 0 var(--sb-ink); padding:11px 18px; background:#FFFDF8; color:#2B180E;">
+        </div>
+        <p id="sb-faq-count" class="sb-script" style="font-size:1.3rem; color:#F5D69E;">9 notes on the board</p>
+      </div>
+
+      <section id="sb-faq-board" class="sb-corkboard" aria-label="FAQ Corkboard">
+        <div class="sb-notes-grid">
+          <article class="sb-sticky-note">
+            <span class="sb-pushpin" style="background:#D94F3D;" aria-hidden="true"></span>
+            <button type="button" class="sb-faq-trigger" aria-expanded="false" style="width:100%; text-align:left; font-family:var(--sb-font-display); font-weight:800; font-size:1.05rem;">How quickly do orders dispatch across India?</button>
+            <p class="sb-faq-answer" style="display:none; margin-top:10px; font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">Ready studio hampers ship within 24 hours (Mon–Sat). Metro PIN codes (Delhi-NCR, Mumbai, Bengaluru, Pune) arrive in 1–2 days; rest of India in 3–4 days.</p>
+          </article>
+
+          <article class="sb-sticky-note">
+            <span class="sb-pushpin" style="background:#1C7C54;" aria-hidden="true"></span>
+            <button type="button" class="sb-faq-trigger" aria-expanded="false" style="width:100%; text-align:left; font-family:var(--sb-font-display); font-weight:800; font-size:1.05rem;">Can I customise ribbon color, wax seal &amp; card note?</button>
+            <p class="sb-faq-answer" style="display:none; margin-top:10px; font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">Yes! Pick your silk ribbon and botanical wax crest right on any hamper page, or use our 11-step Bespoke Builder for custom monograms and Polaroid prints.</p>
+          </article>
+
+          <article class="sb-sticky-note">
+            <span class="sb-pushpin" style="background:#E6A82E;" aria-hidden="true"></span>
+            <button type="button" class="sb-faq-trigger" aria-expanded="false" style="width:100%; text-align:left; font-family:var(--sb-font-display); font-weight:800; font-size:1.05rem;">Do you handle bulk wedding &amp; corporate gifting?</button>
+            <p class="sb-faq-answer" style="display:none; margin-top:10px; font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">Yes — from 10 executive kits to 500 bridesmaid hampers, with GST invoicing, subtle embossed wax seals, and split multi-city dispatch.</p>
+          </article>
+
+          <article class="sb-sticky-note">
+            <span class="sb-pushpin" style="background:#4A1E29;" aria-hidden="true"></span>
+            <button type="button" class="sb-faq-trigger" aria-expanded="false" style="width:100%; text-align:left; font-family:var(--sb-font-display); font-weight:800; font-size:1.05rem;">Is delivery free above a certain order value?</button>
+            <p class="sb-faq-answer" style="display:none; margin-top:10px; font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">Express Pan-India air shipping is complimentary on all orders ₹2,999 and above; orders below ₹2,999 carry a flat ₹150 courier charge.</p>
+          </article>
+
+          <article class="sb-sticky-note">
+            <span class="sb-pushpin" style="background:#D94F3D;" aria-hidden="true"></span>
+            <button type="button" class="sb-faq-trigger" aria-expanded="false" style="width:100%; text-align:left; font-family:var(--sb-font-display); font-weight:800; font-size:1.05rem;">How do I check if my recipient's PIN code is serviceable?</button>
+            <p class="sb-faq-answer" style="display:none; margin-top:10px; font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">Enter any 6-digit Indian PIN code inside the hamper detail page or checkout step 1 for instant express air SLA confirmation.</p>
+          </article>
+
+          <article class="sb-sticky-note">
+            <span class="sb-pushpin" style="background:#1C7C54;" aria-hidden="true"></span>
+            <button type="button" class="sb-faq-trigger" aria-expanded="false" style="width:100%; text-align:left; font-family:var(--sb-font-display); font-weight:800; font-size:1.05rem;">Can I upload my own Polaroid photo inside the hamper?</button>
+            <p class="sb-faq-answer" style="display:none; margin-top:10px; font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">Yes — Step 10 of our Bespoke Builder lets you preview a Polaroid print with a custom handwritten-style caption slipped inside the lid.</p>
+          </article>
+
+          <article class="sb-sticky-note">
+            <span class="sb-pushpin" style="background:#E6A82E;" aria-hidden="true"></span>
+            <button type="button" class="sb-faq-trigger" aria-expanded="false" style="width:100%; text-align:left; font-family:var(--sb-font-display); font-weight:800; font-size:1.05rem;">Which payment methods do you accept?</button>
+            <p class="sb-faq-answer" style="display:none; margin-top:10px; font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">Instant UPI (GPay, PhonePe, Paytm), Visa/Mastercard/RuPay cards, Net Banking, and international NRI cards via Razorpay &amp; Stripe routing.</p>
+          </article>
+
+          <article class="sb-sticky-note">
+            <span class="sb-pushpin" style="background:#4A1E29;" aria-hidden="true"></span>
+            <button type="button" class="sb-faq-trigger" aria-expanded="false" style="width:100%; text-align:left; font-family:var(--sb-font-display); font-weight:800; font-size:1.05rem;">Are glass bottles and ceramic candles safely packed?</button>
+            <p class="sb-faq-answer" style="display:none; margin-top:10px; font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">Every fragile piece gets cushioned in natural cotton shred or honeycomb wrap and passes our mandatory studio QC photo inspection prior to sealing.</p>
+          </article>
+
+          <article class="sb-sticky-note">
+            <span class="sb-pushpin" style="background:#1C7C54;" aria-hidden="true"></span>
+            <button type="button" class="sb-faq-trigger" aria-expanded="false" style="width:100%; text-align:left; font-family:var(--sb-font-display); font-weight:800; font-size:1.05rem;">Can I ask a human stylist on WhatsApp before ordering?</button>
+            <p class="sb-faq-answer" style="display:none; margin-top:10px; font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">Always! Tap WhatsApp Us anywhere on the site or use Eleanor, our live Voice AI Concierge, for instant curation within your budget.</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="sb-footer">
+    <div class="sb-container">
+      <div class="sb-footer__bottom" style="border-top:none; padding-top:0;">
+        <span>© 2026 Hampers by Her Studio</span>
+        <a href="contact.html" class="sb-btn sb-btn--ghost-light sb-btn--sm">Still curious? Write us a letter &rarr;</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="mobile-bar">
+    <a href="catalog.html" class="mobile-bar__item"><span>Hampers</span></a>
+    <a href="index.html?openBuilder=1" class="mobile-bar__item"><span>Build</span></a>
+    <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" class="mobile-bar__item"><span>WhatsApp</span></a>
+    <a href="index.html?openCart=1" class="mobile-bar__item"><span>Bag</span></a>
+  </div>
+  <script src="storybook-ui.js"></script>
+</body>
+</html>

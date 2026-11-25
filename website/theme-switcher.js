@@ -13,7 +13,14 @@
       name: "Atelier Signature",
       mode: "Light",
       vibe: "Warm Creme · Deep Bordeaux · Champagne Gold",
-      swatches: ["#4A1E29", "#C89D42", "#FDFBF7", "#221E1F"]
+      swatches: ["#4A1E29", "#C89D42", "#FAF6EC", "#1C7C54"]
+    },
+    {
+      id: "craft-storybook",
+      name: "Craft Storybook",
+      mode: "Light",
+      vibe: "Warm Cream · Caramel Terracotta · Honey · Espresso",
+      swatches: ["#8F3F14", "#F5D69E", "#FAF6EC", "#2B180E"]
     },
     {
       id: "desert-rose",
@@ -140,6 +147,8 @@
     fab.id = "theme-studio-fab";
     fab.className = "theme-studio-fab";
     fab.setAttribute("aria-label", "Open Theme Factory Studio");
+    fab.setAttribute("aria-expanded", "false");
+    fab.setAttribute("aria-controls", "theme-studio-panel");
     fab.innerHTML = `<span>🎨</span><span id="theme-studio-active-label">${currentTheme.name}</span>`;
 
     const panel = document.createElement("div");
@@ -168,7 +177,7 @@
     panel.innerHTML = `
       <div class="theme-studio-head">
         <div>
-          <div style="font-family:'JetBrains Mono',monospace; font-size:0.65rem; text-transform:uppercase; opacity:0.7;">Theme Factory · 11 Presets</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:0.65rem; text-transform:uppercase; opacity:0.7;">Theme Factory · 12 Presets</div>
           <h3 class="theme-studio-title">Atelier Theme Studio</h3>
         </div>
         <button type="button" id="theme-studio-close" style="background:none; border:none; font-size:1.3rem; cursor:pointer; color:inherit;" aria-label="Close Theme Studio">&times;</button>
@@ -183,12 +192,18 @@
     document.body.appendChild(fab);
     document.body.appendChild(panel);
 
-    fab.addEventListener("click", () => {
-      panel.classList.toggle("open");
+    function setThemePanelOpen(isOpen) {
+      panel.classList.toggle("open", isOpen);
+      fab.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+
+    fab.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setThemePanelOpen(!panel.classList.contains("open"));
     });
 
     panel.querySelector("#theme-studio-close")?.addEventListener("click", () => {
-      panel.classList.remove("open");
+      setThemePanelOpen(false);
     });
 
     panel.querySelectorAll(".theme-swatch-card").forEach((btn) => {
@@ -198,9 +213,15 @@
       });
     });
 
+    document.addEventListener("click", (e) => {
+      if (panel.classList.contains("open") && !panel.contains(e.target) && !fab.contains(e.target)) {
+        setThemePanelOpen(false);
+      }
+    });
+
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && panel.classList.contains("open")) {
-        panel.classList.remove("open");
+        setThemePanelOpen(false);
       }
     });
   }

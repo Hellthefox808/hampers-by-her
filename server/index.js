@@ -122,8 +122,27 @@ app.get(["/architecture", "/architecture.html"], (req, res) => {
   res.sendFile(path.join(__dirname, "..", "docs", "diagrams", "hampers_by_her_architecture.html"));
 });
 
-// Static Web App Serving with Cache-Control Optimization
+// Clean extensionless routes for Storybook Storefront Multi-Page Views
 const websitePath = path.join(__dirname, "..", "website");
+const PAGE_ROUTES = [
+  ["/catalog", "catalog.html"],
+  ["/hamper", "hamper.html"],
+  ["/moments", "moments.html"],
+  ["/how-it-works", "how-it-works.html"],
+  ["/faq", "faq.html"],
+  ["/contact", "contact.html"],
+  ["/delivered", "delivered.html"],
+  ["/admin", "admin.html"],
+  ["/lookbook", "lookbook.html"]
+];
+for (const [routePath, fileName] of PAGE_ROUTES) {
+  app.get(routePath, (req, res) => {
+    res.setHeader("Cache-Control", "no-cache");
+    res.sendFile(path.join(websitePath, fileName));
+  });
+}
+
+// Static Web App Serving with Cache-Control Optimization
 app.use(express.static(websitePath, {
   maxAge: "1d",
   setHeaders: (res, filePath) => {

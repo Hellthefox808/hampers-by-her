@@ -266,6 +266,26 @@ paths:
       responses:
         '200':
           description: Dispatched notification logs
+
+  # ── Storybook Stationery Inquiries & Archived Editions ──
+  /catalog/archives:
+    get:
+      summary: List past limited-edition delivered hampers for ticket archive wall
+      responses:
+        '200':
+          description: Archived editions list
+
+  /inquiries:
+    post:
+      summary: Submit patron stationery contact or hamper enquiry with DSA lead scoring
+      responses:
+        '201':
+          description: Inquiry stored with priority tier and WhatsApp handoff link
+    get:
+      summary: Retrieve submitted stationery inquiries (staff RBAC protected)
+      responses:
+        '200':
+          description: Stored inquiries list
 components:
   schemas:
     ProductListResponse:
