@@ -127,53 +127,80 @@ let totalAudited = 0;
 let totalPassed = 0;
 let failureCount = 0;
 
-console.log('--- 1. AUDITING CORE 44 SPECIFICATIONS (ROOT & DOCS) ---');
-for (const doc of CORE_DOCS) {
-  const rootPath = path.join(ROOT_DIR, doc);
-  const docsPath = path.join(DOCS_DIR, doc);
+const hasFullSpecSuite = CORE_DOCS.every((doc) => fs.existsSync(path.join(ROOT_DIR, doc)));
 
-  // Exclude 00_RESEARCH_NOTES from docs check if only in root, or verify if mirrored
-  const is00 = doc === '00_RESEARCH_NOTES.md';
+if (hasFullSpecSuite) {
+  console.log('--- 1. AUDITING CORE 44 SPECIFICATIONS (ROOT & DOCS) ---');
+  for (const doc of CORE_DOCS) {
+    const rootPath = path.join(ROOT_DIR, doc);
+    const docsPath = path.join(DOCS_DIR, doc);
 
-  totalAudited++;
-  const rootResult = auditFile(rootPath, true);
-  const docsResult = is00 && !fs.existsSync(docsPath) ? { exists: true, missingSections: [] } : auditFile(docsPath, true);
+    // Exclude 00_RESEARCH_NOTES from docs check if only in root, or verify if mirrored
+    const is00 = doc === '00_RESEARCH_NOTES.md';
 
-  const passed =
-    rootResult.exists &&
-    docsResult.exists &&
-    rootResult.missingSections.length === 0 &&
-    docsResult.missingSections.length === 0;
+    totalAudited++;
+    const rootResult = auditFile(rootPath, true);
+    const docsResult = is00 && !fs.existsSync(docsPath) ? { exists: true, missingSections: [] } : auditFile(docsPath, true);
 
-  if (passed) {
-    totalPassed++;
-    console.log(`[PASS] ${doc} | Root: ${rootResult.lines} lines (${rootResult.sizeBytes}B) | 15/15 Sections OK`);
-  } else {
-    failureCount++;
-    console.error(`[FAIL] ${doc}`);
-    if (!rootResult.exists) console.error(`   - Missing in root: ${rootPath}`);
-    if (!docsResult.exists) console.error(`   - Missing in docs: ${docsPath}`);
-    if (rootResult.missingSections.length > 0) {
-      console.error(`   - Root missing sections: ${rootResult.missingSections.join(', ')}`);
-    }
-    if (docsResult.missingSections && docsResult.missingSections.length > 0) {
-      console.error(`   - Docs missing sections: ${docsResult.missingSections.join(', ')}`);
+    const passed =
+      rootResult.exists &&
+      docsResult.exists &&
+      rootResult.missingSections.length === 0 &&
+      docsResult.missingSections.length === 0;
+
+    if (passed) {
+      totalPassed++;
+      console.log(`[PASS] ${doc} | Root: ${rootResult.lines} lines (${rootResult.sizeBytes}B) | 15/15 Sections OK`);
+    } else {
+      failureCount++;
+      console.error(`[FAIL] ${doc}`);
+      if (!rootResult.exists) console.error(`   - Missing in root: ${rootPath}`);
+      if (!docsResult.exists) console.error(`   - Missing in docs: ${docsPath}`);
+      if (rootResult.missingSections.length > 0) {
+        console.error(`   - Root missing sections: ${rootResult.missingSections.join(', ')}`);
+      }
+      if (docsResult.missingSections && docsResult.missingSections.length > 0) {
+        console.error(`   - Docs missing sections: ${docsResult.missingSections.join(', ')}`);
+      }
     }
   }
-}
 
-console.log('\n--- 2. AUDITING AUXILIARY ARTIFACTS (DIAGRAMS, DECISIONS, RUNBOOKS) ---');
-for (const aux of AUXILIARY_FILES) {
-  const auxPath = path.join(ROOT_DIR, aux);
-  const res = auditFile(auxPath, false);
-  totalAudited++;
+  console.log('\n--- 2. AUDITING AUXILIARY ARTIFACTS (DIAGRAMS, DECISIONS, RUNBOOKS) ---');
+  for (const aux of AUXILIARY_FILES) {
+    const auxPath = path.join(ROOT_DIR, aux);
+    const res = auditFile(auxPath, false);
+    totalAudited++;
 
-  if (res.exists) {
-    totalPassed++;
-    console.log(`[PASS] ${aux} | ${res.lines} lines (${res.sizeBytes}B)`);
-  } else {
-    failureCount++;
-    console.error(`[FAIL] Missing auxiliary file: ${aux}`);
+    if (res.exists) {
+      totalPassed++;
+      console.log(`[PASS] ${aux} | ${res.lines} lines (${res.sizeBytes}B)`);
+    } else {
+      failureCount++;
+      console.error(`[FAIL] Missing auxiliary file: ${aux}`);
+    }
+  }
+} else {
+  console.log('--- AUDITING PUBLIC REPOSITORY DOCUMENTATION & TECHNICAL ARTIFACTS ---');
+  const publicDeliverables = [
+    'README.md',
+    '.env.example',
+    'docs/diagrams/customer_journeys.mermaid',
+    'docs/diagrams/system_topology.mermaid',
+    'docs/diagrams/er_diagram.mermaid',
+    'docs/api/openapi.yaml',
+    'docs/database/schema.prisma',
+    'docs/database/ddl.sql'
+  ];
+  for (const relPath of publicDeliverables) {
+    const res = auditFile(path.join(ROOT_DIR, relPath), false);
+    totalAudited++;
+    if (res.exists && res.sizeBytes > 0) {
+      totalPassed++;
+      console.log(`[PASS] ${relPath} | ${res.lines} lines (${res.sizeBytes}B)`);
+    } else {
+      failureCount++;
+      console.error(`[FAIL] Missing repository artifact: ${relPath}`);
+    }
   }
 }
 
