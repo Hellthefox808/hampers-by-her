@@ -1,7 +1,13 @@
-# CodeLens Graph local index
+# Local toolkits & environments
 .codelens/
 .nex/
 .kombai/
+.conda/
+.agent/
+.vscode/
+
+# Documentation excluded from GitHub remote
+*.md
 
 # Dependencies
 node_modules/
@@ -30,10 +36,8 @@ yarn-debug.log*
 yarn-error.log*
 logs/
 
-# Temporary data & caches
-data/*.tmp
-data/*.json.tmp
-data/inquiries_store.json
+# Local runtime & temporary data
+data/
 
 # OS & IDE
 .DS_Store

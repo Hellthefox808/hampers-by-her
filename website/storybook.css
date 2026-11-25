@@ -8,9 +8,11 @@
 :root {
   --sb-cream: #FAF6EC;
   --sb-cream-alt: #FDFBF5;
+  --sb-card-bg: #FFFDF8;
   --sb-honey: #F5E2C4;
   --sb-dusk: #5D2634;
   --sb-night: #251117;
+  --sb-footer-bg: #190B0F;
   --sb-ink: #2B180E;
   --sb-accent: #4A1E29;
   --sb-accent-hover: #38151E;
@@ -24,10 +26,15 @@
   --sb-font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+section[id],
+header[id] {
+  scroll-margin-top: 86px;
+}
+
 body.sb-body {
   background-color: var(--sb-cream);
   background-image:
-    radial-gradient(circle at 50% 12%, rgba(245, 214, 158, 0.38) 0%, transparent 48%),
+    radial-gradient(circle at 50% 12%, rgba(245, 214, 158, 0.34) 0%, transparent 48%),
     radial-gradient(at 15% 40%, rgba(200, 157, 66, 0.08) 0px, transparent 50%),
     radial-gradient(at 85% 75%, rgba(74, 30, 41, 0.05) 0px, transparent 50%);
   background-attachment: scroll;
@@ -124,7 +131,7 @@ body.sb-body {
 }
 
 .sb-btn--cream {
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   color: var(--sb-ink);
 }
 .sb-btn--cream:hover {
@@ -145,6 +152,15 @@ body.sb-body {
 .sb-btn--sm {
   padding: 8px 16px;
   font-size: 0.82rem;
+}
+
+.sb-body a:focus-visible,
+.sb-body button:focus-visible,
+.sb-body input:focus-visible,
+.sb-body select:focus-visible,
+.sb-body textarea:focus-visible {
+  outline: 2.5px solid var(--sb-accent);
+  outline-offset: 2px;
 }
 
 /* ═══════════════ STICKY SCALLOPED NAVBAR ═══════════════ */
@@ -243,35 +259,38 @@ body.sb-body {
 .sb-nav__links {
   display: none;
   align-items: center;
-  gap: 20px;
+  gap: 8px;
   flex-wrap: nowrap;
 }
 
 .sb-nav__link {
   position: relative;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-primary);
   text-decoration: none;
-  padding: 6px 2px;
+  padding: 6px 11px;
+  border-radius: 999px;
   white-space: nowrap;
-  transition: color 160ms ease;
+  transition: color 160ms ease, background-color 160ms ease;
 }
 
 .sb-nav__link:hover,
 .sb-nav__link--active {
   color: var(--sb-accent);
+  background: rgba(200, 157, 66, 0.14);
 }
 
 .sb-nav__link--active::after {
-  content: "❦";
+  content: "";
   position: absolute;
   left: 50%;
-  bottom: -11px;
+  bottom: 2px;
   transform: translateX(-50%);
-  font-size: 0.72rem;
-  color: var(--sb-accent);
-  line-height: 1;
+  width: 18px;
+  height: 2.5px;
+  border-radius: 999px;
+  background: var(--sb-accent);
 }
 
 .sb-nav__actions {
@@ -288,7 +307,7 @@ body.sb-body {
   padding: 7px 14px;
   border-radius: 999px;
   border: 2px solid var(--sb-ink);
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   color: var(--sb-ink);
   box-shadow: 0 2px 0 var(--sb-ink);
   font-family: 'JetBrains Mono', monospace;
@@ -304,7 +323,7 @@ body.sb-body {
   padding: 8px 14px;
   border-radius: 999px;
   border: 2px solid var(--sb-ink);
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   color: var(--sb-ink);
   box-shadow: 0 3px 0 var(--sb-ink);
   font-weight: 700;
@@ -336,7 +355,7 @@ body.sb-body {
   .sb-menu-btn { padding: 6px 10px; font-size: 0.78rem; gap: 4px; }
   .sb-nav__admin-hide-sm { display: none !important; }
   .sb-footer { padding-bottom: 120px; }
-  .sb-footer__bottom { padding-left: 48px; }
+  .sb-footer__bottom { padding-left: 0; justify-content: center; text-align: center; }
 }
 
 /* Full-Screen Warm-Gold Storybook Mobile Menu ("where to, friend?") */
@@ -418,13 +437,29 @@ body.sb-body {
 }
 
 .sb-search-pill.search-input-box {
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   border: 2px solid var(--sb-ink);
   box-shadow: 0 3px 0 var(--sb-ink);
   border-radius: 999px;
   padding: 6px 10px 6px 16px;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
+}
+
+.sb-search-pill.search-input-box input {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .sb-search-pill.search-input-box {
+    border-radius: 20px;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .sb-search-pill.search-input-box input {
+    flex: 1 1 180px;
+  }
 }
 
 .sb-hero__trust {
@@ -462,7 +497,7 @@ body.sb-body {
   border-radius: 999px 999px 0 0;
   border: 2.5px solid var(--sb-ink);
   border-bottom: none;
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   overflow: hidden;
   aspect-ratio: 4/4.8;
   box-shadow: 0 -4px 18px rgba(43, 24, 14, 0.08);
@@ -555,7 +590,8 @@ body.sb-body {
 .sb-hero-float-pill {
   position: relative;
   z-index: 7;
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
+  color: var(--sb-ink);
   border: 2px solid var(--sb-ink);
   border-radius: 999px;
   padding: 8px 18px;
@@ -564,11 +600,28 @@ body.sb-body {
   width: fit-content;
   max-width: calc(100% - 24px);
   margin: 0 auto 22px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
+  text-decoration: none;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+a.sb-hero-float-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--sb-ink);
+  background: var(--sb-honey);
+}
+
+.sb-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sb-whatsapp);
+  box-shadow: 0 0 0 3px rgba(28, 124, 84, 0.22);
+  flex-shrink: 0;
 }
 
 @media (max-width: 767px) {
@@ -624,7 +677,7 @@ body.sb-body {
   padding: 8px 16px;
   border-radius: 999px;
   border: 2px solid var(--sb-ink);
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   color: var(--sb-ink);
   box-shadow: 0 2px 0 var(--sb-ink);
   font-size: 0.84rem;
@@ -655,7 +708,7 @@ body.sb-body {
 }
 
 .sb-door-card.product-card {
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   border: 2px solid var(--sb-ink);
   border-radius: 22px;
   padding: 14px;
@@ -686,6 +739,11 @@ body.sb-body {
   height: 100%;
   object-fit: cover;
   border-radius: 0;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sb-door-card:hover .sb-arch-portal img.product-card__image {
+  transform: scale(1.045);
 }
 
 .sb-arch-portal .product-card__badge {
@@ -815,7 +873,7 @@ body.sb-body {
 }
 
 .sb-path-card {
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   border: 2.5px solid var(--sb-ink);
   border-radius: 22px;
   box-shadow: 0 5px 0 var(--sb-ink);
@@ -874,7 +932,7 @@ body.sb-body {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   border: 2px solid var(--sb-ink);
   border-radius: 16px;
   padding: 14px 18px;
@@ -1007,7 +1065,7 @@ body.sb-body {
 .sb-passport-spread {
   display: grid;
   grid-template-columns: 1fr 1.1fr;
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   border: 2px solid var(--sb-ink);
   border-radius: 18px;
   overflow: hidden;
@@ -1106,7 +1164,7 @@ body.sb-body {
 }
 
 .sb-speech-card {
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   color: var(--sb-ink);
   border: 2.5px solid var(--sb-ink);
   border-radius: 22px;
@@ -1132,7 +1190,7 @@ body.sb-body {
 
 .sb-polaroid {
   position: relative;
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   color: var(--sb-ink);
   border: 2px solid var(--sb-ink);
   border-radius: 6px;
@@ -1279,7 +1337,7 @@ body.sb-body {
 }
 
 .sb-footer {
-  background: #190B0F;
+  background: var(--sb-footer-bg);
   color: #FFF8EC;
   border-top: 2px solid rgba(255, 248, 236, 0.16);
   padding: 56px 0 28px;
@@ -1330,7 +1388,7 @@ body.sb-body {
 /* 1. Multi-Row Filter Board (catalog.html) */
 .sb-filter-board {
   position: relative;
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   border: 2.5px solid var(--sb-ink);
   border-radius: 20px;
   padding: 22px 24px;
@@ -1371,7 +1429,7 @@ body.sb-body {
 }
 
 .sb-notebook-frame {
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   border: 2.5px solid var(--sb-ink);
   border-radius: 20px;
   padding: 16px;
@@ -1380,7 +1438,7 @@ body.sb-body {
 
 .sb-passport-tag {
   position: relative;
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   border: 2.5px solid var(--sb-ink);
   border-radius: 22px;
   padding: 28px 26px;
@@ -1462,7 +1520,7 @@ body.sb-body {
 
 .sb-letter-card {
   position: relative;
-  background: #FFFDF9;
+  background: var(--sb-card-bg);
   color: var(--sb-ink);
   border: 2.5px solid var(--sb-ink);
   border-radius: 18px;
@@ -1538,7 +1596,7 @@ body.sb-body {
 }
 
 .sb-ticket {
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   color: var(--sb-ink);
   border: 2.5px solid var(--sb-ink);
   border-radius: 18px;
@@ -1630,13 +1688,13 @@ body.sb-body {
 /* Back-to-top Atelier Seal */
 .sb-back-top {
   position: fixed;
-  right: 24px;
-  bottom: 92px;
+  right: 30px;
+  bottom: 94px;
   z-index: 940;
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #FFFDF8;
+  background: var(--sb-card-bg);
   color: var(--sb-ink);
   border: 2px solid var(--sb-ink);
   box-shadow: 0 3px 0 var(--sb-ink);
@@ -1648,7 +1706,10 @@ body.sb-body {
   opacity: 0;
   pointer-events: none;
   transform: translateY(10px);
-  transition: opacity 220ms ease, transform 220ms ease;
+  transition: opacity 220ms ease, transform 220ms ease, background-color 160ms ease;
+}
+.sb-back-top:hover {
+  background: var(--sb-honey);
 }
 .sb-back-top.visible {
   opacity: 1;
@@ -1662,7 +1723,7 @@ body.sb-body {
 /* ── Mobile Sticky Bottom Action Bar ── */
 @media (max-width: 767px) {
   .sb-body .mobile-bar {
-    background: #FFFDF8;
+    background: var(--sb-card-bg);
     border: 2.5px solid var(--sb-ink);
     box-shadow: 0 4px 0 var(--sb-ink), 0 12px 28px rgba(43, 24, 14, 0.22);
     border-radius: 28px;
@@ -1672,11 +1733,15 @@ body.sb-body {
   }
 }
 
-/* Ensure floating WhatsApp button does not crowd desktop footer/theme switcher */
+/* Ensure floating WhatsApp button & popover stack cleanly on desktop */
 .sb-body .wa-floating-btn {
   bottom: 24px;
   right: 24px;
   border: 2px solid var(--sb-ink);
   box-shadow: 0 3px 0 var(--sb-ink);
   background: var(--sb-whatsapp);
+}
+.sb-body .wa-popover {
+  bottom: 92px;
+  right: 24px;
 }

@@ -18,9 +18,11 @@
   --theme-nav-scrolled: rgba(255, 255, 255, 0.90);
   --sb-cream: #FAF6EC;
   --sb-cream-alt: #FDFBF5;
+  --sb-card-bg: #FFFDF8;
   --sb-honey: #F5E2C4;
   --sb-dusk: #5D2634;
   --sb-night: #251117;
+  --sb-footer-bg: #190B0F;
   --sb-ink: #2B180E;
   --sb-accent: #4A1E29;
   --sb-accent-hover: #38151E;
@@ -90,6 +92,17 @@
   --theme-header-accent: #E8D5C4;
   --theme-nav-bg: rgba(249, 242, 236, 0.80);
   --theme-nav-scrolled: rgba(255, 253, 251, 0.92);
+  --sb-cream: #F9F2EC;
+  --sb-cream-alt: #FDF9F6;
+  --sb-card-bg: #FFFDFB;
+  --sb-honey: #E8D5C4;
+  --sb-dusk: #5D2E46;
+  --sb-night: #321625;
+  --sb-footer-bg: #26101C;
+  --sb-ink: #3B1D2C;
+  --sb-accent: #5D2E46;
+  --sb-accent-hover: #461F33;
+  --sb-nav-bg: rgba(249, 242, 236, 0.96);
 }
 
 /* ── 2. GOLDEN HOUR (Mustard #f4a900, Terracotta #c1666b, Warm Beige #d4b896, Chocolate #4a403a) ── */
@@ -114,6 +127,17 @@
   --theme-header-accent: #F4A900;
   --theme-nav-bg: rgba(251, 245, 236, 0.82);
   --theme-nav-scrolled: rgba(255, 253, 249, 0.94);
+  --sb-cream: #FBF5EC;
+  --sb-cream-alt: #FEFBF5;
+  --sb-card-bg: #FFFDF9;
+  --sb-honey: #F5E6C8;
+  --sb-dusk: #4A403A;
+  --sb-night: #2E2622;
+  --sb-footer-bg: #221C18;
+  --sb-ink: #332B26;
+  --sb-accent: #C1666B;
+  --sb-accent-hover: #9E4B50;
+  --sb-nav-bg: rgba(251, 245, 236, 0.96);
 }
 
 /* ── 3. BOTANICAL GARDEN (Fern Green #4a7c59, Marigold #f9a620, Terracotta #b7472a, Cream #f5f3ed) ── */
@@ -138,6 +162,17 @@
   --theme-header-accent: #F9A620;
   --theme-nav-bg: rgba(245, 243, 237, 0.82);
   --theme-nav-scrolled: rgba(255, 255, 255, 0.94);
+  --sb-cream: #F5F3ED;
+  --sb-cream-alt: #FAF9F5;
+  --sb-card-bg: #FFFFFF;
+  --sb-honey: #E9E6DC;
+  --sb-dusk: #2E563A;
+  --sb-night: #1A3122;
+  --sb-footer-bg: #122217;
+  --sb-ink: #1F3325;
+  --sb-accent: #4A7C59;
+  --sb-accent-hover: #376044;
+  --sb-nav-bg: rgba(245, 243, 237, 0.96);
 }
 
 /* ── 4. FOREST CANOPY (Forest Green #2d4a2b, Sage #7d8471, Olive #a4ac86, Ivory #faf9f6) ── */
@@ -162,6 +197,17 @@
   --theme-header-accent: #D7DEC2;
   --theme-nav-bg: rgba(250, 249, 246, 0.82);
   --theme-nav-scrolled: rgba(255, 255, 255, 0.94);
+  --sb-cream: #FAF9F6;
+  --sb-cream-alt: #FFFFFF;
+  --sb-card-bg: #FFFFFF;
+  --sb-honey: #EEF0E8;
+  --sb-dusk: #2D4A2B;
+  --sb-night: #182917;
+  --sb-footer-bg: #111D10;
+  --sb-ink: #1E331D;
+  --sb-accent: #2D4A2B;
+  --sb-accent-hover: #1E331D;
+  --sb-nav-bg: rgba(250, 249, 246, 0.96);
 }
 
 /* ── 5. SUNSET BOULEVARD (Burnt Orange #e76f51, Coral #f4a261, Warm Sand #e9c46a, Deep Purple/Teal #264653) ── */
@@ -186,6 +232,17 @@
   --theme-header-accent: #E9C46A;
   --theme-nav-bg: rgba(252, 248, 242, 0.82);
   --theme-nav-scrolled: rgba(255, 255, 255, 0.94);
+  --sb-cream: #FCF8F2;
+  --sb-cream-alt: #FFFFFF;
+  --sb-card-bg: #FFFFFF;
+  --sb-honey: #F7ECDC;
+  --sb-dusk: #264653;
+  --sb-night: #193039;
+  --sb-footer-bg: #112229;
+  --sb-ink: #264653;
+  --sb-accent: #C85538;
+  --sb-accent-hover: #A94127;
+  --sb-nav-bg: rgba(252, 248, 242, 0.96);
 }
 
 /* ── 6. ARCTIC FROST (Ice Blue #d4e4f7, Steel Blue #4a6fa5, Silver #c0c0c0, Crisp White #fafafa) ── */
@@ -210,6 +267,17 @@
   --theme-header-accent: #D4E4F7;
   --theme-nav-bg: rgba(250, 250, 250, 0.84);
   --theme-nav-scrolled: rgba(255, 255, 255, 0.95);
+  --sb-cream: #FAFAFA;
+  --sb-cream-alt: #FFFFFF;
+  --sb-card-bg: #FFFFFF;
+  --sb-honey: #E9F1FB;
+  --sb-dusk: #2A466F;
+  --sb-night: #172740;
+  --sb-footer-bg: #0F1A2C;
+  --sb-ink: #1B2D45;
+  --sb-accent: #3A5C8E;
+  --sb-accent-hover: #2A466F;
+  --sb-nav-bg: rgba(250, 250, 250, 0.96);
 }
 
 /* ── 7. MODERN MINIMALIST (Charcoal #36454f, Slate Gray #708090, Light Gray #d3d3d3, White #ffffff) ── */
@@ -234,6 +302,17 @@
   --theme-header-accent: #FFFFFF;
   --theme-nav-bg: rgba(255, 255, 255, 0.84);
   --theme-nav-scrolled: rgba(255, 255, 255, 0.96);
+  --sb-cream: #F7F8F9;
+  --sb-cream-alt: #FFFFFF;
+  --sb-card-bg: #FFFFFF;
+  --sb-honey: #EAECEE;
+  --sb-dusk: #36454F;
+  --sb-night: #1F2930;
+  --sb-footer-bg: #151C21;
+  --sb-ink: #1F2930;
+  --sb-accent: #36454F;
+  --sb-accent-hover: #243038;
+  --sb-nav-bg: rgba(255, 255, 255, 0.96);
 }
 
 /* ── 8. OCEAN DEPTHS — DARK (Deep Navy #1a2332, Teal #2d8b8b, Seafoam #a8dadc, Cream #f1faee) ── */
@@ -448,9 +527,11 @@
 [data-theme="ocean-depths"] {
   --sb-cream: #141C28;
   --sb-cream-alt: #1A2332;
+  --sb-card-bg: #1E2A3C;
   --sb-honey: #1E2D3E;
   --sb-dusk: #162B38;
   --sb-night: #0E1520;
+  --sb-footer-bg: #0A1018;
   --sb-ink: #A8DADC;
   --sb-accent: #2D8B8B;
   --sb-accent-hover: #237070;
@@ -459,24 +540,101 @@
 [data-theme="midnight-galaxy"] {
   --sb-cream: #1E142D;
   --sb-cream-alt: #2B1E3E;
+  --sb-card-bg: #2E2144;
   --sb-honey: #31234A;
   --sb-dusk: #271A3C;
   --sb-night: #140D20;
+  --sb-footer-bg: #0F091A;
   --sb-ink: #E6E6FA;
-  --sb-accent: #6D62B8;
-  --sb-accent-hover: #584D9F;
+  --sb-accent: #7E72CC;
+  --sb-accent-hover: #6559B3;
   --sb-nav-bg: rgba(30, 20, 45, 0.95);
 }
 [data-theme="tech-innovation"] {
   --sb-cream: #141417;
   --sb-cream-alt: #1E1E22;
+  --sb-card-bg: #232329;
   --sb-honey: #22232B;
   --sb-dusk: #1B1D26;
   --sb-night: #0B0C10;
+  --sb-footer-bg: #07080B;
   --sb-ink: #00FFFF;
   --sb-accent: #0066FF;
   --sb-accent-hover: #0052CC;
   --sb-nav-bg: rgba(20, 20, 23, 0.95);
+}
+
+[data-theme="ocean-depths"] .sb-btn--cream,
+[data-theme="midnight-galaxy"] .sb-btn--cream,
+[data-theme="tech-innovation"] .sb-btn--cream,
+[data-theme="ocean-depths"] .sb-filter-pill,
+[data-theme="midnight-galaxy"] .sb-filter-pill,
+[data-theme="tech-innovation"] .sb-filter-pill,
+[data-theme="ocean-depths"] .sb-hero-float-pill,
+[data-theme="midnight-galaxy"] .sb-hero-float-pill,
+[data-theme="tech-innovation"] .sb-hero-float-pill,
+[data-theme="ocean-depths"] .sb-back-top,
+[data-theme="midnight-galaxy"] .sb-back-top,
+[data-theme="tech-innovation"] .sb-back-top,
+[data-theme="ocean-depths"] .sb-arch-more,
+[data-theme="midnight-galaxy"] .sb-arch-more,
+[data-theme="tech-innovation"] .sb-arch-more {
+  background: var(--sb-card-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-accent) !important;
+}
+
+[data-theme="ocean-depths"] .sb-filter-pill.active,
+[data-theme="midnight-galaxy"] .sb-filter-pill.active,
+[data-theme="tech-innovation"] .sb-filter-pill.active,
+[data-theme="ocean-depths"] .sb-btn--primary,
+[data-theme="midnight-galaxy"] .sb-btn--primary,
+[data-theme="tech-innovation"] .sb-btn--primary {
+  background: var(--sb-accent) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="ocean-depths"] .sb-ticket__stub,
+[data-theme="midnight-galaxy"] .sb-ticket__stub,
+[data-theme="tech-innovation"] .sb-ticket__stub,
+[data-theme="ocean-depths"] .inquiry-message-box,
+[data-theme="midnight-galaxy"] .inquiry-message-box,
+[data-theme="tech-innovation"] .inquiry-message-box,
+[data-theme="ocean-depths"] .calligraphy-quote,
+[data-theme="midnight-galaxy"] .calligraphy-quote,
+[data-theme="tech-innovation"] .calligraphy-quote {
+  background: var(--bg-surface-soft) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+[data-theme="ocean-depths"] .sb-nav__link,
+[data-theme="midnight-galaxy"] .sb-nav__link,
+[data-theme="tech-innovation"] .sb-nav__link,
+[data-theme="ocean-depths"] .sb-polaroid__caption,
+[data-theme="midnight-galaxy"] .sb-polaroid__caption,
+[data-theme="tech-innovation"] .sb-polaroid__caption,
+[data-theme="ocean-depths"] .sb-faq-trigger,
+[data-theme="midnight-galaxy"] .sb-faq-trigger,
+[data-theme="tech-innovation"] .sb-faq-trigger,
+[data-theme="ocean-depths"] .sb-inline-input,
+[data-theme="midnight-galaxy"] .sb-inline-input,
+[data-theme="tech-innovation"] .sb-inline-input,
+[data-theme="ocean-depths"] .sb-lined-textarea,
+[data-theme="midnight-galaxy"] .sb-lined-textarea,
+[data-theme="tech-innovation"] .sb-lined-textarea {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="ocean-depths"] .auth-gate-card,
+[data-theme="midnight-galaxy"] .auth-gate-card,
+[data-theme="tech-innovation"] .auth-gate-card,
+[data-theme="ocean-depths"] .modal-box,
+[data-theme="midnight-galaxy"] .modal-box,
+[data-theme="tech-innovation"] .modal-box {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-accent) !important;
 }
 
 [data-theme="ocean-depths"] .btn--bordeaux,
@@ -663,16 +821,20 @@
 
 @media (max-width: 767px) {
   .theme-studio-fab {
-    bottom: 92px;
+    bottom: 76px;
     left: 12px;
-    padding: 8px 10px;
-    font-size: 0.72rem;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    font-size: 0.92rem;
   }
   .theme-studio-fab #theme-studio-active-label {
     display: none;
   }
   .theme-studio-panel {
-    bottom: 138px;
+    bottom: 126px;
     left: 12px;
     width: calc(100vw - 24px);
   }

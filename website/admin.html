@@ -101,7 +101,52 @@
     }
     
     /* Order Cards */
-    .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 20px; }
+    .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 20px; }
+    .inquiry-message-box {
+      font-size: 0.88rem;
+      color: #334155;
+      background: #FAF6EC;
+      border: 1px solid #E5D5BA;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 0 0 12px;
+    }
+    .admin-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #E5D5BA;
+      padding-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .admin-search-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .admin-container :focus-visible, .admin-header :focus-visible, .auth-gate-card :focus-visible {
+      outline: 2.5px solid #C89D42;
+      outline-offset: 2px;
+    }
+    @media (max-width: 767px) {
+      .admin-header {
+        padding: 14px 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .admin-header > div:last-child {
+        flex-wrap: wrap;
+        gap: 8px !important;
+      }
+      .admin-container {
+        margin: 18px auto;
+        padding: 0 14px 80px;
+      }
+      .metrics-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+      }
+      .admin-search-controls { width: 100%; }
+      #order-search-box { width: 100% !important; flex: 1; }
+    }
     .order-card {
       background: rgba(255, 255, 255, 0.72);
       backdrop-filter: blur(24px) saturate(180%);
@@ -259,7 +304,7 @@
     </div>
 
     <!-- Pipeline Tabs & Search Bar -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #E5D5BA; padding-bottom:12px; flex-wrap:wrap; gap:12px;">
+    <div class="admin-toolbar">
       <div class="pipeline-tabs" style="margin-bottom:0; border-bottom:none; padding-bottom:0;">
         <button class="tab-btn active" data-tab="ALL" onclick="filterStudioOrders('ALL')">All Orders (<span id="cnt-all">0</span>)</button>
         <button class="tab-btn" data-tab="IN_PRODUCTION" onclick="filterStudioOrders('IN_PRODUCTION')">Pending QC (<span id="cnt-qc">0</span>)</button>
@@ -268,7 +313,7 @@
         <button class="tab-btn" data-tab="DISPATCHED" onclick="filterStudioOrders('DISPATCHED')">Dispatched via Air (<span id="cnt-disp">0</span>)</button>
         <button class="tab-btn" data-tab="INQUIRIES" onclick="showStationeryInquiries()">Stationery Letters (<span id="cnt-inq">0</span>)</button>
       </div>
-      <div style="display:flex; gap:10px; align-items:center;">
+      <div class="admin-search-controls">
         <input type="text" id="order-search-box" placeholder="Search order #, patron, phone..." oninput="handleOrderSearch(this.value)" style="padding:8px 14px; border:1px solid #E5D5BA; border-radius:20px; font-size:13px; font-family:'Plus Jakarta Sans',sans-serif; width:250px; outline:none; background:#FFFFFF;">
         <button class="tab-btn" onclick="loadStudioDashboard()" title="Refresh live atelier orders" style="display:flex; align-items:center; gap:6px;">↻ Refresh</button>
       </div>
@@ -353,7 +398,7 @@
                     <span style="background:${badgeColor}; color:#FFFFFF; font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:999px; white-space:nowrap;">${safeEsc(tier)} · Score ${safeEsc(inq.leadScore ?? 65)}</span>
                   </div>
                   <div style="font-size:0.84rem; font-weight:600; color:#4A1E29; margin-bottom:6px;">Hamper: ${safeEsc(inq.hamperTitle || "General / Bespoke Hamper")}</div>
-                  <p style="font-size:0.88rem; color:#334155; background:#FAF6EC; border:1px solid #E5D5BA; border-radius:8px; padding:10px 12px; margin:0 0 12px;">${safeEsc(inq.message || "")}</p>
+                  <p class="inquiry-message-box">${safeEsc(inq.message || "")}</p>
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
                     <span style="font-size:0.75rem; color:#64748B;">${safeEsc(dateLabel)}</span>
                     <a href="${safeEsc(buildWaReplyUrl(inq))}" target="_blank" rel="noreferrer" class="btn btn--primary btn--sm" style="background:#1C7C54; color:#FFFFFF; text-decoration:none; padding:6px 12px; border-radius:6px; font-size:0.82rem; font-weight:600;">Reply on WhatsApp &rarr;</a>
