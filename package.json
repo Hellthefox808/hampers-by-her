@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "Artisanal Luxury Gifting Digital Commerce Ecosystem & Atelier OS",
   "private": true,
+  "type": "commonjs",
   "main": "server.js",
   "engines": {
     "node": ">=20"
