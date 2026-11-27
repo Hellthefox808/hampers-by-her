@@ -93,14 +93,14 @@ function tokenizeSearchIntent(rawQuery) {
   let maxPricePaise = null;
   let minPricePaise = null;
 
-  // Max price matches: "under 4000", "below 5k", "less than 3000", "budget 2500"
-  const maxPriceMatch = normalized.match(/(?:under|below|less\s+than|budget|within|up\s+to)\s*(?:rs\.?|inr|₹)?\s*(\d+(?:\.\d+)?k?)/);
+  // Max price matches: "under 4000", "under ₹4,000", "below 5k", "less than 3000", "budget 2500"
+  const maxPriceMatch = normalized.match(/(?:under|below|less\s+than|budget|within|up\s+to)\s*(?:rs\.?|inr|₹)?\s*(\d[\d,]*(?:\.\d+)?k?)/);
   if (maxPriceMatch) {
     maxPricePaise = parsePriceToPaise(maxPriceMatch[1]);
   }
 
-  // Min price matches: "above 2000", "more than 1500", "starting from 3k"
-  const minPriceMatch = normalized.match(/(?:above|over|more\s+than|starting\s+from|min)\s*(?:rs\.?|inr|₹)?\s*(\d+(?:\.\d+)?k?)/);
+  // Min price matches: "above 2000", "above ₹1,500", "more than 1500", "starting from 3k"
+  const minPriceMatch = normalized.match(/(?:above|over|more\s+than|starting\s+from|min)\s*(?:rs\.?|inr|₹)?\s*(\d[\d,]*(?:\.\d+)?k?)/);
   if (minPriceMatch) {
     minPricePaise = parsePriceToPaise(minPriceMatch[1]);
   }

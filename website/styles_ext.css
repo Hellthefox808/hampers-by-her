@@ -976,6 +976,16 @@
   display: flex;
   gap: 10px;
   justify-content: center;
+  flex-wrap: wrap;
+}
+.voice-interim-bar {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  color: #1C7C54;
+  background: rgba(28, 124, 84, 0.08);
+  border: 1px dashed rgba(28, 124, 84, 0.35);
+  border-radius: 10px;
+  padding: 6px 12px;
 }
 .voice-text-row {
   display: flex;

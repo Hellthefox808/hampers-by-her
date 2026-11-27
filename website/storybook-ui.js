@@ -976,8 +976,27 @@
     }
   }
 
+  function initFloatingVoiceLauncher() {
+    if (document.getElementById("sb-voice-fab")) return;
+    const hasWa = Boolean(document.getElementById("wa-floating-btn"));
+    const modalBtn = document.getElementById("btn-open-voice-concierge");
+    const fab = document.createElement(modalBtn ? "button" : "a");
+    if (modalBtn) {
+      fab.type = "button";
+      fab.addEventListener("click", () => modalBtn.click());
+    } else {
+      fab.href = "index.html?openVoice=1";
+    }
+    fab.id = "sb-voice-fab";
+    fab.className = "sb-voice-fab" + (hasWa ? " sb-voice-fab--with-wa" : "");
+    fab.setAttribute("aria-label", "Open Eleanor Voice AI Concierge");
+    fab.innerHTML = `<span aria-hidden="true">🎙️</span><span>Voice AI</span>`;
+    document.body.appendChild(fab);
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     initSubpageNavAndCart();
+    initFloatingVoiceLauncher();
     initScrollProgressAndBackTop();
     initWhatsAppPhoneReveal();
     initArchedDoors();

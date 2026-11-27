@@ -2253,7 +2253,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ═══════════════════════════════════════════════════════════
-  // 12. REAL-TIME VOICE AI CONCIERGE (WebSocket PCM16 + Web Audio + Barge-In)
+  // 12. REAL-TIME VOICE AI CONCIERGE (WebSocket PCM16 + Web Speech STT/TTS + REST Fallback)
   // ═══════════════════════════════════════════════════════════
   const VOICE_SAMPLE_RATE_HZ = 16000;
   const VOICE_MAX_RECONNECT_ATTEMPTS = 5;
@@ -2265,9 +2265,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const voiceStatusPill = document.getElementById('voice-status-pill');
   const voiceTtfaPill = document.getElementById('voice-ttfa-pill');
   const voiceTranscriptFeed = document.getElementById('voice-transcript-feed');
+  const voiceInterimBar = document.getElementById('voice-interim-bar');
   const voiceActionCards = document.getElementById('voice-action-cards');
   const voiceMicBtn = document.getElementById('voice-mic-btn');
   const voiceInterruptBtn = document.getElementById('voice-interrupt-btn');
+  const voiceSpeakerBtn = document.getElementById('voice-speaker-btn');
   const voiceTextInput = document.getElementById('voice-text-input');
   const voiceSendBtn = document.getElementById('voice-send-btn');
 
@@ -2279,9 +2281,17 @@ document.addEventListener('DOMContentLoaded', () => {
   let voiceNextPlayTime = 0;
   let voiceScheduledSources = [];
   let voiceMicStream = null;
+  let voiceMicCtx = null;
   let voiceMicProcessor = null;
+  let voiceSpeechRec = null;
+  let voiceSpeechFinalText = '';
   let voiceMicActive = false;
   let voiceActiveAssistantEl = null;
+  let voiceSpeakerEnabled = true;
+  let voiceCloudSttActive = false;
+  let voiceCloudTtsActive = false;
+  let voiceTurnWatchdogTimer = null;
+  let voiceTurnHandled = false;
 
   function setVoiceStatus(label, orbState = '') {
     if (voiceStatusPill) voiceStatusPill.textContent = label;
@@ -2289,6 +2299,30 @@ document.addEventListener('DOMContentLoaded', () => {
       voiceOrb.classList.remove('listening', 'speaking');
       if (orbState) voiceOrb.classList.add(orbState);
     }
+  }
+
+  function setVoiceInterim(text) {
+    if (!voiceInterimBar) return;
+    const clean = String(text || '').trim();
+    if (!clean) {
+      voiceInterimBar.style.display = 'none';
+      voiceInterimBar.textContent = '';
+    } else {
+      voiceInterimBar.style.display = 'block';
+      voiceInterimBar.textContent = `🎙️ Hearing: "${clean}"`;
+    }
+  }
+
+  function ensureVoiceAudioUnlocked() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx && !voiceAudioCtx) {
+        voiceAudioCtx = new AudioCtx({ sampleRate: VOICE_SAMPLE_RATE_HZ });
+      }
+      if (voiceAudioCtx && voiceAudioCtx.state === 'suspended') {
+        voiceAudioCtx.resume().catch(() => {});
+      }
+    } catch {}
   }
 
   function appendVoiceMessage(role, text) {
@@ -2315,9 +2349,67 @@ document.addEventListener('DOMContentLoaded', () => {
     if (voiceAudioCtx) {
       voiceNextPlayTime = voiceAudioCtx.currentTime;
     }
+    try {
+      if (typeof window.speechSynthesis !== 'undefined') {
+        window.speechSynthesis.cancel();
+      }
+    } catch {}
+  }
+
+  function formatForSpeech(text) {
+    return String(text || '')
+      .replace(/₹\s*([\d,]+)/g, '$1 rupees')
+      .replace(/['"`*#]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function speakEleanorText(text) {
+    if (!voiceSpeakerEnabled || voiceCloudTtsActive) return;
+    if (typeof window.speechSynthesis === 'undefined' || typeof window.SpeechSynthesisUtterance === 'undefined') {
+      return;
+    }
+    const cleanSpeech = formatForSpeech(text);
+    if (!cleanSpeech) return;
+
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(cleanSpeech);
+      const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+      const preferred =
+        voices.find(v => /en-IN/i.test(v.lang)) ||
+        voices.find(v => /en-GB|en-US/i.test(v.lang) && /female|samantha|victoria|karen|zira|aria|jenny|natural/i.test(v.name)) ||
+        voices.find(v => /^en/i.test(v.lang));
+      if (preferred) utterance.voice = preferred;
+      utterance.lang = preferred?.lang || 'en-IN';
+      utterance.rate = 1.02;
+      utterance.pitch = 1.03;
+
+      setVoiceStatus('Eleanor Speaking', 'speaking');
+      if (voiceInterruptBtn) voiceInterruptBtn.disabled = false;
+
+      utterance.onend = () => {
+        if (voiceModal?.classList.contains('open')) {
+          setVoiceStatus(voiceWs && voiceWs.readyState === WebSocket.OPEN ? 'Connected · Ready' : 'Voice Ready (HTTPS)');
+          if (voiceInterruptBtn) voiceInterruptBtn.disabled = true;
+        }
+      };
+      utterance.onerror = () => {
+        if (voiceModal?.classList.contains('open')) {
+          setVoiceStatus(voiceWs && voiceWs.readyState === WebSocket.OPEN ? 'Connected · Ready' : 'Voice Ready (HTTPS)');
+          if (voiceInterruptBtn) voiceInterruptBtn.disabled = true;
+        }
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } catch {}
   }
 
   function playPcm16Base64Chunk(base64Delta, sampleRate = VOICE_SAMPLE_RATE_HZ) {
+    // Only synthesize WebAudio PCM16 frames when cloud TTS audio is active OR browser SpeechSynthesis is unavailable
+    const hasWebSpeechTts = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance !== 'undefined';
+    if (!voiceSpeakerEnabled || (!voiceCloudTtsActive && hasWebSpeechTts)) return;
+
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -2362,11 +2454,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function stopVoiceMicrophone() {
+  function stopVoiceMicrophone(opts = {}) {
+    const commitFallback = Boolean(opts.commitFallback);
     voiceMicActive = false;
+    setVoiceInterim('');
+
+    if (voiceSpeechRec) {
+      const rec = voiceSpeechRec;
+      voiceSpeechRec = null;
+      try {
+        if (commitFallback) rec.stop();
+        else rec.abort();
+      } catch {}
+    }
     if (voiceMicProcessor) {
       try { voiceMicProcessor.disconnect(); } catch {}
       voiceMicProcessor = null;
+    }
+    if (voiceMicCtx) {
+      try { voiceMicCtx.close().catch(() => {}); } catch {}
+      voiceMicCtx = null;
     }
     if (voiceMicStream) {
       voiceMicStream.getTracks().forEach(t => t.stop());
@@ -2375,16 +2482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (voiceMicBtn) voiceMicBtn.textContent = '🎙️ Start Live Mic';
   }
 
-  async function toggleVoiceMicrophone() {
-    if (voiceMicActive) {
-      stopVoiceMicrophone();
-      if (voiceWs && voiceWs.readyState === WebSocket.OPEN) {
-        voiceWs.send(JSON.stringify({ type: 'input_audio_buffer.commit' }));
-      }
-      setVoiceStatus('Connected · Ready');
-      return;
-    }
-
+  async function startPcm16MicFallback() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       appendVoiceMessage('system', 'Microphone API unavailable in this browser. Use quick prompts or text input below.');
       return;
@@ -2394,13 +2492,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
       voiceMicStream = stream;
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      const micCtx = new AudioCtx({ sampleRate: VOICE_SAMPLE_RATE_HZ });
-      const source = micCtx.createMediaStreamSource(stream);
-      const processor = micCtx.createScriptProcessor(4096, 1, 1);
+      voiceMicCtx = new AudioCtx({ sampleRate: VOICE_SAMPLE_RATE_HZ });
+      const source = voiceMicCtx.createMediaStreamSource(stream);
+      const processor = voiceMicCtx.createScriptProcessor(4096, 1, 1);
       voiceMicProcessor = processor;
       voiceMicActive = true;
       if (voiceMicBtn) voiceMicBtn.textContent = '⏹ Stop & Commit Turn';
-      setVoiceStatus('Listening (Live Mic)', 'listening');
+      setVoiceStatus('Listening (PCM16 Mic)', 'listening');
 
       processor.onaudioprocess = (ev) => {
         if (!voiceMicActive || !voiceWs || voiceWs.readyState !== WebSocket.OPEN) return;
@@ -2414,10 +2512,100 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       source.connect(processor);
-      processor.connect(micCtx.destination);
+      processor.connect(voiceMicCtx.destination);
     } catch {
-      appendVoiceMessage('system', 'Microphone permission declined — you can still converse via prompts or text.');
+      appendVoiceMessage('system', 'Microphone permission declined — you can converse anytime via quick prompts or typing below.');
+      setVoiceStatus(voiceWs && voiceWs.readyState === WebSocket.OPEN ? 'Connected · Ready' : 'Voice Ready (HTTPS)');
     }
+  }
+
+  async function toggleVoiceMicrophone() {
+    ensureVoiceAudioUnlocked();
+
+    if (voiceMicActive) {
+      const spokenDraft = voiceSpeechFinalText.trim();
+      const usingWsPcm = Boolean(voiceMicStream);
+      stopVoiceMicrophone({ commitFallback: Boolean(voiceSpeechRec) });
+      voiceSpeechFinalText = '';
+
+      if (spokenDraft) {
+        sendVoicePrompt(spokenDraft);
+        return;
+      }
+      if (usingWsPcm && voiceWs && voiceWs.readyState === WebSocket.OPEN) {
+        voiceWs.send(JSON.stringify({ type: 'input_audio_buffer.commit' }));
+      }
+      setVoiceStatus(voiceWs && voiceWs.readyState === WebSocket.OPEN ? 'Connected · Ready' : 'Voice Ready (HTTPS)');
+      return;
+    }
+
+    clearAudioPlaybackQueue();
+    const SpeechRecCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    // Prefer native browser SpeechRecognition when cloud STT key isn't active so real spoken words transcribe accurately
+    if (SpeechRecCtor && !voiceCloudSttActive) {
+      try {
+        voiceSpeechFinalText = '';
+        const rec = new SpeechRecCtor();
+        rec.lang = 'en-IN';
+        rec.interimResults = true;
+        rec.continuous = false;
+        rec.maxAlternatives = 1;
+        voiceSpeechRec = rec;
+        voiceMicActive = true;
+        if (voiceMicBtn) voiceMicBtn.textContent = '⏹ Stop Listening';
+        setVoiceStatus('Listening (Speak Now)', 'listening');
+
+        rec.onresult = (event) => {
+          let interim = '';
+          let finalChunk = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const txt = event.results[i][0]?.transcript || '';
+            if (event.results[i].isFinal) finalChunk += ` ${txt}`;
+            else interim += ` ${txt}`;
+          }
+          if (finalChunk.trim()) {
+            voiceSpeechFinalText = `${voiceSpeechFinalText} ${finalChunk}`.trim();
+          }
+          setVoiceInterim(voiceSpeechFinalText || interim);
+        };
+
+        rec.onend = () => {
+          const captured = voiceSpeechFinalText.trim();
+          voiceSpeechFinalText = '';
+          voiceSpeechRec = null;
+          voiceMicActive = false;
+          setVoiceInterim('');
+          if (voiceMicBtn) voiceMicBtn.textContent = '🎙️ Start Live Mic';
+          if (captured) {
+            sendVoicePrompt(captured);
+          } else if (voiceModal?.classList.contains('open')) {
+            setVoiceStatus(voiceWs && voiceWs.readyState === WebSocket.OPEN ? 'Connected · Ready' : 'Voice Ready (HTTPS)');
+          }
+        };
+
+        rec.onerror = (err) => {
+          const code = err?.error || '';
+          stopVoiceMicrophone();
+          voiceSpeechFinalText = '';
+          if (code === 'not-allowed' || code === 'service-not-allowed') {
+            appendVoiceMessage('system', 'Microphone access blocked by browser. You can type or tap any prompt chip below.');
+          } else if (code === 'no-speech') {
+            appendVoiceMessage('system', 'No speech detected — tap Start Live Mic and speak close to your mic, or type below.');
+          } else {
+            // Fall back to PCM16 AudioContext stream if Web Speech service is unavailable offline
+            startPcm16MicFallback();
+          }
+        };
+
+        rec.start();
+        return;
+      } catch {
+        stopVoiceMicrophone();
+      }
+    }
+
+    await startPcm16MicFallback();
   }
 
   function renderVoiceActionCards(cards) {
@@ -2435,8 +2623,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="font-size: 0.76rem; color: var(--text-secondary);">${escapeHtml(c.subtitle || '')}</div>
         </div>
         <div style="text-align: right; flex-shrink: 0;">
-          <div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--color-bordeaux); margin-bottom: 6px;">₹ ${escapeHtml(c.priceRupees || '')}</div>
-          <button type="button" class="btn btn--bordeaux btn--xs voice-inspect-card-btn" data-product-id="${escapeHtml(c.id || '')}">Inspect &rarr;</button>
+          <div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--color-bordeaux); margin-bottom: 6px;">${c.id === 'dictate_card_apply' ? escapeHtml(c.priceRupees || 'Calligraphy') : `₹ ${escapeHtml(c.priceRupees || '')}`}</div>
+          <button type="button" class="btn btn--bordeaux btn--xs voice-inspect-card-btn" data-product-id="${escapeHtml(c.id || '')}" data-card-note="${escapeHtml(c.cardMessage || '')}">${c.id === 'dictate_card_apply' ? 'Apply Note &rarr;' : 'Inspect &rarr;'}</button>
         </div>
       </div>
     `).join('');
@@ -2444,8 +2632,17 @@ document.addEventListener('DOMContentLoaded', () => {
     voiceActionCards.querySelectorAll('.voice-inspect-card-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const pid = btn.getAttribute('data-product-id');
+        const noteText = btn.getAttribute('data-card-note');
         closeVoiceModal();
-        if (pid === 'bespoke_knapsack_curated') {
+        if (pid === 'dictate_card_apply' && noteText) {
+          builderOverlayEl?.classList.add('open');
+          document.body.style.overflow = 'hidden';
+          builderState.cardMessage = noteText;
+          if (cardMsgTextarea) cardMsgTextarea.value = noteText;
+          builderState.currentStep = 9;
+          updateBuilderUI();
+          showToast('Calligraphy card note loaded into Step 9!');
+        } else if (pid === 'bespoke_knapsack_curated') {
           btnOpenKnapsack?.click();
         } else if (pid && typeof openItemDetail === 'function') {
           openItemDetail(pid);
@@ -2454,6 +2651,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     });
+  }
+
+  function applyVoiceTurnResult(turn) {
+    if (!turn) return;
+    if (turn.providers) {
+      voiceCloudSttActive = Boolean(turn.providers.realCloudStt);
+      voiceCloudTtsActive = Boolean(turn.providers.realCloudTts);
+    }
+    if (Array.isArray(turn.actionCards) && turn.actionCards.length > 0) {
+      renderVoiceActionCards(turn.actionCards);
+    } else if (voiceActionCards) {
+      voiceActionCards.style.display = 'none';
+    }
+    if (turn.transcript) {
+      appendVoiceMessage('assistant', turn.transcript);
+      speakEleanorText(turn.transcript);
+    }
+    if (voiceTtfaPill && turn.metrics?.ttfaMs !== undefined && turn.metrics?.ttfaMs !== null) {
+      voiceTtfaPill.textContent = `TTFA: ${turn.metrics.ttfaMs}ms`;
+    }
+    if (!voiceSpeakerEnabled || !('speechSynthesis' in window)) {
+      setVoiceStatus('Voice Ready (HTTPS)');
+      if (voiceInterruptBtn) voiceInterruptBtn.disabled = true;
+    }
+  }
+
+  async function sendVoiceTurnHttp(clean) {
+    try {
+      const res = await fetch('/api/v1/voice/turn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: clean })
+      });
+      const json = await res.json();
+      if (res.ok && json.success && json.data) {
+        applyVoiceTurnResult(json.data);
+      } else {
+        setVoiceStatus('Voice Error');
+        appendVoiceMessage('system', json.detail || json.error || `Unable to reach Eleanor (HTTP ${res.status}).`);
+      }
+    } catch {
+      setVoiceStatus('Offline');
+      appendVoiceMessage('system', 'Network error contacting Eleanor. Please check your connection and retry.');
+    }
   }
 
   function connectVoiceWebSocket() {
@@ -2466,7 +2707,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       voiceWs = new WebSocket(wsUrl);
     } catch {
-      setVoiceStatus('Connection Failed');
+      setVoiceStatus('Voice Ready (HTTPS)');
       return;
     }
 
@@ -2479,10 +2720,16 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'session.created') {
+          if (msg.session?.providers) {
+            voiceCloudSttActive = Boolean(msg.session.providers.realCloudStt);
+            voiceCloudTtsActive = Boolean(msg.session.providers.realCloudTts);
+          }
           setVoiceStatus('Connected · Server-VAD Ready');
         } else if (msg.type === 'input_audio_buffer.speech_started') {
           setVoiceStatus('Listening...', 'listening');
         } else if (msg.type === 'response.audio_transcript.delta') {
+          voiceTurnHandled = true;
+          if (voiceTurnWatchdogTimer) { clearTimeout(voiceTurnWatchdogTimer); voiceTurnWatchdogTimer = null; }
           setVoiceStatus('Eleanor Speaking', 'speaking');
           if (voiceInterruptBtn) voiceInterruptBtn.disabled = false;
           if (!voiceActiveAssistantEl) {
@@ -2493,11 +2740,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (voiceTranscriptFeed) voiceTranscriptFeed.scrollTop = voiceTranscriptFeed.scrollHeight;
           }
         } else if (msg.type === 'response.audio_transcript.done') {
+          voiceTurnHandled = true;
+          if (voiceTurnWatchdogTimer) { clearTimeout(voiceTurnWatchdogTimer); voiceTurnWatchdogTimer = null; }
           if (voiceActiveAssistantEl) {
             const body = voiceActiveAssistantEl.querySelector('.voice-msg-body');
             if (body) body.textContent = msg.transcript || '';
           } else if (msg.transcript) {
             appendVoiceMessage('assistant', msg.transcript);
+          }
+          if (msg.transcript) {
+            speakEleanorText(msg.transcript);
           }
           voiceActiveAssistantEl = null;
         } else if (msg.type === 'response.audio.delta' && msg.delta) {
@@ -2505,8 +2757,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (msg.type === 'response.action_cards') {
           renderVoiceActionCards(msg.cards);
         } else if (msg.type === 'response.done') {
-          setVoiceStatus('Connected · Ready');
-          if (voiceInterruptBtn) voiceInterruptBtn.disabled = true;
+          if (!voiceSpeakerEnabled || voiceCloudTtsActive || !window.speechSynthesis?.speaking) {
+            setVoiceStatus('Connected · Ready');
+            if (voiceInterruptBtn) voiceInterruptBtn.disabled = true;
+          }
           if (voiceTtfaPill && msg.response?.metrics?.ttfaMs !== undefined && msg.response.metrics.ttfaMs !== null) {
             voiceTtfaPill.textContent = `TTFA: ${msg.response.metrics.ttfaMs}ms`;
           }
@@ -2525,7 +2779,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     voiceWs.onerror = () => {
-      setVoiceStatus('Reconnecting...');
+      setVoiceStatus('Voice Ready (HTTPS)');
     };
 
     voiceWs.onclose = () => {
@@ -2533,38 +2787,69 @@ document.addEventListener('DOMContentLoaded', () => {
       if (voiceShouldStayConnected && voiceReconnectAttempt < VOICE_MAX_RECONNECT_ATTEMPTS) {
         const delayMs = Math.min(8000, 500 * Math.pow(2, voiceReconnectAttempt));
         voiceReconnectAttempt++;
-        setVoiceStatus(`Reconnecting (${voiceReconnectAttempt}/${VOICE_MAX_RECONNECT_ATTEMPTS})...`);
+        setVoiceStatus('Voice Ready (HTTPS)');
         voiceReconnectTimer = setTimeout(connectVoiceWebSocket, delayMs);
       } else if (voiceShouldStayConnected) {
-        setVoiceStatus('Disconnected');
+        setVoiceStatus('Voice Ready (HTTPS)');
       }
     };
+  }
+
+  function dispatchVoiceTurn(clean, waitAttempt = 0) {
+    if (voiceWs && voiceWs.readyState === WebSocket.OPEN) {
+      voiceTurnHandled = false;
+      if (voiceTurnWatchdogTimer) clearTimeout(voiceTurnWatchdogTimer);
+      voiceTurnWatchdogTimer = setTimeout(() => {
+        if (!voiceTurnHandled) {
+          sendVoiceTurnHttp(clean);
+        }
+      }, 4000);
+
+      voiceWs.send(JSON.stringify({
+        type: 'conversation.item.create',
+        item: { type: 'message', role: 'user', content: clean }
+      }));
+      return;
+    }
+
+    if (voiceWs && voiceWs.readyState === WebSocket.CONNECTING && waitAttempt < 2) {
+      setTimeout(() => dispatchVoiceTurn(clean, waitAttempt + 1), 300);
+      return;
+    }
+
+    sendVoiceTurnHttp(clean);
   }
 
   function sendVoicePrompt(promptText) {
     const clean = String(promptText || '').trim();
     if (!clean) return;
-    if (!voiceWs || voiceWs.readyState !== WebSocket.OPEN) {
-      connectVoiceWebSocket();
-      setTimeout(() => sendVoicePrompt(clean), 350);
-      return;
-    }
+    ensureVoiceAudioUnlocked();
     clearAudioPlaybackQueue();
     voiceActiveAssistantEl = null;
     appendVoiceMessage('user', clean);
     setVoiceStatus('Thinking...');
     if (voiceInterruptBtn) voiceInterruptBtn.disabled = false;
-    voiceWs.send(JSON.stringify({
-      type: 'conversation.item.create',
-      item: { type: 'message', role: 'user', content: clean }
-    }));
+    if (!voiceWs || voiceWs.readyState === WebSocket.CLOSED || voiceWs.readyState === WebSocket.CLOSING) {
+      connectVoiceWebSocket();
+    }
+    dispatchVoiceTurn(clean, 0);
   }
 
   function openVoiceModal() {
     voiceShouldStayConnected = true;
     voiceModal?.classList.add('open');
     document.body.style.overflow = 'hidden';
+    ensureVoiceAudioUnlocked();
     connectVoiceWebSocket();
+    fetch('/api/v1/voice/status')
+      .then(r => (r.ok ? r.json() : null))
+      .then(json => {
+        if (json?.success && json.data?.capabilities) {
+          voiceCloudSttActive = Boolean(json.data.capabilities.realCloudStt);
+          voiceCloudTtsActive = Boolean(json.data.capabilities.realCloudTts);
+        }
+      })
+      .catch(() => {});
   }
 
   function closeVoiceModal() {
@@ -2572,6 +2857,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (voiceReconnectTimer) {
       clearTimeout(voiceReconnectTimer);
       voiceReconnectTimer = null;
+    }
+    if (voiceTurnWatchdogTimer) {
+      clearTimeout(voiceTurnWatchdogTimer);
+      voiceTurnWatchdogTimer = null;
     }
     stopVoiceMicrophone();
     clearAudioPlaybackQueue();
@@ -2591,8 +2880,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   voiceCloseBtn?.addEventListener('click', closeVoiceModal);
   voiceMicBtn?.addEventListener('click', toggleVoiceMicrophone);
+  voiceSpeakerBtn?.addEventListener('click', () => {
+    voiceSpeakerEnabled = !voiceSpeakerEnabled;
+    if (!voiceSpeakerEnabled) clearAudioPlaybackQueue();
+    voiceSpeakerBtn.setAttribute('aria-pressed', voiceSpeakerEnabled ? 'true' : 'false');
+    voiceSpeakerBtn.textContent = voiceSpeakerEnabled ? '🔊 Voice On' : '🔇 Muted';
+  });
   voiceInterruptBtn?.addEventListener('click', () => {
     clearAudioPlaybackQueue();
+    setVoiceStatus('Interrupted (Barge-In)');
+    voiceInterruptBtn.disabled = true;
     if (voiceWs && voiceWs.readyState === WebSocket.OPEN) {
       voiceWs.send(JSON.stringify({ type: 'response.cancel' }));
     }

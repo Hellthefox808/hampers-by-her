@@ -359,4 +359,51 @@ describe("VoiceAiGateway - Real-Time Streaming, Providers & Domain Orchestration
     assert.ok(engineJava.includes("CHUNK_BYTES"), "Android AudioStreamEngine must use derived CHUNK_BYTES constant");
     assert.ok(engineJava.includes("playbackQueue.clear()"), "Android AudioStreamEngine must clear playbackQueue on barge-in");
   });
+
+  it("HTTPS POST /api/v1/voice/turn handles comma-formatted budgets (₹4,000), card dictation, keyword lookup, and validates inputs", async () => {
+    const badRes = await fetch(`http://localhost:${serverPort}/api/v1/voice/turn`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "   " })
+    });
+    assert.strictEqual(badRes.status, 400);
+
+    const weddingRes = await fetch(`http://localhost:${serverPort}/api/v1/voice/turn`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "I need a luxury wedding hamper under ₹4,000" })
+    });
+    assert.strictEqual(weddingRes.status, 200);
+    const weddingJson = await weddingRes.json();
+    assert.strictEqual(weddingJson.success, true);
+    assert.ok(weddingJson.data.transcript.includes("Vows & Vines"));
+    assert.ok(!weddingJson.data.transcript.includes("under ₹4 "), "Comma-formatted budget ₹4,000 must never truncate to ₹4");
+    assert.strictEqual(weddingJson.data.actionCards[0].id, "prod_wedding_vows");
+    assert.strictEqual(weddingJson.data.metrics.mode, "rest_turn");
+
+    const customRes = await fetch(`http://localhost:${serverPort}/api/v1/voice/turn`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "Curate a custom hamper under ₹3,500" })
+    });
+    assert.strictEqual(customRes.status, 200);
+    const customJson = await customRes.json();
+    assert.strictEqual(customJson.data.functionCall.name, "curateBudgetHamper");
+    assert.ok(customJson.data.functionCall.result.totalPricePaise <= 350000);
+
+    const cardRes = await fetch(`http://localhost:${serverPort}/api/v1/voice/turn`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "Dictate a card saying Warmest wishes for your wedding" })
+    });
+    assert.strictEqual(cardRes.status, 200);
+    const cardJson = await cardRes.json();
+    assert.strictEqual(cardJson.data.actionCards[0].id, "dictate_card_apply");
+    assert.ok(cardJson.data.actionCards[0].cardMessage.includes("Warmest wishes"));
+
+    const indexHtml = fs.readFileSync(path.join(__dirname, "..", "website", "index.html"), "utf8");
+    const scriptJs = fs.readFileSync(path.join(__dirname, "..", "website", "script.js"), "utf8");
+    assert.ok(indexHtml.includes('id="voice-interim-bar"') && indexHtml.includes('id="voice-speaker-btn"'));
+    assert.ok(scriptJs.includes("webkitSpeechRecognition") && scriptJs.includes("speechSynthesis") && scriptJs.includes("/api/v1/voice/turn"));
+  });
 });

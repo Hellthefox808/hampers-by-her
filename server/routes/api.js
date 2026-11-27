@@ -665,12 +665,28 @@ router.post("/whatsapp/simulate-incoming", asyncHandler(async (req, res) => {
 }));
 
 // ═══════════════════════════════════════════════════════════
-// 7. VOICE AI STATUS, VAPI WEBHOOK & LIVEKIT WEBRTC TOKENS
+// 7. VOICE AI STATUS, REST TURN FALLBACK, VAPI WEBHOOK & LIVEKIT WEBRTC TOKENS
 // ═══════════════════════════════════════════════════════════
 
+const { VoiceAiGateway } = require("../services/voiceAiGateway");
+let fallbackVoiceGateway = null;
+function getVoiceGateway(req) {
+  if (req.app?.locals?.voiceGateway) return req.app.locals.voiceGateway;
+  if (!fallbackVoiceGateway) {
+    fallbackVoiceGateway = new VoiceAiGateway(null);
+  }
+  return fallbackVoiceGateway;
+}
+
 router.get("/voice/status", (req, res) => {
-  const gateway = req.app?.locals?.voiceGateway;
+  const gateway = getVoiceGateway(req);
   const liveTelemetry = gateway ? gateway.getMetrics() : null;
+  const providerCaps = gateway
+    ? gateway.getProviderCapabilities()
+    : {
+        realCloudStt: Boolean(process.env.OPENAI_API_KEY || process.env.DEEPGRAM_API_KEY),
+        realCloudTts: Boolean(process.env.OPENAI_API_KEY || process.env.ELEVENLABS_API_KEY)
+      };
 
   res.json({
     success: true,
@@ -678,6 +694,7 @@ router.get("/voice/status", (req, res) => {
       status: "operational",
       version: "2.0.0",
       websocketEndpoint: "/api/v1/voice/stream",
+      httpTurnEndpoint: "/api/v1/voice/turn",
       vapiWebhookEndpoint: "/api/v1/voice/vapi/webhook",
       livekitTokenEndpoint: "/api/v1/voice/livekit/token",
       supportedFormats: [AUDIO_CONFIG.ENCODING],
@@ -691,6 +708,11 @@ router.get("/voice/status", (req, res) => {
         clientChunkBytes: AUDIO_CONFIG.CLIENT_CHUNK_BYTES
       },
       vadDefaults: { ...DEFAULT_VAD_CONFIG },
+      capabilities: {
+        ...providerCaps,
+        httpTurnEndpoint: "/api/v1/voice/turn",
+        browserWebSpeechFallback: true
+      },
       activeEngine: process.env.OPENAI_API_KEY
         ? "openai_realtime"
         : (process.env.DEEPGRAM_API_KEY && process.env.ELEVENLABS_API_KEY
@@ -715,6 +737,33 @@ router.get("/voice/status", (req, res) => {
   });
 });
 
+// HTTPS REST Voice Turn Endpoint (zero-hang fallback when WebSocket is throttled or unavailable)
+router.post("/voice/turn", asyncHandler(async (req, res) => {
+  const rawMessage = req.body?.message ?? req.body?.transcript ?? req.body?.prompt;
+  const cleanMessage = String(rawMessage || "").trim();
+  if (!cleanMessage) {
+    return res.status(400).json({
+      success: false,
+      error: "VOICE_TURN_EMPTY",
+      detail: "A non-empty message, transcript, or prompt string is required."
+    });
+  }
+  if (cleanMessage.length > 1000) {
+    return res.status(400).json({
+      success: false,
+      error: "VOICE_TURN_TOO_LONG",
+      detail: "Voice turn prompt must be 1000 characters or fewer."
+    });
+  }
+
+  const gateway = getVoiceGateway(req);
+  const turn = await gateway.runHttpTurn(cleanMessage);
+  res.json({
+    success: true,
+    data: turn
+  });
+}));
+
 // Vapi Voice Agent Webhook (function-call tool dispatch + end-of-call-report archival)
 router.post("/voice/vapi/webhook", (req, res) => {
   const providedSecret = req.headers["x-vapi-secret"];
@@ -725,9 +774,9 @@ router.post("/voice/vapi/webhook", (req, res) => {
     });
   }
 
-  const gateway = req.app?.locals?.voiceGateway;
+  const gateway = getVoiceGateway(req);
   const payload = req.body || {};
-  const msg = payload.message || payload;
+  const msg = payload.message || payload.payload || payload;
   const eventType = msg.type || payload.type;
 
   if (eventType === "function-call") {
@@ -762,7 +811,7 @@ router.post("/voice/vapi/webhook", (req, res) => {
 
 // Staff-protected access to archived Vapi / Voice AI call transcripts
 router.get("/voice/vapi/transcripts", requireStaffPermission("orders:read"), (req, res) => {
-  const gateway = req.app?.locals?.voiceGateway;
+  const gateway = getVoiceGateway(req);
   const transcripts = gateway ? gateway.getTranscripts() : [];
   res.json({
     success: true,

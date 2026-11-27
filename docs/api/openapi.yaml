@@ -323,6 +323,15 @@ paths:
         '200':
           description: Voice concierge configuration and live session metrics
 
+  /voice/turn:
+    post:
+      summary: Execute a single synchronous Eleanor Voice Concierge turn over HTTPS (REST fallback for WebSocket clients)
+      responses:
+        '200':
+          description: Voice concierge transcript, action cards, executed domain tool result, and TTFA metrics
+        '400':
+          description: Invalid or empty voice turn payload
+
   /voice/vapi/webhook:
     post:
       summary: Handle Vapi assistant tool calls and end-of-call transcript webhooks

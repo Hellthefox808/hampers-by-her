@@ -133,7 +133,16 @@ class VoiceAiGateway {
       lastTtfaMs: null,
       ttfaSamplesMs: []
     };
-    this.initWebSocketServer();
+    if (this.server) {
+      this.initWebSocketServer();
+    }
+  }
+
+  getProviderCapabilities() {
+    return {
+      realCloudStt: Boolean(process.env.OPENAI_API_KEY || process.env.DEEPGRAM_API_KEY),
+      realCloudTts: Boolean(process.env.OPENAI_API_KEY || process.env.ELEVENLABS_API_KEY)
+    };
   }
 
   initWebSocketServer() {
@@ -172,6 +181,7 @@ class VoiceAiGateway {
       this.metrics.totalSessions++;
 
       // Send session initialization ack with explicit audio & VAD contract
+      const providerCaps = this.getProviderCapabilities();
       this.sendJson(ws, {
         type: "session.created",
         session: {
@@ -182,6 +192,7 @@ class VoiceAiGateway {
           channels: AUDIO_CONFIG.CHANNELS,
           frame_duration_ms: AUDIO_CONFIG.FRAME_DURATION_MS,
           voice: process.env.OPENAI_REALTIME_VOICE || "atelier_eleanor",
+          providers: providerCaps,
           turn_detection: {
             type: session.vad.type,
             threshold: session.vad.threshold,
@@ -612,13 +623,15 @@ class VoiceAiGateway {
     const text = String(userText || "").toLowerCase();
     const intent = tokenizeSearchIntent(userText || "");
     const maxBudgetRupees = intent.maxPricePaise ? Math.round(Number(intent.maxPricePaise) / 100) : null;
+    const rawBudgetMatch = String(userText || "").match(/\b([1-9]\d{0,2}(?:,\d{3})+|[1-9]\d{3,4})\b/);
+    const numericMentionedRupees = rawBudgetMatch ? Number(rawBudgetMatch[1].replace(/,/g, "")) : null;
 
     // 1. Bespoke Budget Knapsack Curation ("custom", "curate", "build" + budget)
     if (
-      (text.includes("custom") || text.includes("curate") || text.includes("build") || text.includes("knapsack")) &&
-      (maxBudgetRupees || /\b[1-9]\d{3,4}\b/.test(text))
+      (text.includes("custom") || text.includes("curate") || text.includes("build") || text.includes("knapsack") || text.includes("compose")) &&
+      (maxBudgetRupees || numericMentionedRupees)
     ) {
-      const parsedNum = maxBudgetRupees || Number((text.match(/\b([1-9]\d{3,4})\b/) || [])[1]) || 3500;
+      const parsedNum = maxBudgetRupees || numericMentionedRupees || 3500;
       const bundle = this.executeToolCall("curateBudgetHamper", { budgetRupees: parsedNum });
       const totalInr = Math.round(bundle.totalPricePaise / 100).toLocaleString("en-IN");
       const itemNames = bundle.items.slice(0, 3).map((i) => i.name).join(", ");
@@ -642,6 +655,37 @@ class VoiceAiGateway {
       };
     }
 
+    // 1.5 Explicit Calligraphy Card Dictation Intent (prioritized over occasion words inside dictated text)
+    if (
+      text.includes("dictate") ||
+      text.includes("inscribe") ||
+      /\b(?:write|compose|add|draft)\s+(?:a\s+|my\s+)?(?:handwritten\s+)?(?:calligraphy\s+)?(?:card|note|message)\b/i.test(text)
+    ) {
+      const extractedNote = String(userText || "")
+        .replace(/^(?:please\s+)?(?:dictate|write|compose|add|draft|inscribe)\s+(?:a\s+|my\s+)?(?:handwritten\s+)?(?:calligraphy\s+)?(?:card|note|message)?(?:\s+saying|\s+that\s+says|\s+reading|:)?\s*/i, "")
+        .trim() || String(userText || "").trim();
+      const res = this.executeToolCall("dictateCardMessage", { message: extractedNote, tone: "handwritten_calligraphy" });
+      return {
+        text: `I have captured your calligraphy card note: "${res.message}". Tap Apply Note below to load it directly onto deckle-edge cotton parchment in the Bespoke Atelier.`,
+        actionCards: [
+          {
+            id: "dictate_card_apply",
+            title: "Calligraphy Note Ready",
+            occasion: "Calligraphy Card",
+            priceRupees: "Complimentary",
+            subtitle: `"${res.message}"`,
+            badge: "Apply to Builder",
+            cardMessage: res.message
+          }
+        ],
+        functionCall: {
+          name: "dictateCardMessage",
+          arguments: { tone: res.tone, status: res.status },
+          result: res
+        }
+      };
+    }
+
     // 2. Occasion & Budget Catalog Search (powered by real intentTokenizer)
     const selectWithinBudget = (occasionName) => {
       const occasionMatches = CURATED_HAMPERS.filter((h) => h.occasion === occasionName);
@@ -651,7 +695,7 @@ class VoiceAiGateway {
       const anyInBudget = CURATED_HAMPERS
         .filter((h) => h.basePricePaise <= maxBudgetRupees * 100)
         .sort((a, b) => b.basePricePaise - a.basePricePaise)[0];
-      return anyInBudget || occasionMatches[0];
+      return anyInBudget || occasionMatches[0] || CURATED_HAMPERS[0];
     };
 
     if (intent.occasion === "WEDDING" || text.includes("wedding") || text.includes("marry") || text.includes("bride")) {
@@ -671,63 +715,74 @@ class VoiceAiGateway {
     }
 
     if (intent.occasion === "ANNIVERSARY" || text.includes("anniversary") || text.includes("romantic") || text.includes("partner")) {
-      const match = CURATED_HAMPERS.find((h) => h.occasion === "Anniversary");
+      const match = selectWithinBudget("Anniversary");
       return {
         text: `For your anniversary, '${match.title}' is unforgettable at ₹${match.priceRupees}. Composed with small-batch mead, a preserved crimson rose, and deckle-edge letterpress stationery. Shall we compose a personalized handwritten card?`,
         actionCards: [match],
         functionCall: {
           name: "searchHampers",
-          arguments: { occasion: "Anniversary", maxBudget: maxBudgetRupees || 5000 },
+          arguments: { occasion: match.occasion, maxBudget: maxBudgetRupees || 5000 },
           result: [match]
         }
       };
     }
 
     if (intent.occasion === "BIRTHDAY" || text.includes("birthday") || text.includes("friend")) {
-      const match = CURATED_HAMPERS.find((h) => h.occasion === "Birthday");
+      const match = selectWithinBudget("Birthday");
       return {
         text: `Our '${match.title}' is delightful for birthdays at ₹${match.priceRupees}. It includes vanilla bean shortbread, organic chamomile tea, and a meadow flower posy. Would you like to view this hamper?`,
         actionCards: [match],
         functionCall: {
           name: "searchHampers",
-          arguments: { occasion: "Birthday", maxBudget: maxBudgetRupees },
+          arguments: { occasion: match.occasion, maxBudget: maxBudgetRupees },
           result: [match]
         }
       };
     }
 
     if (intent.occasion === "CORPORATE" || text.includes("corporate") || text.includes("client") || text.includes("colleague") || text.includes("office")) {
-      const match = CURATED_HAMPERS.find((h) => h.occasion === "Corporate");
+      const match = selectWithinBudget("Corporate");
       return {
         text: `'${match.title}' at ₹${match.priceRupees} is tailored for executive gifting. It features single-origin roasted hazelnut cocoa, raw silk napkins, and a handmade brass letter opener with optional monogramming.`,
         actionCards: [match],
         functionCall: {
           name: "searchHampers",
-          arguments: { occasion: "Corporate", maxBudget: maxBudgetRupees },
+          arguments: { occasion: match.occasion, maxBudget: maxBudgetRupees },
           result: [match]
         }
       };
     }
 
     if (intent.occasion === "FESTIVE" || text.includes("festive") || text.includes("diwali") || text.includes("celebration")) {
-      const match = CURATED_HAMPERS.find((h) => h.occasion === "Festive");
+      const match = selectWithinBudget("Festive");
       return {
         text: `Our seasonal edit '${match.title}' at ₹${match.priceRupees} radiates warmth with a hand-cast brass diya, slow-burn temple incense, and sun-dried citrus garland. A true festive favorite.`,
         actionCards: [match],
         functionCall: {
           name: "searchHampers",
-          arguments: { occasion: "Festive", maxBudget: maxBudgetRupees },
+          arguments: { occasion: match.occasion, maxBudget: maxBudgetRupees },
           result: [match]
         }
       };
     }
 
-    // 3. Card Dictation Intent
-    if (text.includes("card") || text.includes("message") || text.includes("write") || text.includes("dictate")) {
-      const res = this.executeToolCall("dictateCardMessage", { message: userText, tone: "handwritten_calligraphy" });
+    // 3. Implicit Card/Note Fallback Intent
+    if (text.includes("card") || text.includes("message") || text.includes("note")) {
+      const extractedNote = String(userText || "").trim();
+      const res = this.executeToolCall("dictateCardMessage", { message: extractedNote, tone: "handwritten_calligraphy" });
       return {
-        text: "I have drafted your handwritten card with an artisan deckle-edge finish. You can dictate the exact wording, and our calligrapher will hand-inscribe it onto cotton parchment.",
-        actionCards: [],
+        text: `I have captured your calligraphy card note: "${res.message}". Tap Apply Note below to load it directly onto deckle-edge cotton parchment in the Bespoke Atelier.`,
+        actionCards: [
+          {
+            id: "dictate_card_apply",
+            title: "Calligraphy Note Ready",
+            occasion: "Calligraphy Card",
+            priceRupees: "Complimentary",
+            subtitle: `"${res.message}"`,
+            badge: "Apply to Builder",
+            cardMessage: res.message
+          }
+        ],
         functionCall: {
           name: "dictateCardMessage",
           arguments: { tone: res.tone, status: res.status },
@@ -773,6 +828,30 @@ class VoiceAiGateway {
       };
     }
 
+    // 6. Direct ingredient / product keyword search or budget-only search
+    const searchTokens = (intent.keywords || []).filter((kw) => kw.length >= 3);
+    if (searchTokens.length > 0 || maxBudgetRupees) {
+      const keywordMatches = CURATED_HAMPERS.filter((h) => {
+        const haystack = `${h.title} ${h.occasion} ${h.subtitle} ${h.description} ${(h.itemsIncluded || []).join(" ")}`.toLowerCase();
+        const kwOk = searchTokens.length === 0 || searchTokens.some((tok) => haystack.includes(tok));
+        const budgetOk = !maxBudgetRupees || h.basePricePaise <= maxBudgetRupees * 100;
+        return kwOk && budgetOk;
+      });
+      if (keywordMatches.length > 0) {
+        const picks = keywordMatches.slice(0, 2);
+        const top = picks[0];
+        return {
+          text: `I found '${top.title}' (₹${top.priceRupees}) featuring ${top.subtitle} Would you like to inspect it or curate a bespoke variation?`,
+          actionCards: picks,
+          functionCall: {
+            name: "searchHampers",
+            arguments: { query: userText, maxBudget: maxBudgetRupees },
+            result: picks
+          }
+        };
+      }
+    }
+
     // Default luxury atelier greeting
     return {
       text: "Welcome to Hampers by Her. I am Eleanor, your Atelier Voice Concierge. Tell me the occasion, recipient, or budget ceiling, and I will compose the perfect hand-tied edit for you.",
@@ -780,6 +859,41 @@ class VoiceAiGateway {
       functionCall: {
         name: "listCuratedHampers",
         result: CURATED_HAMPERS.slice(0, 2)
+      }
+    };
+  }
+
+  /**
+   * Executes a single conversational Voice turn over HTTP REST (reliable serverless fallback when WS is unavailable).
+   * @param {string} userPrompt
+   */
+  async runHttpTurn(userPrompt) {
+    const startMs = Date.now();
+    this.metrics.totalTurns++;
+    const responseData = await this.orchestrateDomainVoice(userPrompt);
+    if (responseData.functionCall) {
+      this.metrics.toolCallsCount++;
+    }
+    const segments = splitIntoStreamingSegments(responseData.text, 50);
+    const ttfaMs = Math.max(1, Date.now() - startMs);
+    this.metrics.lastTtfaMs = ttfaMs;
+    this.metrics.ttfaSamplesMs.push(ttfaMs);
+    if (this.metrics.ttfaSamplesMs.length > 100) {
+      this.metrics.ttfaSamplesMs.shift();
+    }
+
+    return {
+      prompt: String(userPrompt || "").trim(),
+      transcript: responseData.text,
+      actionCards: responseData.actionCards || [],
+      functionCall: responseData.functionCall || null,
+      segments,
+      providers: this.getProviderCapabilities(),
+      metrics: {
+        ttfaMs,
+        totalTurnMs: Math.max(1, Date.now() - startMs),
+        segments: segments.length,
+        mode: "rest_turn"
       }
     };
   }

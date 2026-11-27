@@ -481,7 +481,9 @@
           }
 
           queueMicrotask(() => {
-            loadStationeryInquiries();
+            if (sessionStorage.getItem("hbh_staff_token")) {
+              loadStationeryInquiries();
+            }
           });
         });
       })();

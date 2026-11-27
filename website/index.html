@@ -1646,15 +1646,18 @@
 
       <div id="voice-transcript-feed" class="voice-transcript-feed" aria-live="polite">
         <div class="voice-msg voice-msg--assistant">
-          <strong>Eleanor:</strong> Welcome to Hampers by Her. Tap the microphone to speak live over WebSocket PCM16, or choose a prompt below.
+          <strong>Eleanor:</strong> Welcome to Hampers by Her. Tap <strong>Start Live Mic</strong> to speak naturally, or tap any prompt below.
         </div>
       </div>
+
+      <div id="voice-interim-bar" class="voice-interim-bar" aria-live="polite" style="display: none;"></div>
 
       <div id="voice-action-cards" class="voice-action-cards" style="display: none;"></div>
 
       <div class="voice-controls-row">
         <button type="button" id="voice-mic-btn" class="btn btn--bordeaux btn--sm">🎙️ Start Live Mic</button>
         <button type="button" id="voice-interrupt-btn" class="btn btn--outline btn--sm" disabled>✋ Interrupt (Barge-In)</button>
+        <button type="button" id="voice-speaker-btn" class="btn btn--outline btn--sm" aria-pressed="true" title="Toggle Eleanor spoken audio replies">🔊 Voice On</button>
       </div>
 
       <div class="voice-text-row">
