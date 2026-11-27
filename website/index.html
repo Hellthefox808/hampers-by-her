@@ -798,10 +798,13 @@
 
       <footer class="cart-drawer__footer">
         <div class="coupon-box">
-          <input type="text" id="coupon-input" class="coupon-input" placeholder="Promo code (e.g. ALMAS10)">
+          <input type="text" id="coupon-input" class="coupon-input" placeholder="Promo code (ALMAS10, WELCOME500)">
           <button id="apply-coupon-btn" class="btn btn--outline btn--xs">Apply</button>
         </div>
-        <div id="applied-coupon-badge" style="display: none; margin-bottom: 10px; font-size: 0.8rem; color: var(--color-success); font-weight: 500;"></div>
+        <div id="applied-coupon-row" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.8rem; color: var(--color-success); font-weight: 500;">
+          <span id="applied-coupon-badge"></span>
+          <button type="button" id="remove-coupon-btn" style="background: none; border: none; color: var(--color-bordeaux); font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: underline;">Remove</button>
+        </div>
 
         <div class="cart-summary-row">
           <span>Subtotal</span>
@@ -989,7 +992,7 @@
 
         <!-- STEP 6: Ribbon Selection -->
         <div class="builder-step-pane" data-step="6">
-          <h3 class="display-text" style="font-size: 1.3rem;">6. Signature Ribbon Finish</h3>
+          <h3 class="display-text" style="font-size: 1.3rem;">6. Signature Ribbon Finish &amp; Monogram</h3>
           <p class="text-secondary" style="font-size: 0.88rem; margin-bottom: 16px;">Tied by hand in our signature double-loop French knot.</p>
           <div class="swatch-group">
             <div class="swatch-item selected" data-ribbon-id="RIB_SATIN_CREAM" data-price="0">
@@ -1012,6 +1015,11 @@
               <span style="font-size: 0.8rem; font-weight: 500;">Forest Pine</span>
               <span class="mono-label">+ ₹ 100</span>
             </div>
+          </div>
+          <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+            <label for="monogram-input" class="mono-label" style="display: block; margin-bottom: 8px; color: var(--text-primary);">Bespoke Foil Monogram Initials (Optional, max 3 chars)</label>
+            <input type="text" id="monogram-input" class="form-input" maxlength="3" placeholder="e.g. HBH or AF" aria-label="Bespoke Foil Monogram Initials" style="max-width: 220px; text-transform: uppercase; letter-spacing: 0.14em; font-weight: 600;">
+            <p class="text-secondary" style="font-size: 0.78rem; margin-top: 6px;">Embossed live onto your keepsake preview on Step 11.</p>
           </div>
         </div>
 

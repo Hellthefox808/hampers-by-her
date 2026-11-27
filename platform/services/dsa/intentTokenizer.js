@@ -215,14 +215,28 @@ function rankItemsByFuzzyQuery(items, query, threshold = 0.2) {
   const scored = [];
 
   for (const item of items) {
-    const titleSim = computeTrigramSimilarity(item.title || item.name || "", query);
-    const descSim = computeTrigramSimilarity(item.description || "", query);
+    const itemPricePaise = item.basePricePaise ?? item.pricePaise ?? null;
+    if (intent.maxPricePaise !== null && itemPricePaise !== null && BigInt(itemPricePaise) > intent.maxPricePaise) {
+      continue;
+    }
+    if (intent.minPricePaise !== null && itemPricePaise !== null && BigInt(itemPricePaise) < intent.minPricePaise) {
+      continue;
+    }
+
+    const titleText = item.title || item.name || "";
+    const inclusionText = Array.isArray(item.inclusions) ? item.inclusions.map((i) => i.name || "").join(" ") : "";
+    const metaText = `${item.subtitle || ""} ${item.theme || ""} ${item.description || ""} ${inclusionText}`;
+    const titleSim = computeTrigramSimilarity(titleText, query);
+    const descSim = computeTrigramSimilarity(metaText, query);
     const occasionMatch = intent.occasion && item.occasion && item.occasion.toUpperCase() === intent.occasion ? 0.35 : 0.0;
     const recipientMatch = intent.recipient && item.recipient && item.recipient.toUpperCase() === intent.recipient ? 0.25 : 0.0;
+    const hayLower = `${titleText} ${metaText} ${item.occasion || ""}`.toLowerCase();
+    const keywordHits = intent.keywords.filter((kw) => hayLower.includes(kw)).length;
+    const keywordBoost = intent.keywords.length > 0 ? (keywordHits / intent.keywords.length) * 0.35 : 0.0;
 
-    const compositeScore = (titleSim * 0.5) + (descSim * 0.2) + occasionMatch + recipientMatch;
+    const compositeScore = (titleSim * 0.5) + (descSim * 0.2) + occasionMatch + recipientMatch + keywordBoost;
 
-    if (compositeScore >= threshold || titleSim >= 0.3) {
+    if (compositeScore >= threshold || titleSim >= 0.3 || keywordHits > 0) {
       scored.push({
         item,
         score: Number(compositeScore.toFixed(4)),

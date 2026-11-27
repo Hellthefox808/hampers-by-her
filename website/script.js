@@ -224,16 +224,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cartItemsList.innerHTML = cart.map((item, index) => `
       <div class="cart-item" data-index="${index}">
-        <img src="${item.image}" alt="${item.title}" class="cart-item__img">
+        <img src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.title)}" class="cart-item__img">
         <div>
-          <h4 class="cart-item__title">${item.title}</h4>
-          <p class="cart-item__subtitle">${item.ribbon} · ${item.waxSeal}</p>
-          <div class="cart-item__price">₹ ${item.priceRupees}</div>
+          <h4 class="cart-item__title">${escapeHtml(item.title)}</h4>
+          <p class="cart-item__subtitle">${escapeHtml(item.ribbon || '')} · ${escapeHtml(item.waxSeal || '')}</p>
+          <div class="cart-item__price">₹ ${escapeHtml(item.priceRupees)}</div>
           <button class="cart-item__remove" data-index="${index}" style="margin-top: 6px;">Remove</button>
         </div>
         <div class="cart-item__qty">
           <button class="cart-item__qty-btn btn-dec" data-index="${index}">-</button>
-          <span class="cart-item__qty-val">${item.quantity}</span>
+          <span class="cart-item__qty-val">${Number(item.quantity) || 1}</span>
           <button class="cart-item__qty-btn btn-inc" data-index="${index}">+</button>
         </div>
       </div>
@@ -273,6 +273,23 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTotals(subtotalPaise);
   }
 
+  function computeCouponDiscountPaise(code, subtotalPaise) {
+    const normalized = String(code || '').trim().toUpperCase();
+    const RULES = {
+      ALMAS10: { type: 'PERCENT', value: 10, max: 50000, min: 150000, label: '10% Atelier Courtesy (up to ₹500)' },
+      WELCOME500: { type: 'FLAT', value: 50000, min: 250000, label: 'Flat ₹500 First Order Off' },
+      CELEBRATE: { type: 'FLAT', value: 30000, min: 200000, label: 'Flat ₹300 Festive Celebration' },
+      WELCOME15: { type: 'PERCENT', value: 15, max: 100000, min: 250000, label: '15% Signature Patron Privilege' },
+      WEDDINGVIP: { type: 'FLAT', value: 250000, min: 1500000, label: 'Flat ₹2,500 Trousseau Privilege' }
+    };
+    const rule = RULES[normalized];
+    if (!rule || subtotalPaise < rule.min) return { valid: false, discountPaise: 0, label: rule?.label || '' };
+    const discountPaise = rule.type === 'PERCENT'
+      ? Math.min(Math.round(subtotalPaise * (rule.value / 100)), rule.max)
+      : Math.min(rule.value, subtotalPaise);
+    return { valid: true, code: normalized, discountPaise, label: rule.label };
+  }
+
   function updateTotals(subtotalPaise) {
     const subtotalRupees = Math.round(subtotalPaise / 100);
     const subtotalEl = document.getElementById('cart-subtotal');
@@ -308,15 +325,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const shippingEl = document.getElementById('cart-shipping');
     if (shippingEl) shippingEl.textContent = isFreeShipping ? 'FREE' : '₹ 150';
 
-    // Discount
-    let discountPaise = 0;
-    if (appliedCoupon === 'ALMAS10') {
-      discountPaise = Math.min(Math.round(subtotalPaise * 0.10), 100000);
-      const discountRow = document.getElementById('cart-discount-row');
-      const discountEl = document.getElementById('cart-discount');
-      if (discountRow && discountEl) {
+    // Discount synchronized with server PricingEngine rules
+    const evalCoupon = computeCouponDiscountPaise(appliedCoupon, subtotalPaise);
+    const discountPaise = evalCoupon.valid ? evalCoupon.discountPaise : 0;
+    const discountRow = document.getElementById('cart-discount-row');
+    const discountEl = document.getElementById('cart-discount');
+    if (discountRow && discountEl) {
+      if (discountPaise > 0) {
         discountRow.style.display = 'flex';
         discountEl.textContent = `- ₹ ${(discountPaise / 100).toLocaleString('en-IN')}`;
+      } else {
+        discountRow.style.display = 'none';
+        discountEl.textContent = '- ₹ 0';
       }
     }
 
@@ -332,22 +352,68 @@ document.addEventListener('DOMContentLoaded', () => {
     if (totalEl) totalEl.textContent = `₹ ${Math.round(totalPaise / 100).toLocaleString('en-IN')}`;
   }
 
-  // Coupon handling
+  // Coupon handling (live PricingEngine verification with local fallback)
   const applyCouponBtn = document.getElementById('apply-coupon-btn');
+  const removeCouponBtn = document.getElementById('remove-coupon-btn');
   const couponInput = document.getElementById('coupon-input');
-  applyCouponBtn?.addEventListener('click', () => {
+
+  function clearAppliedCoupon(notify = false) {
+    appliedCoupon = null;
+    if (couponInput) couponInput.value = '';
+    const couponRow = document.getElementById('applied-coupon-row');
+    const badge = document.getElementById('applied-coupon-badge');
+    if (couponRow) couponRow.style.display = 'none';
+    if (badge) {
+      badge.textContent = '';
+      badge.style.display = 'none';
+    }
+    renderCart();
+    if (notify) showToast("Promo code removed.");
+  }
+
+  removeCouponBtn?.addEventListener('click', () => clearAppliedCoupon(true));
+
+  applyCouponBtn?.addEventListener('click', async () => {
     const code = couponInput?.value?.trim().toUpperCase();
-    if (code === 'ALMAS10') {
-      appliedCoupon = 'ALMAS10';
+    if (!code) {
+      showToast("Enter a promo code (e.g. ALMAS10, WELCOME500)");
+      return;
+    }
+    const subtotalPaise = cart.reduce((sum, item) => sum + (item.basePricePaise * item.quantity), 0);
+    let validated = null;
+    try {
+      const res = await fetch('/api/v1/checkout/validate-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ couponCode: code, subtotalPaise })
+      });
+      const json = await res.json();
+      if (res.ok && json.success && json.data?.valid) {
+        validated = { code: json.data.code, label: json.data.description || `${json.data.code} Applied` };
+      } else if (json?.data?.message || json?.error?.message) {
+        showToast(json.data?.message || json.error.message);
+        return;
+      }
+    } catch {
+      const localEval = computeCouponDiscountPaise(code, subtotalPaise);
+      if (localEval.valid) {
+        validated = { code: localEval.code, label: localEval.label };
+      }
+    }
+
+    if (validated) {
+      appliedCoupon = validated.code;
+      const couponRow = document.getElementById('applied-coupon-row');
       const badge = document.getElementById('applied-coupon-badge');
+      if (couponRow) couponRow.style.display = 'flex';
       if (badge) {
-        badge.textContent = '✓ ALMAS10 Applied (10% Atelier Courtesy)';
-        badge.style.display = 'block';
+        badge.textContent = `✓ ${validated.code} Applied (${validated.label})`;
+        badge.style.display = 'inline';
       }
       renderCart();
-      showToast("Coupon ALMAS10 applied successfully!");
+      showToast(`Coupon ${validated.code} applied!`);
     } else {
-      showToast("Invalid promo code. Try ALMAS10");
+      showToast("Promo code not applicable for current bag subtotal.");
     }
   });
 
@@ -649,9 +715,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const json = await res.json();
       if (!json.success || !json.data?.items) throw new Error();
 
-      igFeedContainer.innerHTML = json.data.items.map(post => `
-        <div class="ig-feed-card" data-hamper="${post.linkedHamperId || ''}" data-url="${post.permalink}">
-          <img src="${post.thumbnailUrl}" alt="${post.caption}">
+      igFeedContainer.innerHTML = json.data.items.map(post => {
+        const safeHamperId = escapeHtml(post.linkedHamperId || '');
+        const safeUrl = escapeHtml(post.permalink || 'https://www.instagram.com/hampers._by_her/');
+        const safeThumb = escapeHtml(post.thumbnailUrl || '');
+        const safeCaption = escapeHtml(post.caption || '');
+        return `
+        <div class="ig-feed-card" data-hamper="${safeHamperId}" data-url="${safeUrl}">
+          <img src="${safeThumb}" alt="${safeCaption}">
           ${post.isReel ? `
             <div class="ig-reel-badge">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -659,14 +730,15 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           ` : ''}
           <div class="ig-feed-card__overlay">
-            <p class="ig-feed-card__caption">${post.caption}</p>
+            <p class="ig-feed-card__caption">${safeCaption}</p>
             <div class="ig-feed-card__meta">
-              <span>❤️ ${post.likeCount}</span>
-              <span>💬 ${post.commentsCount}</span>
+              <span>❤️ ${Number(post.likeCount) || 0}</span>
+              <span>💬 ${Number(post.commentsCount) || 0}</span>
             </div>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
 
       igFeedContainer.querySelectorAll('.ig-feed-card').forEach(card => {
         card.addEventListener('click', () => {
@@ -1053,18 +1125,20 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = '';
       }
       if (mobileMenu?.classList.contains('open')) closeMenu();
-      const cartDrawer = document.getElementById('cart-drawer');
-      if (cartDrawer?.classList.contains('open')) {
-        cartDrawer.classList.remove('open');
-        document.body.style.overflow = '';
+      const cartOverlayEl = document.getElementById('cart-overlay');
+      if (cartOverlayEl?.classList.contains('open')) {
+        closeCart();
       }
       if (waPopover?.classList.contains('open')) {
         setWaPopoverOpen(false);
       }
-      document.getElementById('builder-overlay')?.classList.remove('open');
-      document.getElementById('checkout-overlay')?.classList.remove('open');
-      document.getElementById('knapsack-curator-modal')?.classList.remove('open');
-      document.getElementById('order-tracking-modal')?.classList.remove('open');
+      ['builder-overlay', 'checkout-overlay', 'knapsack-curator-modal', 'order-tracking-modal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el?.classList.contains('open')) {
+          el.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      });
       if (document.getElementById('voice-concierge-modal')?.classList.contains('open')) {
         document.getElementById('voice-close-btn')?.click();
       }
@@ -1458,6 +1532,8 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           boxId: builderState.boxId,
+          shredId: builderState.shredId,
+          botanicalId: builderState.botanicalId,
           ribbonColor: builderState.ribbonColor,
           waxSealColor: builderState.waxSealColor,
           sealMotif: builderState.sealMotif,
@@ -1549,11 +1625,12 @@ document.addEventListener('DOMContentLoaded', () => {
     checkoutStep2.style.display = 'none';
     checkoutStep3.style.display = 'none';
 
-    // Compute total
+    // Compute total using synchronized PricingEngine coupon rules
     const subtotalPaise = cart.reduce((sum, item) => sum + (item.basePricePaise * item.quantity), 0);
     const isFreeShipping = subtotalPaise >= 299900 || subtotalPaise === 0;
     const shippingFeePaise = isFreeShipping ? 0 : 15000;
-    let discountPaise = appliedCoupon === 'ALMAS10' ? Math.min(Math.round(subtotalPaise * 0.10), 50000) : 0;
+    const couponEval = computeCouponDiscountPaise(appliedCoupon, subtotalPaise);
+    const discountPaise = couponEval.valid ? couponEval.discountPaise : 0;
     const taxablePaise = Math.max(0, subtotalPaise - discountPaise);
     const taxPaise = Math.round(taxablePaise * 0.18);
     const finalPaise = taxablePaise + taxPaise + shippingFeePaise;
@@ -1618,16 +1695,23 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ phone, channel: 'WHATSAPP' })
       });
       const json = await res.json();
-      if (json.success) {
+      if (res.ok && json.success) {
         authStepVerify.style.display = 'block';
-        if (otpFeedback) otpFeedback.textContent = "✓ 6-digit OTP dispatched to your WhatsApp! (Sandbox code: 123456)";
+        const sandboxCode = json.data?.sandboxCode;
+        if (otpFeedback) {
+          otpFeedback.textContent = sandboxCode
+            ? `✓ 6-digit OTP dispatched to your WhatsApp! (Sandbox code: ${sandboxCode})`
+            : "✓ 6-digit verification OTP dispatched to your WhatsApp.";
+        }
         showToast("OTP sent to your WhatsApp!");
       } else {
-        throw new Error(json.error);
+        const msg = json?.error?.message || json?.error || "Unable to send OTP. Please check your phone number.";
+        if (otpFeedback) otpFeedback.textContent = `⚠ ${msg}`;
+        showToast(msg);
       }
     } catch {
-      authStepVerify.style.display = 'block';
-      if (otpFeedback) otpFeedback.textContent = "✓ Sandbox code active: Use 123456 to verify";
+      if (otpFeedback) otpFeedback.textContent = "⚠ Unable to reach WhatsApp OTP gateway. Please retry.";
+      showToast("OTP gateway unreachable.");
     }
   });
 
@@ -1721,7 +1805,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const subtotalPaise = cart.reduce((sum, item) => sum + (item.basePricePaise * item.quantity), 0);
     const isFreeShipping = subtotalPaise >= 299900 || subtotalPaise === 0;
     const shippingFeePaise = isFreeShipping ? 0 : 15000;
-    let discountPaise = appliedCoupon === 'ALMAS10' ? Math.min(Math.round(subtotalPaise * 0.10), 50000) : 0;
+    const couponEval = computeCouponDiscountPaise(appliedCoupon, subtotalPaise);
+    const discountPaise = couponEval.valid ? couponEval.discountPaise : 0;
     const taxablePaise = Math.max(0, subtotalPaise - discountPaise);
     const taxPaise = Math.round(taxablePaise * 0.18);
     const finalPaise = taxablePaise + taxPaise + shippingFeePaise;
@@ -1894,18 +1979,49 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnLoadKnapsackBuilder?.addEventListener('click', () => {
-    if (lastKnapsackComposition && Array.isArray(lastKnapsackComposition.selectedItems)) {
-      builderState.inclusions = lastKnapsackComposition.selectedItems.map(it => ({
-        id: it.id,
-        title: it.name,
-        pricePaise: it.pricePaise,
-        volumeCm3: it.volume_mm3 ? Math.round(it.volume_mm3 / 1000) : 600
-      }));
+    if (lastKnapsackComposition) {
+      const box = lastKnapsackComposition.box;
+      if (box) {
+        const mappedBoxId = box.id || box.builderBoxId || 'BOX_KRAFT_RIGID';
+        builderState.boxId = mappedBoxId;
+        builderState.boxName = box.name || builderState.boxName;
+        builderState.boxPricePaise = Number(box.pricePaise || builderState.boxPricePaise);
+        if (box.volumeCm3) builderState.boxCapacityCm3 = Number(box.volumeCm3);
+        document.querySelectorAll('.builder-step-pane[data-step="1"] .select-card').forEach(card => {
+          const isMatch = card.dataset.boxId === mappedBoxId;
+          card.classList.toggle('selected', isMatch);
+          if (isMatch && card.dataset.capacity) {
+            builderState.boxCapacityCm3 = parseInt(card.dataset.capacity, 10) || builderState.boxCapacityCm3;
+          }
+        });
+      }
+
+      if (Array.isArray(lastKnapsackComposition.selectedItems)) {
+        builderState.inclusions = lastKnapsackComposition.selectedItems.map(it => ({
+          id: it.id,
+          title: it.name,
+          pricePaise: Number(it.pricePaise || 0),
+          volumeCm3: it.volumeCm3
+            ? Number(it.volumeCm3)
+            : (it.volume_mm3 ? Math.round(Number(it.volume_mm3) / 1000) : 600)
+        }));
+        const selectedNames = new Set(builderState.inclusions.map(i => String(i.title || '').toLowerCase()));
+        const selectedIds = new Set(builderState.inclusions.map(i => String(i.id || '')));
+        document.querySelectorAll(
+          '.builder-step-pane[data-step="3"] .select-card, ' +
+          '.builder-step-pane[data-step="4"] .select-card, ' +
+          '.builder-step-pane[data-step="5"] .select-card'
+        ).forEach(card => {
+          const cid = card.dataset.itemId || card.dataset.inclusionId || '';
+          const cTitle = card.querySelector('.select-card__title')?.textContent?.trim()?.toLowerCase() || '';
+          card.classList.toggle('selected', selectedIds.has(cid) || (cTitle && selectedNames.has(cTitle)));
+        });
+      }
     }
     knapsackModal?.classList.remove('open');
     builderOverlayEl?.classList.add('open');
     document.body.style.overflow = 'hidden';
-    builderState.currentStep = 6; // Jump directly to inclusions
+    builderState.currentStep = 11; // Jump directly to review & live procedural SVG preview
     updateBuilderUI();
     showToast("Loaded AI curated components into Bespoke Atelier!");
   });
@@ -1917,19 +2033,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const naturalSearchBtn = document.getElementById('natural-search-btn');
   const searchIntentPills = document.getElementById('search-intent-pills');
 
+  function resetCatalogFilter() {
+    document.querySelectorAll('.product-card').forEach(card => {
+      card.style.display = '';
+    });
+    if (searchIntentPills) {
+      searchIntentPills.innerHTML = '';
+      searchIntentPills.style.display = 'none';
+    }
+    if (naturalSearchInput) naturalSearchInput.value = '';
+  }
+
   async function executeNaturalSearch() {
     const query = naturalSearchInput?.value?.trim();
-    if (!query) return;
+    if (!query) {
+      resetCatalogFilter();
+      return;
+    }
 
     try {
       const res = await fetch('/api/v1/dsa/tokenize-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
+        body: JSON.stringify({ query, rankCatalog: true })
       });
       const data = await res.json();
       if (data.success && data.data) {
         const intent = data.data.intent || data.data;
+        const rankedProducts = Array.isArray(data.data.rankedProducts) ? data.data.rankedProducts : [];
+        const rankedIds = new Set(rankedProducts.map(p => p.id));
         const priceCapRupees = intent.maxPricePaise
           ? Math.round(Number(intent.maxPricePaise) / 100)
           : intent.priceCapRupees;
@@ -1942,16 +2074,31 @@ document.addEventListener('DOMContentLoaded', () => {
           if (intent.isLuxury || (Array.isArray(intent.tones) && intent.tones.includes('luxury'))) {
             chips += `<span class="intent-chip">✨ Luxury Tier</span>`;
           }
-          searchIntentPills.innerHTML = chips || `<span class="intent-chip">Tokens: ${escapeHtml(query)}</span>`;
+          if (!chips) chips = `<span class="intent-chip">Tokens: ${escapeHtml(query)}</span>`;
+          chips += `<button type="button" id="reset-intent-filter-btn" class="intent-chip" style="cursor:pointer; border:1px solid var(--color-bordeaux); background:transparent; color:var(--color-bordeaux);">✕ Reset Filter</button>`;
+          searchIntentPills.innerHTML = chips;
+          document.getElementById('reset-intent-filter-btn')?.addEventListener('click', resetCatalogFilter);
         }
 
-        // Filter cards in grid
+        // Filter cards in grid by ranked IDs / occasion / budget ceiling
         const cards = document.querySelectorAll('.product-card');
+        let visibleCount = 0;
         cards.forEach(card => {
           const text = card.textContent.toLowerCase();
-          const matchOccasion = !intent.occasion || text.includes(intent.occasion.toLowerCase());
-          card.style.display = matchOccasion ? '' : 'none';
+          const cardPid = card.getAttribute('data-product-id') || '';
+          const priceMatch = card.textContent.match(/₹\s*([\d,]+)/);
+          const cardRupees = priceMatch ? parseInt(priceMatch[1].replace(/,/g, ''), 10) : null;
+          const withinBudget = !priceCapRupees || cardRupees === null || cardRupees <= Number(priceCapRupees);
+          const matchIntent = rankedIds.size > 0
+            ? rankedIds.has(cardPid)
+            : (!intent.occasion || text.includes(intent.occasion.toLowerCase()));
+          const show = matchIntent && withinBudget;
+          card.style.display = show ? '' : 'none';
+          if (show) visibleCount++;
         });
+        if (visibleCount === 0) {
+          showToast("No catalog hampers matched that exact filter — click Reset Filter to view all.");
+        }
 
         // Smooth scroll to collections
         document.getElementById('collections')?.scrollIntoView({ behavior: 'smooth' });
@@ -2300,8 +2447,8 @@ document.addEventListener('DOMContentLoaded', () => {
         closeVoiceModal();
         if (pid === 'bespoke_knapsack_curated') {
           btnOpenKnapsack?.click();
-        } else if (pid && typeof openItemModal === 'function') {
-          openItemModal(pid);
+        } else if (pid && typeof openItemDetail === 'function') {
+          openItemDetail(pid);
         } else {
           document.getElementById('collections')?.scrollIntoView({ behavior: 'smooth' });
         }

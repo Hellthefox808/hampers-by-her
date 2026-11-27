@@ -26,7 +26,20 @@ const WAX_SEAL_PALETTES = {
 const BOX_STYLES = {
   BOX_LINEN_KEEPSAKE: { name: "Linen Keepsake Box", baseColor: "#F5F2EB", shadowColor: "#D6D0C3", lidColor: "#EAE5DB", texture: "linen" },
   BOX_VELVET_CHEST: { name: "Royal Velvet Chest", baseColor: "#3B141E", shadowColor: "#22080E", lidColor: "#4E1B28", texture: "velvet" },
+  BOX_VELVET_BORDEAUX: { name: "Royal Bordeaux Velvet Casket", baseColor: "#3B141E", shadowColor: "#22080E", lidColor: "#4E1B28", texture: "velvet" },
   BOX_KRAFT_RIGID: { name: "Raw Kraft Rigid Box", baseColor: "#C9A982", shadowColor: "#A3825C", lidColor: "#BCA07B", texture: "kraft" }
+};
+
+const BOTANICAL_SPRIGS = {
+  BOT_BABYS_BREATH: { label: "Baby's Breath", stem: "#7D8B6A", petal: "#FFFDF8" },
+  BOT_LAVENDER: { label: "French Lavender", stem: "#5F7454", petal: "#9B7CB9" },
+  BOT_WHEAT: { label: "Golden Wheat", stem: "#9C7A3C", petal: "#E8C77B" }
+};
+
+const SHRED_PALETTES = {
+  SHRED_ECRU: "#F4EDE2",
+  SHRED_GOLD: "#E8C87A",
+  SHRED_BORDEAUX: "#632736"
 };
 
 /**
@@ -62,6 +75,8 @@ function generateHamperPreviewSvg({
   ribbonColor = "burgundy_merlot",
   waxSealColor = "vintage_gold",
   sealMotif = "monogram_hbh",
+  botanicalId = "BOT_BABYS_BREATH",
+  shredId = "SHRED_ECRU",
   monogramInitials = "HBH",
   cardMessage = "To someone truly cherished, with warmest congratulations on your joyous milestone.",
   recipientName = "Aditi",
@@ -71,6 +86,8 @@ function generateHamperPreviewSvg({
   const box = BOX_STYLES[boxId] || BOX_STYLES.BOX_LINEN_KEEPSAKE;
   const ribbon = RIBBON_PALETTES[ribbonColor] || RIBBON_PALETTES.burgundy_merlot;
   const seal = WAX_SEAL_PALETTES[waxSealColor] || WAX_SEAL_PALETTES.vintage_gold;
+  const botanical = BOTANICAL_SPRIGS[botanicalId] || BOTANICAL_SPRIGS.BOT_BABYS_BREATH;
+  const shredColor = SHRED_PALETTES[shredId] || SHRED_PALETTES.SHRED_ECRU;
   const initials = escapeXml((monogramInitials || "HBH").slice(0, 3).toUpperCase());
   const safeMessage = escapeXml(cardMessage);
   const safeRecipient = escapeXml(recipientName);
@@ -138,6 +155,8 @@ function generateHamperPreviewSvg({
   <g id="keepsake-box" filter="url(#boxShadow)">
     <!-- Box Body -->
     <rect x="200" y="160" width="400" height="320" rx="14" fill="${box.baseColor}" stroke="${box.shadowColor}" stroke-width="2"/>
+    <!-- Inner Cushion Shred Accent Peek -->
+    <path d="M 208 205 Q 240 218 270 205 Q 305 218 340 205 Q 375 218 410 205 Q 445 218 480 205 Q 520 218 592 205" fill="none" stroke="${shredColor}" stroke-width="4" stroke-opacity="0.72" stroke-linecap="round"/>
     <!-- Lid Lip & Bevel -->
     <rect x="190" y="140" width="420" height="70" rx="10" fill="url(#boxLidGrad)" stroke="#C89D42" stroke-width="1.5" stroke-opacity="0.4"/>
     <line x1="200" y1="205" x2="600" y2="205" stroke="#C89D42" stroke-width="0.8" stroke-dasharray="6,4" stroke-opacity="0.5"/>
@@ -173,6 +192,16 @@ function generateHamperPreviewSvg({
     <!-- Ribbon Tails -->
     <path d="M 390 320 Q 360 410, 330 450 L 350 455 Q 380 400, 400 330 Z" fill="${ribbon.shadow}" opacity="0.9"/>
     <path d="M 410 320 Q 440 415, 480 445 L 460 452 Q 425 400, 405 330 Z" fill="${ribbon.shadow}" opacity="0.9"/>
+  </g>
+
+  <!-- Botanical Sprig Tucked Under Ribbon Bow -->
+  <g id="botanical-sprig" transform="translate(400, 310) rotate(-32)">
+    <path d="M 0 0 Q 26 -38 56 -64" fill="none" stroke="${botanical.stem}" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="28" cy="-34" r="4.5" fill="${botanical.petal}"/>
+    <circle cx="38" cy="-42" r="4" fill="${botanical.petal}"/>
+    <circle cx="44" cy="-54" r="4.5" fill="${botanical.petal}"/>
+    <circle cx="53" cy="-60" r="4" fill="${botanical.petal}"/>
+    <circle cx="22" cy="-24" r="3.5" fill="${botanical.petal}"/>
   </g>
 
   <!-- Hand-Poured Botanical Wax Seal with Monogram -->

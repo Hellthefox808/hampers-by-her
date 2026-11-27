@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "express",
+  "fluid": true,
+  "buildCommand": "npm run vercel-build",
+  "cleanUrls": true,
+  "functions": {
+    "server.js": {
+      "maxDuration": 300,
+      "includeFiles": "{website,docs/diagrams,platform,docs/database}/**"
+    }
+  }
+}

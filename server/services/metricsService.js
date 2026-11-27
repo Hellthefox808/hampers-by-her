@@ -25,6 +25,19 @@ class MetricsCollector {
 
     this.eventLoopHistogram = monitorEventLoopDelay({ resolution: 20 });
     this.eventLoopHistogram.enable();
+
+    this.domainCounters = {
+      ordersCreatedTotal: 0,
+      ordersConfirmedTotal: 0,
+      qcVerificationsTotal: 0,
+      inquiriesReceivedTotal: 0
+    };
+  }
+
+  incrementCounter(name, delta = 1) {
+    if (Object.prototype.hasOwnProperty.call(this.domainCounters, name)) {
+      this.domainCounters[name] += delta;
+    }
   }
 
   /**
@@ -107,6 +120,22 @@ class MetricsCollector {
     lines.push("# HELP process_uptime_seconds Process uptime in seconds.");
     lines.push("# TYPE process_uptime_seconds gauge");
     lines.push(`process_uptime_seconds ${Math.floor(process.uptime())}`);
+
+    lines.push("# HELP hbh_orders_created_total Total orders created in this runtime.");
+    lines.push("# TYPE hbh_orders_created_total counter");
+    lines.push(`hbh_orders_created_total ${this.domainCounters.ordersCreatedTotal}`);
+
+    lines.push("# HELP hbh_orders_confirmed_total Total orders confirmed after payment verification.");
+    lines.push("# TYPE hbh_orders_confirmed_total counter");
+    lines.push(`hbh_orders_confirmed_total ${this.domainCounters.ordersConfirmedTotal}`);
+
+    lines.push("# HELP hbh_qc_verifications_total Total studio QC photo inspections signed.");
+    lines.push("# TYPE hbh_qc_verifications_total counter");
+    lines.push(`hbh_qc_verifications_total ${this.domainCounters.qcVerificationsTotal}`);
+
+    lines.push("# HELP hbh_inquiries_received_total Total stationery inquiries received.");
+    lines.push("# TYPE hbh_inquiries_received_total counter");
+    lines.push(`hbh_inquiries_received_total ${this.domainCounters.inquiriesReceivedTotal}`);
 
     return lines.join("\n") + "\n";
   }

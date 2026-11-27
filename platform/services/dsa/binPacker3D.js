@@ -94,13 +94,16 @@ function evaluateHamperPacking(box, items) {
   });
 
   for (const item of sortedItems) {
-    const l = item.length_mm || 0;
-    const w = item.width_mm || 0;
-    const h = item.height_mm || 0;
-    const weight = item.weight_g || 0;
+    const l = Number(item.length_mm ?? item.l_mm ?? 0);
+    const w = Number(item.width_mm ?? item.w_mm ?? 0);
+    const h = Number(item.height_mm ?? item.h_mm ?? 0);
+    const weight = Number(item.weight_g ?? item.weightGrams ?? 0);
+    const mustKeepUpright = Boolean(item.must_keep_upright ?? item.mustBeUpright ?? item.keep_upright);
+    const isFragile = Boolean(item.is_fragile ?? item.isFragile);
+    const isTempSensitive = Boolean(item.temperature_sensitive ?? item.temperatureSensitive);
 
     // Dimension boundary check
-    if (item.must_keep_upright) {
+    if (mustKeepUpright) {
       // Must stay standing upright: height is fixed on vertical Z axis
       const fitsNormal = l <= box.length_mm && w <= box.width_mm && h <= box.height_mm;
       const fitsRotatedFootprint = w <= box.length_mm && l <= box.width_mm && h <= box.height_mm;
@@ -117,12 +120,12 @@ function evaluateHamperPacking(box, items) {
     }
 
     // Volume calculation with fragile cushioning factor
-    const rawVolume = (l && w && h) ? (l * w * h) : (item.volume_mm3 || 0);
-    const effectiveVolume = item.is_fragile ? rawVolume * FRAGILE_VOLUME_MULTIPLIER : rawVolume;
+    const rawVolume = (l && w && h) ? (l * w * h) : (Number(item.volume_mm3 ?? (item.volumeCm3 ? item.volumeCm3 * 1000 : 0)));
+    const effectiveVolume = isFragile ? rawVolume * FRAGILE_VOLUME_MULTIPLIER : rawVolume;
     totalItemVolumeMm3 += effectiveVolume;
     totalItemWeightG += weight;
 
-    if (item.temperature_sensitive) {
+    if (isTempSensitive) {
       hasChilled = true;
     } else {
       hasAmbient = true;

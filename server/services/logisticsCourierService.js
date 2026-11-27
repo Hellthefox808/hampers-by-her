@@ -6,7 +6,9 @@
  * carrier tracking webhook ingestion, and Non-Delivery Report (NDR) recovery workflows.
  */
 
+const crypto = require("crypto");
 const { OrderService } = require("./orderService");
+const { persistenceEngine } = require("./persistenceEngine");
 const { resolveDeliverySla } = require("../../platform/services/dsa/logisticsSlaResolver");
 
 const CARRIER_TIERS = {
@@ -21,6 +23,36 @@ class LogisticsCourierService {
     this.manifests = new Map(); // orderNumber -> Manifest
     this.awbLookup = new Map(); // awb -> orderNumber
     this.ndrLedger = new Map(); // orderNumber -> Array<NDREvent>
+
+    try {
+      const saved = persistenceEngine.loadState();
+      if (saved && Array.isArray(saved.shipments)) {
+        for (const manifest of saved.shipments) {
+          if (manifest?.orderNumber && manifest?.awb) {
+            this.manifests.set(manifest.orderNumber, manifest);
+            this.awbLookup.set(manifest.awb, manifest.orderNumber);
+          }
+        }
+      }
+    } catch {
+      // Fresh shipment map fallback
+    }
+
+    persistenceEngine.registerStateProvider("shipments", () => Array.from(this.manifests.values()));
+    persistenceEngine.registerHydrator((state) => this.rehydrateFromState(state?.shipments));
+  }
+
+  /**
+   * Merges cold-start shipping manifests recovered from PostgreSQL/Supabase.
+   */
+  rehydrateFromState(shipments = []) {
+    if (!Array.isArray(shipments)) return;
+    for (const manifest of shipments) {
+      if (manifest?.orderNumber && manifest?.awb) {
+        this.manifests.set(manifest.orderNumber, manifest);
+        this.awbLookup.set(manifest.awb, manifest.orderNumber);
+      }
+    }
   }
 
   /**
@@ -52,7 +84,7 @@ class LogisticsCourierService {
     }
 
     const carrierConfig = CARRIER_TIERS[sla.zone] || CARRIER_TIERS.SURFACE_NATIONAL;
-    const awb = `HBH-AWB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+    const awb = `HBH-AWB-2026-${crypto.randomInt(100000, 1000000)}`;
 
     const manifest = {
       orderNumber,
@@ -100,8 +132,8 @@ class LogisticsCourierService {
         actor: manifest.carrier,
         notes: `Carrier AWB ${manifest.awb} dispatched via ${manifest.carrier}`
       });
-      OrderService.syncPersistence();
     }
+    OrderService.syncPersistence();
 
     return manifest;
   }

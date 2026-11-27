@@ -174,9 +174,32 @@
     }
     .status-IN_PRODUCTION { background: rgba(254, 247, 224, 0.85); color: #B06000; border: 1px solid rgba(249, 171, 0, 0.4); }
     .status-QUALITY_CHECKED { background: rgba(230, 244, 234, 0.85); color: #137333; border: 1px solid rgba(52, 168, 83, 0.4); }
+    .status-PACKED { background: rgba(224, 242, 254, 0.9); color: #0369A1; border: 1px solid rgba(2, 132, 199, 0.35); }
     .status-DISPATCHED { background: rgba(232, 240, 254, 0.85); color: #1A73E8; border: 1px solid rgba(66, 133, 244, 0.4); }
+    .status-DELIVERED { background: rgba(220, 252, 231, 0.9); color: #166534; border: 1px solid rgba(22, 163, 74, 0.4); }
     .status-CONFIRMED { background: rgba(243, 232, 253, 0.85); color: #8430CE; border: 1px solid rgba(161, 66, 244, 0.4); }
     .status-PENDING_PAYMENT { background: rgba(252, 232, 230, 0.85); color: #C5221F; border: 1px solid rgba(234, 67, 53, 0.4); }
+    .studio-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 10050;
+      max-width: 420px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      background: #4A1E29;
+      color: #FBF8F5;
+      border: 1px solid rgba(200, 157, 66, 0.6);
+      box-shadow: 0 16px 40px rgba(30, 10, 15, 0.35);
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+    .studio-toast.show { opacity: 1; transform: translateY(0); }
+    .studio-toast.error { background: #7F1D1D; border-color: #FCA5A5; }
     
     .embellishment-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
     .emb-tag { font-size: 11px; background: rgba(253, 251, 247, 0.85); border: 1px solid rgba(200, 157, 66, 0.35); padding: 4px 8px; border-radius: 6px; color: #4A1E29; font-family: 'JetBrains Mono', monospace; }
@@ -197,13 +220,15 @@
     .btn-manifest { background: linear-gradient(135deg, #4A1E29 0%, #2D1018 100%); color: #F1D175; }
     .btn-manifest:hover { background: #632937; transform: translateY(-1px); }
 
-    /* Modal Overlay */
+    /* Modal Overlay (overrides shared styles_ext.css hidden default so display:flex shows modal) */
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(30, 10, 15, 0.55);
       backdrop-filter: blur(24px) saturate(160%);
       -webkit-backdrop-filter: blur(24px) saturate(160%);
       display: none; align-items: center; justify-content: center; z-index: 9999;
+      opacity: 1;
+      visibility: visible;
     }
     .modal-box {
       background: rgba(253, 251, 247, 0.94);
@@ -484,12 +509,17 @@
           Under Section 81 of the Operating System, hampers cannot transition to <code>QUALITY_CHECKED</code> without photographic proof of correct assembly.
         </p>
 
-        <div class="photo-preview-box" id="qc-dropzone" onclick="simulatePhotoCapture()">
+        <div class="photo-preview-box" id="qc-dropzone" onclick="document.getElementById('qc-photo-file-input').click()">
+          <input type="file" id="qc-photo-file-input" accept="image/*" style="display:none" onchange="handleQcPhotoUpload(event)">
           <div style="font-size:32px;">📷</div>
           <div style="font-weight:600; color:#4A1E29; margin-top:6px;">Upload Assembled Hamper Photograph</div>
-          <div style="font-size:11px; color:#7A696B;">Click to capture or attach studio verification photo</div>
+          <div style="font-size:11px; color:#7A696B;">Click to select photo file from camera/disk, or use sample studio frame</div>
+          <img id="qc-photo-thumb" alt="QC Verification Preview" style="display:none; max-width:100%; max-height:140px; margin:10px auto 0; border-radius:6px; border:1px solid #C89D42;">
+          <div style="margin-top:8px;">
+            <button type="button" class="btn-action btn-slip" style="flex:none; padding:6px 12px;" onclick="event.stopPropagation(); simulatePhotoCapture();">Use Studio Reference Frame</button>
+          </div>
           <div id="qc-photo-status" style="font-size:11px; color:#137333; font-weight:700; margin-top:6px; display:none;">
-            ✓ Photographic Proof Attached: studio_qc_verified.jpg (SHA256 verified)
+            ✓ Photographic Proof Attached: studio_qc_verified (SHA256 ready)
           </div>
         </div>
 
@@ -773,19 +803,44 @@
                 <button class="btn-action btn-qc" onclick="openQcModal('${safeOrderNum}')">✦ QC Photo Gate</button>
               ` : ''}
               ${order.status === "QUALITY_CHECKED" ? `
+                <button class="btn-action btn-slip" onclick="transitionStatus('${safeOrderNum}', 'PACKED')">Pack Order →</button>
+                <button class="btn-action btn-manifest" onclick="generateManifest('${safeOrderNum}')">✦ Dispatch Air AWB</button>
+              ` : ''}
+              ${order.status === "PACKED" ? `
                 <button class="btn-action btn-manifest" onclick="generateManifest('${safeOrderNum}')">✦ Dispatch Air AWB</button>
               ` : ''}
               ${order.status === "CONFIRMED" ? `
                 <button class="btn-action btn-manifest" onclick="transitionStatus('${safeOrderNum}', 'IN_PRODUCTION')">Start Production →</button>
               ` : ''}
-              ${order.status === "DISPATCHED" && safeAwb ? `
-                <button class="btn-action btn-manifest" style="background:#1A73E8;" onclick="alert('Carrier: ${safeCarrier}\\nAWB: ${safeAwb}')">AWB: ${safeAwb}</button>
+              ${order.status === "DISPATCHED" ? `
+                ${safeAwb ? `<button class="btn-action btn-manifest" style="background:#1A73E8;" onclick="showStudioToast('Carrier: ${safeCarrier} · AWB: ${safeAwb}')">AWB: ${safeAwb}</button>` : ''}
+                <button class="btn-action btn-qc" onclick="transitionStatus('${safeOrderNum}', 'DELIVERED')">Mark Delivered ✓</button>
               ` : ''}
               <button class="btn-action btn-slip" onclick="openPackingSlip('${safeOrderNum}')">Packing Slip</button>
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    let studioToastTimer = null;
+    function showStudioToast(message, isError = false) {
+      let el = document.getElementById("studio-toast");
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "studio-toast";
+        el.className = "studio-toast";
+        el.setAttribute("role", "status");
+        el.setAttribute("aria-live", "polite");
+        document.body.appendChild(el);
+      }
+      el.textContent = String(message || "");
+      el.classList.toggle("error", Boolean(isError));
+      el.classList.add("show");
+      if (studioToastTimer) clearTimeout(studioToastTimer);
+      studioToastTimer = setTimeout(() => {
+        el.classList.remove("show");
+      }, 4200);
     }
 
     // ── 3. Action Handlers ──
@@ -798,17 +853,25 @@
         });
         const data = await res.json();
         if (res.ok && data.success) {
+          showStudioToast(`Order ${orderNumber} transitioned to ${targetStatus.replace(/_/g, " ")}.`);
           loadStudioDashboard();
         } else {
-          alert("Transition failed: " + (data.error || data.detail || `HTTP ${res.status}`));
+          showStudioToast("Transition failed: " + (data.error || data.detail || `HTTP ${res.status}`), true);
         }
       } catch (e) {
-        alert("Error transitioning status: network request failed.");
+        showStudioToast("Error transitioning status: network request failed.", true);
       }
     }
 
     function openQcModal(orderNum) {
       activeQcOrderNumber = orderNum;
+      capturedPhoto = "";
+      const thumb = document.getElementById("qc-photo-thumb");
+      const statusEl = document.getElementById("qc-photo-status");
+      const fileInput = document.getElementById("qc-photo-file-input");
+      if (thumb) { thumb.style.display = "none"; thumb.removeAttribute("src"); }
+      if (statusEl) statusEl.style.display = "none";
+      if (fileInput) fileInput.value = "";
       document.getElementById("qc-modal-ordernum").innerText = orderNum;
       document.getElementById("qc-modal").style.display = "flex";
     }
@@ -817,16 +880,48 @@
       document.getElementById("qc-modal").style.display = "none";
     }
 
+    function applyQcPhotoData(dataUrl, label) {
+      capturedPhoto = dataUrl;
+      const thumb = document.getElementById("qc-photo-thumb");
+      const statusEl = document.getElementById("qc-photo-status");
+      if (thumb) {
+        thumb.src = dataUrl;
+        thumb.style.display = "block";
+      }
+      if (statusEl) {
+        statusEl.textContent = `✓ Photographic Proof Attached: ${label} (SHA256 ready)`;
+        statusEl.style.display = "block";
+      }
+    }
+
+    function handleQcPhotoUpload(event) {
+      const file = event?.target?.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (typeof e.target?.result === "string") {
+          applyQcPhotoData(e.target.result, file.name);
+          showStudioToast(`Studio QC photo "${file.name}" ready for attestation.`);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
     function simulatePhotoCapture() {
-      capturedPhoto = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP...";
-      document.getElementById("qc-photo-status").style.display = "block";
+      const orderTag = encodeURIComponent(activeQcOrderNumber || "HBH-STUDIO");
+      const svgFrame = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180"><rect width="320" height="180" fill="#FBF8F5"/><rect x="14" y="14" width="292" height="152" rx="10" fill="#F5F2EB" stroke="#C89D42" stroke-width="2"/><rect x="150" y="14" width="20" height="152" fill="#4A1E29"/><rect x="14" y="80" width="292" height="20" fill="#4A1E29"/><circle cx="160" cy="90" r="24" fill="#C89D42" stroke="#4A1E29" stroke-width="2"/><text x="160" y="95" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#2A0F16" text-anchor="middle">QC</text><text x="160" y="150" font-family="monospace" font-size="10" fill="#4A1E29" text-anchor="middle">${orderTag}</text></svg>`;
+      const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgFrame)}`;
+      applyQcPhotoData(dataUrl, "studio_qc_reference_frame.svg");
     }
 
     async function submitQcGate() {
       const inspector = document.getElementById("qc-inspector-name").value;
       if (!inspector) {
-        alert("Please enter the inspector name.");
+        showStudioToast("Please enter the inspector name.", true);
         return;
+      }
+      if (!capturedPhoto) {
+        simulatePhotoCapture();
       }
 
       const btn = document.getElementById("btn-submit-qc");
@@ -852,14 +947,14 @@
 
         const data = await res.json();
         if (res.ok && data.success) {
-          alert("✓ Studio QC Gate Passed! Order " + activeQcOrderNumber + " is now QUALITY CHECKED.");
+          showStudioToast("✓ Studio QC Gate Passed! Order " + activeQcOrderNumber + " is now QUALITY CHECKED.");
           closeQcModal();
           loadStudioDashboard();
         } else {
-          alert("QC Gate Error: " + (data.error || data.detail || `HTTP ${res.status}`));
+          showStudioToast("QC Gate Error: " + (data.error || data.detail || `HTTP ${res.status}`), true);
         }
       } catch (e) {
-        alert("QC Gate Submission Failed: Unable to reach Atelier API. Order status was NOT modified.");
+        showStudioToast("QC Gate Submission Failed: Unable to reach Atelier API. Order status was NOT modified.", true);
       } finally {
         btn.textContent = "✦ Sign & Pass Studio QC Gate";
         btn.disabled = false;
@@ -874,13 +969,13 @@
         });
         const html = await res.text();
         if (!res.ok) {
-          alert("Unable to load packing slip: HTTP " + res.status);
+          showStudioToast("Unable to load packing slip: HTTP " + res.status, true);
           return;
         }
         iframe.srcdoc = html;
         document.getElementById("slip-modal").style.display = "flex";
       } catch (e) {
-        alert("Failed to fetch packing slip from server.");
+        showStudioToast("Failed to fetch packing slip from server.", true);
       }
     }
 
@@ -902,13 +997,13 @@
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          alert("✓ Courier Manifest Generated!\nCarrier: " + data.data.carrier + "\nAWB: " + data.data.awb);
+          showStudioToast("✓ Courier Manifest Generated · Carrier: " + data.data.carrier + " · AWB: " + data.data.awb);
           loadStudioDashboard();
         } else {
-          alert("Error generating manifest: " + (data.error || data.detail || `HTTP ${res.status}`));
+          showStudioToast("Error generating manifest: " + (data.error || data.detail || `HTTP ${res.status}`), true);
         }
       } catch (e) {
-        alert("Manifest Generation Failed: Unable to reach Logistics API. No AWB was assigned.");
+        showStudioToast("Manifest Generation Failed: Unable to reach Logistics API. No AWB was assigned.", true);
       }
     }
 

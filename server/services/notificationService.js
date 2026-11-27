@@ -8,6 +8,15 @@
 
 const { whatsappService } = require("./whatsappService");
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 class NotificationService {
   constructor() {
     this.dispatchLedger = []; // Array<{ id, orderNumber, channel, template, status, timestamp }>
@@ -15,17 +24,14 @@ class NotificationService {
 
   /**
    * Dispatches multi-channel notification for an order event
-   * @param {Object} params
-   * @param {string} params.event "ORDER_CONFIRMED" | "IN_PRODUCTION" | "QC_PASSED" | "DISPATCHED" | "DELIVERED"
-   * @param {Object} params.order Order details
-   * @param {string} [params.customerPhone]
-   * @param {string} [params.customerEmail]
-   * @returns {Object} Dispatch result
    */
   async dispatchOrderNotification({ event, order, customerPhone, customerEmail }) {
-    const phone = customerPhone || order.customer?.phone || order.shippingAddress?.phone || "919876543210";
+    const phone = customerPhone || order.customer?.phone || order.shippingAddress?.phone || order.shippingAddress?.phoneNumber || "919876543210";
     const email = customerEmail || order.customer?.email || "patron@example.com";
     const orderNumber = order.orderNumber;
+    const totalRupees = order.pricing?.totalRupees
+      || order.pricing?.formatted?.totalRupees
+      || ((Number(order.pricing?.totalPaise || 0) / 100).toFixed(2));
 
     const results = {
       event,
@@ -37,27 +43,37 @@ class NotificationService {
     // 1. WhatsApp Channel (Primary Luxury Channel)
     try {
       let waTemplate = "hbh_order_update_generic_v1";
-      let waParameters = [order.customer?.name || "Patron", orderNumber];
+      let waRes;
 
       if (event === "ORDER_CONFIRMED") {
         waTemplate = "hbh_order_confirmed_v2";
-        waParameters = [order.customer?.name || "Patron", orderNumber, order.pricing?.formatted?.totalRupees || "4,500.00"];
-      } else if (event === "DISPATCHED") {
+        waRes = await whatsappService.sendTemplate(phone, waTemplate, {
+          customer_name: order.customer?.name || "Patron",
+          order_number: orderNumber,
+          item_count: order.items?.length || 1,
+          total_amount: `₹${totalRupees}`,
+          eta_date: order.deliveryDate || "2-4 Business Days"
+        });
+      } else if (event === "DISPATCHED" || event === "ORDER_DISPATCHED") {
         waTemplate = "hbh_dispatch_update_v1";
-        waParameters = [order.customer?.name || "Patron", orderNumber, order.tracking?.awb || "AWB-IN-PROGRESS", order.tracking?.trackingUrl || "https://track.hampersbyher.com"];
+        waRes = await whatsappService.sendTemplate(phone, waTemplate, {
+          order_number: orderNumber,
+          carrier_name: order.tracking?.carrier || "BlueDart Express",
+          awb_number: order.tracking?.awb || "AWB-IN-PROGRESS",
+          tracking_link: order.tracking?.trackingUrl || `https://hampersbyher.com/?openTracking=1&order=${encodeURIComponent(orderNumber)}`
+        });
+      } else {
+        waRes = await whatsappService.sendTextMessage(
+          phone,
+          `Hampers by Her · Order ${orderNumber}: ${this._formatEventSubject(event, orderNumber)}`
+        );
       }
-
-      const waRes = await whatsappService.sendTemplateMessage({
-        to: phone,
-        templateName: waTemplate,
-        parameters: waParameters
-      });
 
       results.channelsDispatched.push({
         channel: "WHATSAPP",
         template: waTemplate,
-        success: waRes.success,
-        messageId: waRes.data?.messages?.[0]?.id
+        success: Boolean(waRes?.success),
+        messageId: waRes?.messages?.[0]?.id || waRes?.data?.messages?.[0]?.id || null
       });
     } catch (err) {
       results.channelsDispatched.push({
@@ -87,19 +103,25 @@ class NotificationService {
 
     // Record in audit ledger
     this.dispatchLedger.push(results);
+    if (this.dispatchLedger.length > 500) {
+      this.dispatchLedger = this.dispatchLedger.slice(-500);
+    }
 
     return results;
   }
 
   /**
-   * Generates formatted transactional email receipt HTML
-   * @param {Object} order
-   * @param {string} event
-   * @returns {string} HTML markup
+   * Generates formatted transactional email receipt HTML with strict XSS escaping
    */
   generateReceiptEmailHtml(order, event) {
-    const items = order.items || [];
-    const recipient = order.shippingAddress?.fullName || order.customer?.name || "Valued Patron";
+    const items = Array.isArray(order.items) ? order.items : [];
+    const recipient = escapeHtml(order.shippingAddress?.fullName || order.shippingAddress?.recipientName || order.customer?.name || "Valued Patron");
+    const safeOrderNumber = escapeHtml(order.orderNumber);
+    const safeStatus = escapeHtml(order.status || "CONFIRMED");
+    const safeBox = escapeHtml(order.box?.name || "Signature Keepsake Box");
+    const safeRibbon = escapeHtml(order.ribbon?.name || order.ribbon || "Burgundy Merlot Raw Silk");
+    const safeSeal = escapeHtml(order.waxSeal?.name || order.waxSeal || "Vintage Gold Laurel");
+    const safeMonogram = escapeHtml(order.customMonogram || "HBH");
 
     return `<!DOCTYPE html>
 <html>
@@ -124,23 +146,28 @@ class NotificationService {
     </div>
     <div class="body-content">
       <p>Dear <strong>${recipient}</strong>,</p>
-      <p>${this._getEventMessage(event, order.orderNumber)}</p>
+      <p>${this._getEventMessage(event, safeOrderNumber)}</p>
       <div class="order-box">
-        <strong>Order: ${order.orderNumber}</strong><br>
-        Status: <span style="color:#C89D42; font-weight:700;">${order.status}</span><br>
-        Packaging Box: ${order.box?.name || "Signature Keepsake Box"}<br>
-        Ribbon: ${order.ribbon?.name || "Burgundy Merlot Raw Silk"}<br>
-        Wax Seal: ${order.waxSeal?.name || "Vintage Gold Laurel"} (Monogram: <strong>${order.customMonogram || "HBH"}</strong>)
+        <strong>Order: ${safeOrderNumber}</strong><br>
+        Status: <span style="color:#C89D42; font-weight:700;">${safeStatus}</span><br>
+        Packaging Box: ${safeBox}<br>
+        Ribbon: ${safeRibbon}<br>
+        Wax Seal: ${safeSeal} (Monogram: <strong>${safeMonogram}</strong>)
       </div>
       <div style="font-weight: 700; margin-bottom: 10px;">Hamper Contents:</div>
-      ${items.map(i => `
+      ${items.map(i => {
+        const itemTitle = escapeHtml(i.name || i.title || "Gourmet Component");
+        const qty = Number(i.quantity || 1);
+        const unitPaise = Number(i.pricePaise ?? i.basePricePaise ?? 0);
+        return `
         <div class="item-row">
-          <span>${i.name || i.title || "Gourmet Component"} x ${i.quantity || 1}</span>
-          <span>₹${((i.pricePaise || 50000) / 100).toFixed(2)}</span>
+          <span>${itemTitle} x ${qty}</span>
+          <span>₹${(unitPaise / 100).toFixed(2)}</span>
         </div>
-      `).join("")}
+      `;
+      }).join("")}
       <div style="margin-top: 25px; text-align: center;">
-        <a href="https://hampersbyher.com/orders/${order.orderNumber}" style="background: #4A1E29; color: #F1D175; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: 600; display: inline-block;">
+        <a href="https://hampersbyher.com/?openTracking=1&order=${encodeURIComponent(order.orderNumber || "")}" style="background: #4A1E29; color: #F1D175; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: 600; display: inline-block;">
           View Live Order Journey
         </a>
       </div>

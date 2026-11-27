@@ -1,9 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
+const fs = require("fs");
 const path = require("path");
 const apiRoutes = require("./routes/api");
 const { metricsCollector } = require("./services/metricsService");
+const { OrderService } = require("./services/orderService");
+const { postgresStore } = require("./services/postgresClient");
 
 const app = express();
 app.disable("x-powered-by");
@@ -82,11 +85,18 @@ app.use((req, res, next) => {
 });
 
 // Root Health & Telemetry Probes
-app.get("/health", (req, res) => {
+app.get("/health", async (req, res) => {
+  const dbStatus = req.query.deep === "1"
+    ? await postgresStore.ping()
+    : {
+        enabled: postgresStore.isEnabled(),
+        mode: postgresStore.getConnectionMode()
+      };
   res.json({
     status: "healthy",
     uptimeSeconds: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
+    database: dbStatus,
     eventLoopLagMs: (metricsCollector.getEventLoopLagSeconds() * 1000).toFixed(2),
     memory: {
       rssMb: (process.memoryUsage().rss / 1024 / 1024).toFixed(2),
@@ -116,14 +126,19 @@ app.use("/api", (req, res) => {
   });
 });
 
+const rawWebsiteDir = path.join(__dirname, "..", "website");
+const vercelPublicDir = path.join(__dirname, "..", "public");
+const websitePath = fs.existsSync(rawWebsiteDir) ? rawWebsiteDir : vercelPublicDir;
+
 // Interactive Archify Architecture Diagram Route
 app.get(["/architecture", "/architecture.html"], (req, res) => {
   res.setHeader("Cache-Control", "no-cache");
-  res.sendFile(path.join(__dirname, "..", "docs", "diagrams", "hampers_by_her_architecture.html"));
+  const diagramPath = path.join(__dirname, "..", "docs", "diagrams", "hampers_by_her_architecture.html");
+  const target = fs.existsSync(diagramPath) ? diagramPath : path.join(websitePath, "architecture.html");
+  res.sendFile(target);
 });
 
 // Clean extensionless routes for Storybook Storefront Multi-Page Views
-const websitePath = path.join(__dirname, "..", "website");
 const PAGE_ROUTES = [
   ["/catalog", "catalog.html"],
   ["/hamper", "hamper.html"],
@@ -200,6 +215,7 @@ if (require.main === module) {
 
   const gracefulShutdown = (signal) => {
     console.log(`Received ${signal}. Shutting down gracefully...`);
+    OrderService.flushPersistence();
     metricsCollector.shutdown();
     httpServer.close(() => {
       console.log("HTTP server closed.");

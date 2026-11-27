@@ -5,10 +5,12 @@
  */
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const crypto = require("crypto");
 const { scoreInboundLead, leadPriorityQueue } = require("../../platform/services/dsa");
 const { CatalogService } = require("./catalogService");
+const { postgresStore, resolveConnectionString } = require("./postgresClient");
 
 const ARCHIVED_EDITIONS = [
   {
@@ -75,11 +77,51 @@ const ARCHIVED_EDITIONS = [
 
 class InquiryService {
   constructor(dataDir = null) {
-    this.dataDir = dataDir || path.join(__dirname, "..", "..", "data");
+    const isReadOnlyRuntime = Boolean(
+      process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.READ_ONLY_FS
+    );
+    this.dataDir = dataDir || (
+      isReadOnlyRuntime
+        ? path.join(os.tmpdir(), "hampers-by-her-data")
+        : path.join(__dirname, "..", "..", "data")
+    );
     this.storePath = path.join(this.dataDir, "inquiries_store.json");
     this.tempPath = path.join(this.dataDir, "inquiries_store.json.tmp");
     this.inquiries = [];
+    this._hydrationPromise = null;
+    this._hydratedUrl = null;
     this._load();
+  }
+
+  async ensureHydrated(force = false) {
+    if (!postgresStore.isEnabled()) return false;
+    const activeUrl = resolveConnectionString();
+    if (this._hydrationPromise && !force && this._hydratedUrl === activeUrl) {
+      return this._hydrationPromise;
+    }
+    this._hydratedUrl = activeUrl;
+    this._hydrationPromise = (async () => {
+      try {
+        const dbRows = await postgresStore.loadInquiries();
+        if (!Array.isArray(dbRows)) return false;
+        const byId = new Map();
+        for (const item of dbRows) {
+          if (item?.id) byId.set(item.id, item);
+        }
+        for (const item of this.inquiries) {
+          if (item?.id && !byId.has(item.id)) byId.set(item.id, item);
+        }
+        this.inquiries = Array.from(byId.values())
+          .sort((a, b) => Date.parse(b.createdAt || 0) - Date.parse(a.createdAt || 0))
+          .slice(0, 500);
+        return true;
+      } catch (err) {
+        console.warn("[InquiryService] Postgres hydration skipped:", err.message);
+        this._hydrationPromise = null;
+        return false;
+      }
+    })();
+    return this._hydrationPromise;
   }
 
   _load() {
@@ -95,7 +137,7 @@ class InquiryService {
     }
   }
 
-  _persist() {
+  _persist(latestInquiry = null) {
     try {
       if (!fs.existsSync(this.dataDir)) {
         fs.mkdirSync(this.dataDir, { recursive: true });
@@ -109,10 +151,15 @@ class InquiryService {
         null,
         2
       );
-      fs.writeFileSync(this.tempPath, payload, "utf8");
-      fs.renameSync(this.tempPath, this.storePath);
+      const pidTemp = `${this.tempPath}.${process.pid}.tmp`;
+      fs.writeFileSync(pidTemp, payload, "utf8");
+      fs.renameSync(pidTemp, this.storePath);
     } catch {
       // Graceful non-fatal persistence fallback in read-only environments
+    }
+
+    if (postgresStore.isEnabled() && latestInquiry) {
+      postgresStore.scheduleBackground(postgresStore.upsertInquiry(latestInquiry));
     }
   }
 
@@ -182,7 +229,7 @@ class InquiryService {
     if (this.inquiries.length > 500) {
       this.inquiries = this.inquiries.slice(0, 500);
     }
-    this._persist();
+    this._persist(inquiry);
 
     const waSummary = `Dear Hampers by Her, I'm ${name} (${phone})` +
       (city ? ` from ${city}` : "") +

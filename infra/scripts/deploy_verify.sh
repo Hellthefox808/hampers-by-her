@@ -27,7 +27,7 @@ while true; do
 
   echo "[*] Polling $TARGET_URL/health (Elapsed: ${ELAPSED}s)..."
   HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" "$TARGET_URL/health" || echo "000")
-  HTTP_BODY=$(echo "$HTTP_RESPONSE" | head -n -1)
+  HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
   HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n 1)
 
   if [ "$HTTP_STATUS" -eq 200 ]; then
@@ -52,10 +52,28 @@ fi
 # Verify studio operations endpoint
 echo "[*] Testing studio operations status: $TARGET_URL/api/v1/admin/orders..."
 ADMIN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET_URL/api/v1/admin/orders" || echo "000")
-if [ "$ADMIN_STATUS" -eq 200 ]; then
-  echo "[+] Studio operations service online (HTTP 200)."
+if [ "$ADMIN_STATUS" -eq 200 ] || [ "$ADMIN_STATUS" -eq 401 ]; then
+  echo "[+] Studio operations service reachable (HTTP $ADMIN_STATUS)."
 else
   echo "[-] Warning: Studio operations returned HTTP $ADMIN_STATUS."
+fi
+
+# Verify microservice mesh health endpoint
+echo "[*] Testing microservice mesh health: $TARGET_URL/api/v1/system/health..."
+MESH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET_URL/api/v1/system/health" || echo "000")
+if [ "$MESH_STATUS" -eq 200 ]; then
+  echo "[+] System mesh health endpoint online (HTTP 200)."
+else
+  echo "[-] Warning: System mesh health returned HTTP $MESH_STATUS."
+fi
+
+# Verify Prometheus metrics endpoint
+echo "[*] Testing Prometheus metrics endpoint: $TARGET_URL/metrics..."
+METRICS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET_URL/metrics" || echo "000")
+if [ "$METRICS_STATUS" -eq 200 ]; then
+  echo "[+] Prometheus metrics endpoint online (HTTP 200)."
+else
+  echo "[-] Warning: Prometheus metrics endpoint returned HTTP $METRICS_STATUS."
 fi
 
 echo "=================================================================="

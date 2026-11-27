@@ -118,7 +118,7 @@ class WhatsAppService {
       return {
         success: true,
         mode: "sandbox",
-        messages: [{ id: `wamid.HBHSANDBOX_${Date.now()}_${Math.random().toString(36).substring(7)}` }]
+        messages: [{ id: `wamid.HBHSANDBOX_${Date.now()}_${crypto.randomBytes(4).toString("hex")}` }]
       };
     }
 
@@ -228,10 +228,34 @@ class WhatsAppService {
   }
 
   /**
+   * Compatibility adapter supporting object-style template dispatch ({ to, templateName, parameters })
+   */
+  async sendTemplateMessage({ to, templateName, parameters } = {}) {
+    const templateDef = HSM_TEMPLATES[templateName];
+    if (!templateDef) {
+      return this.sendTextMessage(
+        to,
+        Array.isArray(parameters) ? parameters.join(" · ") : String(parameters || "")
+      );
+    }
+
+    if (Array.isArray(parameters)) {
+      const mapped = {};
+      const paramNames = templateDef.components?.[0]?.parameters || [];
+      paramNames.forEach((key, idx) => {
+        if (parameters[idx] !== undefined) mapped[key] = parameters[idx];
+      });
+      return this.sendTemplate(to, templateName, mapped);
+    }
+
+    return this.sendTemplate(to, templateName, parameters || {});
+  }
+
+  /**
    * Dispatch Transactional Order Notifications
    */
   async notifyOrderEvent(order, eventType) {
-    const phone = order.customer?.phone || order.shippingAddress?.phone;
+    const phone = order.customer?.phone || order.shippingAddress?.phone || order.shippingAddress?.phoneNumber;
     if (!phone) {
       return { success: false, reason: "Missing customer phone number" };
     }
@@ -247,11 +271,12 @@ class WhatsAppService {
         });
 
       case "ORDER_DISPATCHED":
+      case "DISPATCHED":
         return this.sendTemplate(phone, "hbh_dispatch_update_v1", {
           order_number: order.orderNumber,
-          carrier_name: order.fulfillment?.carrier || "BlueDart Express",
-          awb_number: order.fulfillment?.awb || "HBH-EXP-91823",
-          tracking_link: `https://hampersbyher.com/track/${order.orderNumber}`
+          carrier_name: order.tracking?.carrier || order.fulfillment?.carrier || "BlueDart Express",
+          awb_number: order.tracking?.awb || order.fulfillment?.awb || "HBH-EXP-PENDING",
+          tracking_link: `https://hampersbyher.com/?openTracking=1&order=${encodeURIComponent(order.orderNumber)}`
         });
 
       default:
@@ -347,9 +372,17 @@ class WhatsAppService {
       const pin = pinMatch ? pinMatch[0] : raw.replace(/\D/g, "");
       if (pin.length === 6) {
         const result = DeliveryService.checkPincode(pin);
+        if (!result.isServiceable) {
+          return this.sendTextMessage(
+            phone,
+            `We couldn't verify express serviceability for PIN ${pin}: ${result.error || "Extended zone"}. Type *AGENT* to arrange manual courier dispatch.`
+          );
+        }
+        const etaDays = result.standardDays || 3;
+        const slaHours = etaDays * 24;
         const pinText = `📦 *Delivery Serviceability for PIN ${pin}*\n\n` +
-          `• *Zone:* ${result.city || result.tier}\n` +
-          `• *Estimated Time:* ${result.slaHours} hours (${result.expressAvailable ? "Air Express Eligible" : "Standard Surface"})\n` +
+          `• *Zone:* ${result.city || result.zone}${result.state ? `, ${result.state}` : ""}\n` +
+          `• *Estimated Time:* ${etaDays} business days (~${slaHours}h · ${result.expressAvailable ? "Air Express Eligible" : "Standard Surface"})\n` +
           `• *Free Shipping:* On orders above ₹2,999\n\n` +
           `Would you like to explore curated hampers for this zone?`;
 

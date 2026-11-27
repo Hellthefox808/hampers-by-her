@@ -17,12 +17,14 @@ node_modules/
 
 # Build & Dist
 .next/
+public/
 out/
 build/
 dist/
 android/build/
 *.apk
 *.keystore
+supabase/.temp/
 
 # Environment
 .env

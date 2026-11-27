@@ -541,6 +541,11 @@ class VoiceAiGateway {
           const budgetMatch = !maxBudgetRupees || h.basePricePaise <= maxBudgetRupees * 100;
           return occMatch && budgetMatch;
         });
+        if (matches.length === 0 && maxBudgetRupees) {
+          matches = CURATED_HAMPERS
+            .filter((h) => h.basePricePaise <= maxBudgetRupees * 100)
+            .sort((a, b) => b.basePricePaise - a.basePricePaise);
+        }
         if (matches.length === 0) matches = CURATED_HAMPERS.slice(0, 2);
         return { hampers: matches, count: matches.length };
       }
@@ -638,14 +643,28 @@ class VoiceAiGateway {
     }
 
     // 2. Occasion & Budget Catalog Search (powered by real intentTokenizer)
+    const selectWithinBudget = (occasionName) => {
+      const occasionMatches = CURATED_HAMPERS.filter((h) => h.occasion === occasionName);
+      if (!maxBudgetRupees) return occasionMatches[0] || CURATED_HAMPERS[0];
+      const inBudget = occasionMatches.find((h) => h.basePricePaise <= maxBudgetRupees * 100);
+      if (inBudget) return inBudget;
+      const anyInBudget = CURATED_HAMPERS
+        .filter((h) => h.basePricePaise <= maxBudgetRupees * 100)
+        .sort((a, b) => b.basePricePaise - a.basePricePaise)[0];
+      return anyInBudget || occasionMatches[0];
+    };
+
     if (intent.occasion === "WEDDING" || text.includes("wedding") || text.includes("marry") || text.includes("bride")) {
-      const match = CURATED_HAMPERS.find((h) => h.occasion === "Wedding");
+      const match = selectWithinBudget("Wedding");
+      const overBudgetHint = maxBudgetRupees && match.basePricePaise > maxBudgetRupees * 100
+        ? ` Note: our signature '${match.title}' is ₹${match.priceRupees}; ask me to curate a custom hamper under ₹${maxBudgetRupees.toLocaleString("en-IN")} anytime.`
+        : "";
       return {
-        text: `I recommend our signature '${match.title}', priced at ₹${match.priceRupees}. It features elderflower tonic, a wax-sealed greeting card, and dried hydrangeas, wrapped in natural raw silk ribbon. Would you like me to open this hamper?`,
+        text: `I recommend our signature '${match.title}', priced at ₹${match.priceRupees}. It features elderflower tonic, a wax-sealed greeting card, and dried hydrangeas, wrapped in natural raw silk ribbon.${overBudgetHint} Would you like me to open this hamper?`,
         actionCards: [match],
         functionCall: {
           name: "searchHampers",
-          arguments: { occasion: "Wedding", maxBudget: maxBudgetRupees || 4000 },
+          arguments: { occasion: match.occasion, maxBudget: maxBudgetRupees || 4000 },
           result: [match]
         }
       };

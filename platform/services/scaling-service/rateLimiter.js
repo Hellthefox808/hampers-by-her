@@ -7,6 +7,7 @@
 class SlidingWindowRateLimiter {
   constructor(options = {}) {
     this.windows = new Map();
+    this.maxKeys = Number(options.maxKeys) > 0 ? Number(options.maxKeys) : 10000;
     this.tiers = {
       ANONYMOUS: { limit: 60, windowMs: 60000 },       // 60 req/min
       AUTHENTICATED: { limit: 300, windowMs: 60000 },   // 300 req/min
@@ -32,6 +33,21 @@ class SlidingWindowRateLimiter {
     let windowRecord = this.windows.get(key);
 
     if (!windowRecord || now - windowRecord.startTime >= config.windowMs) {
+      if (!windowRecord && this.windows.size >= this.maxKeys) {
+        // Sweep expired entries before evicting oldest key to bound memory
+        for (const [existingKey, existingRecord] of this.windows.entries()) {
+          if (now - existingRecord.startTime >= config.windowMs) {
+            this.windows.delete(existingKey);
+          }
+          if (this.windows.size < this.maxKeys) break;
+        }
+        if (this.windows.size >= this.maxKeys) {
+          const oldestKey = this.windows.keys().next().value;
+          if (oldestKey !== undefined) {
+            this.windows.delete(oldestKey);
+          }
+        }
+      }
       // Initialize new window
       windowRecord = {
         startTime: now,

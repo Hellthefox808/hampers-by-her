@@ -2,8 +2,8 @@
 
 [![Version](https://img.shields.io/badge/Version-2.0.0-4A1E29)](package.json)
 [![Node.js](https://img.shields.io/badge/Node.js-22+_LTS-339933)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-259_Passing_%7C_66_Suites-1C7C54)](tests/)
-[![Playwright E2E](https://img.shields.io/badge/Playwright_QA-54_Checks_Passing-2EAD33)](website/)
+[![Tests](https://img.shields.io/badge/Tests-279_Passing_%7C_68_Suites-1C7C54)](tests/)
+[![Playwright E2E](https://img.shields.io/badge/Playwright_QA-Headless_Chromium_Verified-2EAD33)](website/)
 [![License](https://img.shields.io/badge/License-Proprietary-8F3F14)](package.json)
 
 ---
@@ -215,7 +215,8 @@ docker compose ps
 
 ```bash
 npm run audit:docs      # Audits repository technical deliverables
-npm test                # Runs all 259 automated tests across 66 suites
+npm test                # Runs all 279 automated tests across 68 suites
+npm run build           # Syncs website/ & architecture.html into public/ for Vercel CDN
 npm run build:apk       # Verifies Android sources (or compiles APK when SDK present)
 npm run verify          # Runs audit:docs, full test suite, and Android build check
 ```
@@ -296,10 +297,10 @@ The repository supports both zero-dependency local execution and relational clou
 | Check | Command | Verified Result |
 | :--- | :--- | :--- |
 | **Repository Deliverable Audit** | `npm run audit:docs` | Verifies repo artifacts & local specs (`57/57` when full spec suite is present locally) |
-| **Automated Test Suite** | `npm test` | **259 passing / 0 failing / 0 skipped** across **66 suites** (`tests/` & `platform/tests/`) |
+| **Automated Test Suite** | `npm test` | **279 passing / 0 failing / 0 skipped** across **68 suites** (`tests/` & `platform/tests/`) |
 | **Scoped Suites** | `npm run test:commerce` · `npm run test:platform` · `npm run test:e2e` · `npm run test:dsa` | Runs focused commerce, DSA, RAG, Voice, and E2E integration suites |
 | **Benchmarks** | `npm run benchmark` | Executes runtime micro-benchmark checks |
-| **Headless Browser QA** | Native Python Playwright (`54` desktop & mobile assertions) | Verified `0` console/pageerrors, `0` HTTP `>=400` responses, dark-mode contrast, and mobile zero-overflow |
+| **Headless Browser QA** | Python Playwright (`Desktop 1440x900`, `Mobile 390x844`, 7 subpages, `/admin` Studio OS) | Verified `0` console/page errors, `0` HTTP `>=400` responses, `0` overflow, builder/cart/QC flows |
 
 ---
 

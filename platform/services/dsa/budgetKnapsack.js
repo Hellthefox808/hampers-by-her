@@ -57,6 +57,12 @@ function optimizeHamperForBudget({
   }
 
   const box = STANDARD_BOXES[selectedBoxKey];
+  const builderBoxIdMap = {
+    SMALL: "BOX_KRAFT_RIGID",
+    MEDIUM: "BOX_KRAFT_RIGID",
+    LARGE: "BOX_LINEN_KEEPSAKE",
+    GRANDE: "BOX_VELVET_BORDEAUX"
+  };
   const itemBudgetPaise = budget - boxPricePaise;
 
   // 2. Filter & Rank Catalog Candidates by Aesthetic Density
@@ -125,6 +131,7 @@ function optimizeHamperForBudget({
   return {
     success: selectedItems.length >= 2,
     box: {
+      id: builderBoxIdMap[selectedBoxKey] || "BOX_KRAFT_RIGID",
       sizeKey: selectedBoxKey,
       name: box.name,
       pricePaise: Number(boxPricePaise)

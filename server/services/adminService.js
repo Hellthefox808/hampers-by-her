@@ -7,6 +7,7 @@
  */
 
 const { OrderService } = require("./orderService");
+const { persistenceEngine } = require("./persistenceEngine");
 const { formatRupees } = require("../../platform/services/dsa/pricingLedger");
 
 function escapeHtml(value) {
@@ -37,6 +38,32 @@ class AdminStudioService {
   constructor() {
     this.qcInspectionRecords = new Map(); // orderNumber -> QCInspection
     this.customPackingSlips = new Map(); // orderNumber -> PackingSlip
+
+    try {
+      const saved = persistenceEngine.loadState();
+      if (saved && Array.isArray(saved.qcRecords)) {
+        for (const rec of saved.qcRecords) {
+          if (rec?.orderNumber) this.qcInspectionRecords.set(rec.orderNumber, rec);
+        }
+      }
+    } catch {
+      // Fresh QC map fallback
+    }
+
+    persistenceEngine.registerStateProvider("qcRecords", () => Array.from(this.qcInspectionRecords.values()));
+    persistenceEngine.registerHydrator((state) => this.rehydrateFromState(state?.qcRecords));
+  }
+
+  /**
+   * Merges cold-start QC inspection records recovered from PostgreSQL/Supabase.
+   */
+  rehydrateFromState(qcRecords = []) {
+    if (!Array.isArray(qcRecords)) return;
+    for (const rec of qcRecords) {
+      if (rec?.orderNumber) {
+        this.qcInspectionRecords.set(rec.orderNumber, rec);
+      }
+    }
   }
 
   /**
@@ -376,7 +403,7 @@ class AdminStudioService {
       activeOrdersCount: orders.length,
       revenue: {
         totalPaise: totalGrossRevenuePaise,
-        formattedRupees: formatRupees(BigInt(totalGrossRevenuePaise))
+        formattedRupees: formatRupees(BigInt(Math.round(Number(totalGrossRevenuePaise) || 0)))
       },
       pipeline: {
         pendingPayment: pendingPaymentCount,

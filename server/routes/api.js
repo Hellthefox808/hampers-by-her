@@ -1,4 +1,5 @@
 const express = require("express");
+const crypto = require("crypto");
 const router = express.Router();
 
 const { PricingEngine } = require("../services/pricingEngine");
@@ -13,6 +14,9 @@ const { adminService } = require("../services/adminService");
 const { logisticsCourierService } = require("../services/logisticsCourierService");
 const { notificationService } = require("../services/notificationService");
 const { inquiryService } = require("../services/inquiryService");
+const { metricsCollector } = require("../services/metricsService");
+const { persistenceEngine } = require("../services/persistenceEngine");
+const { postgresStore } = require("../services/postgresClient");
 const {
   AUDIO_CONFIG,
   DEFAULT_VAD_CONFIG,
@@ -25,6 +29,52 @@ const { SmartPaymentRouter } = require("../../platform/services/payment-service/
 const { CacheGrid } = require("../../platform/services/cache-service/cacheGrid");
 const { serviceMesh } = require("../../platform/services/mesh-service/serviceMesh");
 const { inventoryEngine } = require("../../platform/services/scaling-service/inventoryLock");
+
+// Register active core domain services into the platform service mesh
+if (!serviceMesh.services.has("CatalogService")) {
+  serviceMesh.registerService("CatalogService", {
+    version: "2.1.0",
+    handlers: {
+      listProducts: async () => CatalogService.getProducts({ limit: 50 })
+    },
+    healthCheckFn: async () => ({
+      status: CatalogService.getProducts({ limit: 1 }).items.length > 0 ? "UP" : "DEGRADED",
+      latencyMs: 1
+    })
+  });
+}
+if (!serviceMesh.services.has("InventoryService")) {
+  serviceMesh.registerService("InventoryService", {
+    version: "2.1.0",
+    handlers: {
+      getStock: async ({ sku }) => inventoryEngine.getStock(sku)
+    },
+    healthCheckFn: async () => ({
+      status: "UP",
+      trackedSkus: inventoryEngine.stockLevels.size,
+      activeLocks: inventoryEngine.reservations.size,
+      latencyMs: 1
+    })
+  });
+}
+if (!serviceMesh.services.has("DeliveryService")) {
+  serviceMesh.registerService("DeliveryService", {
+    version: "2.1.0",
+    handlers: {
+      checkPincode: async ({ pincode }) => DeliveryService.checkPincode(pincode)
+    },
+    healthCheckFn: async () => ({ status: "UP", latencyMs: 1 })
+  });
+}
+if (!serviceMesh.services.has("WhatsAppService")) {
+  serviceMesh.registerService("WhatsAppService", {
+    version: "2.1.0",
+    handlers: {
+      health: async () => ({ status: "UP", mode: process.env.WHATSAPP_ACCESS_TOKEN ? "LIVE" : "SANDBOX" })
+    },
+    healthCheckFn: async () => ({ status: "UP", latencyMs: 1 })
+  });
+}
 
 // Advanced Computational Algorithms (39_DSA.md) & Visualizer
 const {
@@ -51,6 +101,15 @@ const cacheGrid = new CacheGrid();
 
 // Express 4 async error bridge so rejected promises reach RFC 7807 error middleware
 const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+// Ensure cold-start serverless instances hydrate domain state from PostgreSQL/Supabase once
+router.use(asyncHandler(async (_req, _res, next) => {
+  await Promise.all([
+    persistenceEngine.ensureHydrated(),
+    inquiryService.ensureHydrated()
+  ]);
+  next();
+}));
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -123,7 +182,7 @@ function requireStaffPermission(permission) {
 // SLIDING-WINDOW IP RATE LIMITING MIDDLEWARE (25_AUTH_SECURITY.md)
 // ═══════════════════════════════════════════════════════════
 
-function createRateLimiter({ windowMs = 60000, maxRequests = 30, message = "Too many requests. Please slow down." }) {
+function createRateLimiter({ windowMs = 60000, maxRequests = 30, maxTrackedIps = 10000, message = "Too many requests. Please slow down." }) {
   const requests = new Map();
 
   setInterval(() => {
@@ -160,6 +219,12 @@ function createRateLimiter({ windowMs = 60000, maxRequests = 30, message = "Too 
       });
     }
 
+    if (!requests.has(clientIp) && requests.size >= maxTrackedIps) {
+      const oldestIp = requests.keys().next().value;
+      if (oldestIp !== undefined) {
+        requests.delete(oldestIp);
+      }
+    }
     validTimestamps.push(now);
     requests.set(clientIp, validTimestamps);
     res.setHeader("X-RateLimit-Limit", maxRequests);
@@ -287,6 +352,29 @@ router.post("/checkout/calculate", (req, res) => {
   }
 });
 
+router.post("/checkout/validate-coupon", (req, res) => {
+  try {
+    const { couponCode, code, subtotalPaise = 0 } = req.body || {};
+    const evaluation = PricingEngine.validateCoupon(couponCode || code, subtotalPaise);
+    if (!evaluation.valid) {
+      return res.status(400).json({
+        success: false,
+        error: { code: evaluation.reason, message: evaluation.message },
+        data: evaluation
+      });
+    }
+    res.json({
+      success: true,
+      data: evaluation
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: { code: "COUPON_VALIDATION_ERROR", message: err.message }
+    });
+  }
+});
+
 router.post("/checkout/create-order", checkoutRateLimiter, asyncHandler(async (req, res) => {
   const acquiredReservations = [];
   const rollbackReservations = async () => {
@@ -330,6 +418,8 @@ router.post("/checkout/create-order", checkoutRateLimiter, asyncHandler(async (r
     const order = OrderService.createOrder(req.body);
     order.inventoryReservationIds = acquiredReservations;
     OrderService.syncPersistence();
+    metricsCollector.incrementCounter("ordersCreatedTotal");
+    postgresStore.emitMetric("orders.created", 1, { outcome: "success" });
 
     res.status(201).json({
       success: true,
@@ -342,6 +432,7 @@ router.post("/checkout/create-order", checkoutRateLimiter, asyncHandler(async (r
       }
     });
   } catch (err) {
+    postgresStore.emitMetric("orders.created", 1, { outcome: "error" });
     await rollbackReservations();
     res.status(400).json({
       success: false,
@@ -350,19 +441,32 @@ router.post("/checkout/create-order", checkoutRateLimiter, asyncHandler(async (r
   }
 }));
 
-router.post(["/payments/verify", "/payments/verify-and-confirm"], async (req, res) => {
+router.post(["/payments/verify", "/payments/verify-and-confirm"], asyncHandler(async (req, res) => {
   const { orderNumber, paymentId, method } = req.body;
   if (!orderNumber) {
     return res.status(400).json({ success: false, error: { message: "orderNumber is required" } });
   }
 
   try {
+    const existingOrder = OrderService.getOrderByNumber(orderNumber);
+    const wasAlreadyConfirmed = Boolean(existingOrder && existingOrder.status !== "PENDING_PAYMENT");
     const order = OrderService.confirmPayment(orderNumber, { paymentId, method });
 
-    // Programmatically trigger WhatsApp HSM notification asynchronously
-    whatsappService.notifyOrderEvent(order, "ORDER_CONFIRMED").catch(err => {
-      console.warn("WhatsApp notification error (non-blocking):", err.message);
-    });
+    if (!wasAlreadyConfirmed) {
+      for (const resId of (order.inventoryReservationIds || [])) {
+        await inventoryEngine.commit(resId).catch(() => {});
+      }
+      metricsCollector.incrementCounter("ordersConfirmedTotal");
+      postgresStore.emitMetric("orders.confirmed", 1, {
+        outcome: "success",
+        method: String(method || "UPI")
+      });
+
+      // Programmatically trigger WhatsApp HSM notification asynchronously
+      whatsappService.notifyOrderEvent(order, "ORDER_CONFIRMED").catch(err => {
+        console.warn("WhatsApp notification error (non-blocking):", err.message);
+      });
+    }
 
     res.json({
       success: true,
@@ -374,12 +478,14 @@ router.post(["/payments/verify", "/payments/verify-and-confirm"], async (req, re
       }
     });
   } catch (err) {
-    res.status(404).json({
+    const isConflict = err.message.includes("ORDER_NOT_PAYABLE") || err.message.includes("cannot accept payment");
+    const statusCode = isConflict ? 409 : 404;
+    res.status(statusCode).json({
       success: false,
-      error: { code: "PAYMENT_CONFIRM_FAILED", message: err.message }
+      error: { code: isConflict ? "ORDER_NOT_PAYABLE" : "PAYMENT_CONFIRM_FAILED", message: err.message }
     });
   }
-});
+}));
 
 router.get("/orders/:orderNumber", (req, res) => {
   const order = OrderService.getOrderByNumber(req.params.orderNumber);
@@ -502,7 +608,7 @@ router.post("/whatsapp/inquire", async (req, res) => {
 });
 
 // Outbound Transactional Notification Dispatch
-router.post("/whatsapp/notify/order", async (req, res) => {
+router.post("/whatsapp/notify/order", requireStaffPermission("orders:write"), asyncHandler(async (req, res) => {
   const { orderNumber, eventType } = req.body;
   const order = OrderService.getOrderByNumber(orderNumber);
   if (!order) {
@@ -511,7 +617,7 @@ router.post("/whatsapp/notify/order", async (req, res) => {
 
   const result = await whatsappService.notifyOrderEvent(order, eventType || "ORDER_CONFIRMED");
   res.json({ success: true, result });
-});
+}));
 
 // Simulated Incoming Message (strictly disabled in production)
 router.post("/whatsapp/simulate-incoming", asyncHandler(async (req, res) => {
@@ -694,17 +800,18 @@ router.post("/voice/livekit/token", (req, res) => {
 // ═══════════════════════════════════════════════════════════
 
 router.post("/payments/initiate", (req, res) => {
-  const { orderId, amountPaise, currency, clientType, idempotencyKey } = req.body;
-  if (!orderId || !amountPaise) {
+  const { orderId, amountPaise, currency, clientType, idempotencyKey } = req.body || {};
+  const numericAmount = Number(amountPaise);
+  if (!orderId || !Number.isFinite(numericAmount) || numericAmount <= 0) {
     return res.status(400).json({
       success: false,
-      error: "orderId and amountPaise are required"
+      error: "orderId and a positive amountPaise are required"
     });
   }
 
   const session = smartRouter.routeCheckout({
     orderId,
-    amountPaise,
+    amountPaise: Math.round(numericAmount),
     currency: currency || "INR",
     clientType: clientType || "mobile",
     idempotencyKey
@@ -776,13 +883,19 @@ router.post("/payments/refund", requireStaffPermission("refunds:initiate"), asyn
 // ═══════════════════════════════════════════════════════════
 
 router.get("/system/health", asyncHandler(async (req, res) => {
-  const meshHealth = await serviceMesh.getSystemHealth();
+  const [meshHealth, dbHealth] = await Promise.all([
+    serviceMesh.getSystemHealth(),
+    postgresStore.ping()
+  ]);
+  const meshHealthy = meshHealth.status === "HEALTHY";
+  const dbOk = !dbHealth.enabled || dbHealth.connected;
   res.json({
     success: true,
     data: {
-      status: meshHealth.status === "HEALTHY" ? "healthy" : "degraded",
+      status: meshHealthy && dbOk ? "healthy" : "degraded",
       uptimeSeconds: Math.floor(process.uptime()),
       timestamp: new Date().toISOString(),
+      database: dbHealth,
       cacheMetrics: cacheGrid.getMetrics(),
       mesh: meshHealth
     }
@@ -1081,7 +1194,7 @@ router.get("/admin/orders/:orderNumber", requireStaffPermission("orders:read"), 
   res.json({ success: true, data: order });
 });
 
-router.post("/admin/orders/:orderNumber/transition", requireStaffPermission("orders:write"), (req, res) => {
+router.post("/admin/orders/:orderNumber/transition", requireStaffPermission("orders:write"), asyncHandler(async (req, res) => {
   try {
     const { targetStatus, actorName, notes } = req.body;
     const updated = adminService.transitionOrderStatus({
@@ -1090,11 +1203,16 @@ router.post("/admin/orders/:orderNumber/transition", requireStaffPermission("ord
       actorName,
       notes
     });
+    if (String(targetStatus || "").toUpperCase() === "CANCELLED" && Array.isArray(updated?.inventoryReservationIds)) {
+      for (const resId of updated.inventoryReservationIds) {
+        await inventoryEngine.release(resId).catch(() => {});
+      }
+    }
     res.json({ success: true, data: updated });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
-});
+}));
 
 router.post(["/admin/orders/:orderNumber/qc-verify", "/admin/orders/:orderNumber/qc-inspect"], requireStaffPermission("orders:qc_verify"), (req, res) => {
   try {
@@ -1107,6 +1225,8 @@ router.post(["/admin/orders/:orderNumber/qc-verify", "/admin/orders/:orderNumber
       checklist,
       notes
     });
+    metricsCollector.incrementCounter("qcVerificationsTotal");
+    postgresStore.emitMetric("qc.verified", 1, { outcome: "success" });
     res.json({ success: true, data: result });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -1132,7 +1252,7 @@ router.get("/admin/metrics", requireStaffPermission("analytics:read"), (req, res
 // 14. LOGISTICS COURIER ADAPTER & AWB TRACKING (20_DELIVERY_LOGISTICS.md)
 // ═══════════════════════════════════════════════════════════
 
-router.post("/delivery/manifest", (req, res) => {
+router.post("/delivery/manifest", requireStaffPermission("logistics:manifest"), (req, res) => {
   try {
     const { orderNumber, grossWeightG, pickupSlot } = req.body;
     if (!orderNumber) {
@@ -1151,6 +1271,23 @@ router.post("/delivery/manifest", (req, res) => {
 
 router.post("/delivery/carrier-webhook", (req, res) => {
   try {
+    const expectedSecret = process.env.CARRIER_WEBHOOK_SECRET;
+    const providedSig = String(
+      req.headers["x-carrier-signature"] ||
+      req.headers["x-webhook-secret"] ||
+      req.headers["x-signature"] ||
+      ""
+    );
+    if (expectedSecret) {
+      const a = Buffer.from(providedSig, "utf8");
+      const b = Buffer.from(String(expectedSecret), "utf8");
+      if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+        return res.status(401).json({ success: false, error: "Invalid carrier webhook signature" });
+      }
+    } else if (process.env.NODE_ENV === "production") {
+      return res.status(401).json({ success: false, error: "CARRIER_WEBHOOK_SECRET is required in production" });
+    }
+
     const result = logisticsCourierService.processTrackingWebhook(req.body);
     res.json({ success: true, data: result });
   } catch (err) {
@@ -1231,7 +1368,7 @@ router.get("/delivery/track/:identifier", (req, res) => {
 // 15. MULTI-CHANNEL NOTIFICATION DISPATCHER (30_NOTIFICATION_SYSTEM.md)
 // ═══════════════════════════════════════════════════════════
 
-router.post("/notifications/send", async (req, res) => {
+router.post("/notifications/send", requireStaffPermission("orders:write"), async (req, res) => {
   try {
     const { event, order, customerPhone, customerEmail } = req.body;
     if (!event || !order) {
@@ -1275,6 +1412,11 @@ router.get("/catalog/archives", (req, res) => {
 router.post("/inquiries", checkoutRateLimiter, (req, res) => {
   try {
     const result = inquiryService.createInquiry(req.body);
+    metricsCollector.incrementCounter("inquiriesReceivedTotal");
+    postgresStore.emitMetric("inquiries.created", 1, {
+      outcome: "success",
+      tier: String(result?.inquiry?.priorityTier || "P2")
+    });
     res.status(201).json({
       success: true,
       data: result

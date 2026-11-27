@@ -286,6 +286,70 @@ paths:
       responses:
         '200':
           description: Stored inquiries list
+
+  # ── Coupons, Staff Auth, Smart Payments & System Observability ──
+  /checkout/validate-coupon:
+    post:
+      summary: Validate promo code (ALMAS10, WELCOME500, CELEBRATE, WELCOME15, WEDDINGVIP) against subtotal
+      responses:
+        '200':
+          description: Coupon eligibility and exact integer paise discount breakdown
+
+  /auth/staff-login:
+    post:
+      summary: Authenticate Atelier staff PIN and issue short-lived RBAC JWT
+      responses:
+        '200':
+          description: Staff JWT and granted RBAC permissions
+
+  /payments/smart-webhook:
+    post:
+      summary: Verify multi-gateway signed webhook notifications (Razorpay/Cashfree)
+      responses:
+        '200':
+          description: Webhook HMAC verification outcome
+
+  /payments/refund:
+    post:
+      summary: Initiate instant UPI/gateway refund (staff refunds:initiate permission required)
+      responses:
+        '200':
+          description: Refund transaction initiation result
+
+  /voice/status:
+    get:
+      summary: Inspect Eleanor Voice Concierge gateway readiness and active provider status
+      responses:
+        '200':
+          description: Voice concierge configuration and live session metrics
+
+  /voice/vapi/webhook:
+    post:
+      summary: Handle Vapi assistant tool calls and end-of-call transcript webhooks
+      responses:
+        '200':
+          description: Vapi tool response or webhook acknowledgement
+
+  /voice/livekit/token:
+    post:
+      summary: Mint short-lived LiveKit room participant token for WebRTC voice sessions
+      responses:
+        '200':
+          description: LiveKit JWT and WebSocket room coordinates
+
+  /system/health:
+    get:
+      summary: Consolidated runtime health, cache telemetry, and microservice mesh status
+      responses:
+        '200':
+          description: System and mesh health payload
+
+  /system/mesh/health:
+    get:
+      summary: Microservice mesh circuit-breaker and registered handler health probes
+      responses:
+        '200':
+          description: Service mesh health summary
 components:
   schemas:
     ProductListResponse:
